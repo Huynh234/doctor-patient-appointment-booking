@@ -6,7 +6,9 @@ const {
   updateDoctor,
   getAllDoctors,
   updateAppointment,
-  findDoctor
+  findDoctor,
+  registerDoctor,
+  loginDoctor
 } = require("../Controllers/Doctor.controller");
 const DoctorRouter = express.Router();
 const Auth = require("../Middlewares/JWT.authentication");
@@ -208,10 +210,10 @@ const { DoctorAuth } = require("../Middlewares/RoleBased.authentication");
 
 
 // Doctor Registration
-DoctorRouter.post("/register", register);
+DoctorRouter.post("/register", registerDoctor);
 
 // Doctor Login
-DoctorRouter.post("/login", login);
+DoctorRouter.post("/login", loginDoctor);
 
 // Doctor Deletion
 DoctorRouter.delete("/:doctorId", Auth, DoctorAuth, deleteDoctor);

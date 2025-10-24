@@ -9,7 +9,7 @@ require("dotenv").config();
 
 
 // Đăng ký bác sĩ
-const register = async (req, res) => {
+const registerDoctor = async (req, res) => {
   try {
     const { email, password, ...rest } = req.body;
 
@@ -19,57 +19,45 @@ const register = async (req, res) => {
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-
     const newDoctor = await Doctor.create({
       ...rest,
       email,
       password: hashedPassword,
-      profile: getRandomDoctorImage(),
+      profile: getRandomDoctorImage()
     });
 
-    res.status(201).json({ newDoctor, message: "registration successfully", status: true });
+    res.status(201).json({ newDoctor, message: "Doctor registration successful", status: true });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Internal server error" });
+    console.error("Register Doctor Error:", error);
+    res.status(500).json({ message: "Internal server error", status: false });
   }
 };
 
-// Đăng nhập
-const login = async (req, res) => {
+// Đăng nhập bác sĩ
+const loginDoctor = async (req, res) => {
   try {
-    const doctor = await Doctor.findOne({ where: { email: req.body.email } });
+    const { email, password } = req.body;
+    const doctor = await Doctor.findOne({ where: { email } });
 
-    if (!doctor) {
-      return res.status(400).json({ message: "Email not found!", status: false });
-    }
+    if (!doctor) return res.status(404).json({ message: "Email not found!", status: false });
 
-    // const passwordMatch = await bcrypt.compare(req.body.password, doctor.password);
-    // if (!passwordMatch) {
-    //   return res.status(400).json({ message: "Incorrect password!", status: false });
-    // }
-    if(req.body.password !== doctor.password){
-       return res.status(400).json({ message: "Incorrect password!", status: false });
-    }
-    const token = jwt.sign({ userId: doctor.doctorId, role: "doctor" }, process.env.secretKey);
+    const match = await bcrypt.compare(password, doctor.password);
+    if (!match) return res.status(400).json({ message: "Incorrect password!", status: false });
 
-    res.status(200).json({
-      message: "Login successful!",
-      token,
-      userId: doctor.doctorId,
-      status: true,
-    });
+    const token = jwt.sign({ id: doctor.doctorId, role: "doctor" }, process.env.secretKey, { expiresIn: "2h" });
+
+    res.status(200).json({ message: "Login successful", token, user: doctor, status: true });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Internal server error" });
+    console.error("Login Doctor Error:", error);
+    res.status(500).json({ message: "Internal server error", status: false });
   }
 };
-
 // Xóa bác sĩ
 const deleteDoctor = async (req, res) => {
   try {
     const doctorId = req.params.doctorId;
 
-    const deleted = await Doctor.destroy({ where: { id: doctorId } });
+    const deleted = await Doctor.destroy({ where: { doctorId: doctorId } });
 
     if (!deleted) {
       return res.status(404).json({ message: "Doctor not found" });
@@ -87,7 +75,7 @@ const updateDoctor = async (req, res) => {
   try {
     const doctorId = req.params.doctorId;
 
-    const [updated] = await Doctor.update(req.body, { where: { id: doctorId } });
+    const [updated] = await Doctor.update(req.body, { where: { doctorId: doctorId } });
     if (!updated) {
       return res.status(404).json({ message: "Doctor not found" });
     }
@@ -159,8 +147,8 @@ const updateAppointment = async (req, res) => {
 };
 
 module.exports = {
-  register,
-  login,
+  registerDoctor,
+  loginDoctor,
   deleteDoctor,
   updateDoctor,
   findDoctor,

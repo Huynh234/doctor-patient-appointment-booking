@@ -6,7 +6,6 @@ require("dotenv").config();
 
 // controllers/Patient.controller.js
 
-// Đăng ký bệnh nhân
 const registerPatient = async (req, res) => {
   try {
     const { email, password, ...rest } = req.body;
@@ -21,44 +20,33 @@ const registerPatient = async (req, res) => {
     const newPatient = await Patient.create({
       ...rest,
       email,
-      password: hashedPassword,
+      password: hashedPassword
     });
 
-    res.status(201).json({ newPatient, message: "Registration successfully", status: true });
+    res.status(201).json({ newPatient, message: "Registration successful", status: true });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Internal server error" });
+    console.error("Register Patient Error:", error);
+    res.status(500).json({ message: "Internal server error", status: false });
   }
 };
 
-// Đăng nhập
+// Đăng nhập bệnh nhân
 const loginPatient = async (req, res) => {
   try {
-    const patient = await Patient.findOne({ where: { email: req.body.email } });
+    const { email, password } = req.body;
+    const patient = await Patient.findOne({ where: { email } });
 
-    if (!patient) {
-      return res.status(400).json({ message: "Email not found!", status: false });
-    }
+    if (!patient) return res.status(404).json({ message: "Email not found!", status: false });
 
-    // const passwordMatch = await bcrypt.compare(req.body.password, patient.password);
-    // if (!passwordMatch) {
-    //   return res.status(400).json({ message: "Incorrect password!", status: false });
-    // }
-    if(req.body.password !== patient.password){
-       return res.status(400).json({ message: "Incorrect password!", status: false });
-    }
+    const match = await bcrypt.compare(password, patient.password);
+    if (!match) return res.status(400).json({ message: "Incorrect password!", status: false });
 
-    const token = jwt.sign({ userId: patient.patientId , role: "patient"}, process.env.secretKey);
+    const token = jwt.sign({ id: patient.patientId, role: "patient" }, process.env.secretKey, { expiresIn: "2h" });
 
-    res.status(200).json({
-      message: "Login successful!",
-      status: true,
-      token,
-      userId: patient.patientId,
-    });
+    res.status(200).json({ message: "Login successful", token, user: patient, status: true });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Internal server error" });
+    console.error("Login Patient Error:", error);
+    res.status(500).json({ message: "Internal server error", status: false });
   }
 };
 
