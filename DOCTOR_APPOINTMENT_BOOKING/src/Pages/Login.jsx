@@ -4,6 +4,11 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { AuthContext } from "../Context/AuthContext";
+import { InputText } from "primereact/inputtext";
+import { Button } from "primereact/button";
+import { ButtonGroup } from "primereact/buttongroup";
+import { IconField } from 'primereact/iconfield';
+import { InputIcon } from 'primereact/inputicon';
 
 const Login = () => {
   const history = useNavigate();
@@ -14,21 +19,29 @@ const Login = () => {
   });
   const { login } = useContext(AuthContext);
   const [isLoading, setIsLoading] = useState(false);
-  // console.log("login", login);
-
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    // console.log("handleInputChange", name, value);
     setFormData({ ...formData, [name]: value });
   };
 
-  const handleRoleChange = (e) => {
-    // console.log("Role change", e.target.value);
-    setFormData({ ...formData, role: e.target.value });
+  const resetForm = (value) => {
+    setFormData({
+      email: "",
+      password: "",
+      role: value,
+    });
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleRoleChange = (dataValue) => {
+    // setFormData({ ...formData, role: dataValue });
+    resetForm(dataValue);
+    console.log(formData);
+  };
+
+  const handleLogin = async (e) => {
+    // Nếu muốn vẫn hỗ trợ form submit, giữ dòng này:
+    e?.preventDefault?.();
+
     setIsLoading(true);
     try {
       const response = await axios.post(
@@ -38,20 +51,18 @@ const Login = () => {
 
       if (response.data.status) {
         toast.success("Login successful!");
-        // console.log("UserId: " + response.data.userId, response.data);
         localStorage.setItem("token", response.data.token);
         localStorage.setItem("userId", response.data.userId);
 
         if (formData.role === "patient") {
           history("/patient-dashboard");
-          login();
         } else if (formData.role === "doctor") {
           history("/doctor-dashboard");
-          login();
         } else if (formData.role === "admin") {
           history("/admin-dashboard");
-          login();
         }
+
+        login();
       } else {
         toast.error("Login failed. Please check your credentials.");
       }
@@ -65,106 +76,124 @@ const Login = () => {
     }
   };
 
+
   return (
-    <div className="flex justify-center items-center h-screen bg-[url(https://healthworldnet.com/imagesHealthCloudBusinessofHealthHospitalsClinicshospital_800.jpg)] bg-cover ">
-      <div className=" bg-opacity-10 backdrop-blur-xl w-full max-w-md p-6 rounded-lg shadow-lg">
-        <h2 className="text-3xl font-bold text-center text-indigo-700 mb-6">
-          Login
-        </h2>
-        <form onSubmit={handleSubmit}>
-          <div className="mb-4">
-            <label className="block text-indigo-700 text-sm font-bold mb-2">
-              Email<span className="text-red-500">*</span>
-            </label>
-            <input
-              type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleInputChange}
-              className="w-full border rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-transparent border-b-4 border-indigo-600"
-              placeholder="Enter your email"
-              required
-            />
+    <div className="flex justify-center items-center h-screen bg-[url(https://healthworldnet.com/imagesHealthCloudBusinessofHealthHospitalsClinicshospital_800.jpg)] bg-cover">
+      <div className="bg-opacity-95 bg-white backdrop-blur-xl w-full max-w-2xl rounded-lg shadow-lg">
+        <div className="bg-blue-600 rounded-t-lg !w-full h-16 md:h-20 lg:h-28 flex items-center justify-center">
+          <div>
+            <h2 className="text-xl md:text-2xl lg:text-3xl font-bold text-center text-white mb-1 md:mb-2 lg:mb-4">Đăng nhập hệ thống</h2>
+            <p className="text-center text-white text-xs font-medium md:text-sm lg:text-base">Đăng nhập vào hệ thống đặt lịch khám trực tuyến</p>
           </div>
-          <div className="mb-4">
-            <label className="block text-indigo-700 text-sm font-bold mb-2">
-              Password<span className="text-red-500">*</span>
-            </label>
-            <input
-              type="password"
-              name="password"
-              value={formData.password}
-              onChange={handleInputChange}
-              className="w-full border rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-transparent border-b-4 border-indigo-600"
-              placeholder="Enter your password"
-              required
-            />
-          </div>
+        </div>
+        <div className="flex justify-center mt-4">
+          <div>
+            <div className="mb-4 text-center">
+              <p className="text-indigo-700 font-medium text-xl">Chọn loại tài khoản</p>
+            </div>
+            <div>
+              <ButtonGroup>
+                <Button
+                  rounded
+                  severity="info"
+                  raised
+                  text
+                  onClick={() => handleRoleChange("patient")}
+                  className={`px-4 py-2 font-bold ${formData.role === "patient" ? "bg-sky-200 text-blue-800" : ""
+                    }`}
+                >
+                  <div className="flex flex-col items-center justify-center w-20 md:w-32 lg:w-44">
+                    <i className="pi pi-user" style={{ fontSize: "2.5rem" }}></i>
+                    <span className="mt-1 text-sm md:text-base lg:text-lg">Bệnh nhân</span>
+                  </div>
+                </Button>
+                <Button
+                  severity="info"
+                  raised
+                  rounded
+                  text
+                  onClick={() => handleRoleChange("doctor")}
+                  className={`px-4 py-2 font-bold ${formData.role === "doctor" ? "bg-sky-200 text-blue-800" : ""
+                    }`}
+                >
+                  <div className="flex flex-col items-center justify-center w-20 md:w-32 lg:w-44">
+                    <i className="font-extrabold text-4xl">&#129658;</i>
+                    <span className="mt-1 text-sm md:text-base lg:text-lg">Bác sĩ</span>
+                  </div>
+                </Button>
 
-          <div className="flex items-center space-x-4">
-            <label className="block text-indigo-700 text-sm font-bold mb-2">
-              Role
-            </label>
-            <div className="flex items-center space-x-4">
-              <label className="flex items-center">
-                <input
-                  type="radio"
-                  name="role"
-                  value="patient"
-                  checked={formData.role === "patient"}
-                  onChange={handleRoleChange}
-                  className="mr-2 -mt-2"
-                />
-                <span className="text-sm text-indigo-700 font-bold -mt-2">
-                  Patient
-                </span>
-              </label>
-
-              <label className="flex items-center">
-                <input
-                  type="radio"
-                  name="role"
-                  value="doctor"
-                  checked={formData.role === "doctor"}
-                  onChange={handleRoleChange}
-                  className="mr-2 -mt-2"
-                />
-                <span className="text-sm text-indigo-700 font-bold -mt-2">
-                  Doctor
-                </span>
-              </label>
-
-              <label className="flex items-center">
-                <input
-                  type="radio"
-                  name="role"
-                  value="admin"
-                  checked={formData.role === "admin"}
-                  onChange={handleRoleChange}
-                  className="mr-2 -mt-2"
-                />
-                <span className="text-sm text-indigo-700 font-bold -mt-2">
-                  Admin
-                </span>
-              </label>
+                <Button
+                  rounded
+                  severity="info"
+                  raised
+                  text
+                  onClick={() => handleRoleChange("admin")}
+                  className={`px-4 py-2 font-bold ${formData.role === "admin" ? "bg-sky-200 text-blue-800" : ""
+                    }`}
+                >
+                  <div className="flex flex-col items-center justify-center w-20 md:w-32 lg:w-44">
+                    <i className="pi pi-shield" style={{ fontSize: "2.5rem" }}></i>
+                    <span className="mt-1 text-sm md:text-base lg:text-lg">Admin</span>
+                  </div>
+                </Button>
+              </ButtonGroup>
             </div>
           </div>
-          <div className="text-center">
-            <button
-              type="submit"
-              className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-full focus:outline-none focus:shadow-outline-indigo active:bg-indigo-800 mt-10 w-full transform hover:scale-105 transition-transform duration-300 ease-in-out"
-              disabled={isLoading}
-            >
-              {isLoading ? "Please wait, logging in..." : "Login"}{" "}
-            </button>
+        </div>
+        <div className="p-6 md:p-8 lg:p-10">
+          <div>
+            <div className="mb-4">
+              <label className="block text-indigo-700 text-sm font-bold mb-2">
+                Email<span className="text-red-500">*</span>
+              </label>
+              <IconField iconPosition="left">
+                <InputIcon className="pi pi-envelope" ></InputIcon>
+                  <InputText
+                    type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleInputChange}
+                    className="w-full"
+                    placeholder="Enter your email"
+                    required
+                  />
+              </IconField>
+            </div>
+            <div className="mb-4">
+              <label className="block text-indigo-700 text-sm font-bold mb-2">
+                Password<span className="text-red-500">*</span>
+              </label>
+              <IconField iconPosition="left">
+                <InputIcon className="pi pi-lock" ></InputIcon>
+                  <InputText
+                    type="password"
+                    name="password"
+                    value={formData.password}
+                    onChange={handleInputChange}
+                    className="w-full"
+                    placeholder="Enter your password"
+                    required
+                  />
+              </IconField>
+            </div>
+            <div className="text-center">
+              <Button
+                label={isLoading ? "Please wait, logging in..." : "Login"}
+                type="submit"
+                onClick={handleLogin}
+                className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-full focus:outline-none focus:shadow-outline-indigo active:bg-indigo-800 mt-10 w-full transform hover:scale-105 transition-transform duration-300 ease-in-out"
+                disabled={isLoading}
+              />
+
+            </div>
+            <div className="text-center mt-4">
+              New user?
+              <Link to="/" className="text-indigo-700 hover:underline">
+                Register here.
+              </Link>
+            </div>
           </div>
-          <div className="text-center mt-4">
-            New user?
-            <Link to="/" className="text-indigo-700 hover:underline">
-              Register here.
-            </Link>
-          </div>
-        </form>
+        </div>
       </div>
     </div>
   );
