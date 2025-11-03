@@ -12,6 +12,7 @@ require("dotenv").config()
 require("./Models/Patient.model");
 require("./Models/Doctor.model");
 require("./Models/Appointment.model");
+require("./Models/EmailNotification.model");
 
 const app=express();
 const cors=require('cors')
