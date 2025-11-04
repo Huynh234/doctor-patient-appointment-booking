@@ -2,7 +2,7 @@
 const Appointment = require("../Models/Appointment.model");
 const Doctor = require("../Models/Doctor.model");
 const Patient = require("../Models/Patient.model");
-
+const {sendEmailAndLog} = require("./SendMail.controller");
 // Tạo lịch hẹn mới
 const createAppointment = async (req, res) => {
   try {
@@ -15,7 +15,7 @@ const createAppointment = async (req, res) => {
       status,
       disease,
     } = req.body;
-
+    const role = req.body.role;
     const newAppointment = await Appointment.create({
       patientId: patient,
       doctorId: doctor,
@@ -26,6 +26,7 @@ const createAppointment = async (req, res) => {
       disease,
     });
     // ====> Gửi thông báo realtime đến doctor & patient <====
+    await sendWithRole(role, newAppointment, 'được tạo');
     req.io.to(`doctor_${newAppointment.doctorId}`).emit("appointmentAdded", newAppointment);
     req.io.to(`patient_${newAppointment.patientId}`).emit("appointmentAdded", newAppointment);
     res.status(201).json(newAppointment);
@@ -81,19 +82,20 @@ const getPatientAppointmentById = async (req, res) => {
 const updateAppointmentById = async (req, res) => {
   try {
     const appointmentId = req.params.appointmentId;
-
+    const role = req.body.role;
     const [updated] = await Appointment.update(req.body, {
       where: { id: appointmentId },
     });
 
     if (!updated) {
       return res.status(404).json({ message: "Appointment not found" });
-    }
+      }
 
     const updatedAppointment = await Appointment.findByPk(appointmentId, {
       include: [Doctor, Patient],
     });
     // Emit event cập nhật
+    await sendWithRole(role, updatedAppointment, 'được cập nhật');
     req.io.to(`doctor_${updatedAppointment.doctorId}`).emit("appointmentUpdated", updatedAppointment);
     req.io.to(`patient_${updatedAppointment.patientId}`).emit("appointmentUpdated", updatedAppointment);
     res.status(200).json(updatedAppointment);
@@ -108,11 +110,10 @@ const deleteAppointmentById = async (req, res) => {
   try {
     const appointmentId = req.params.appointmentId;
     const appointment = await Appointment.findByPk(appointmentId);
-
+    const role = req.body.role;
     if (!appointment) return res.status(404).json({ message: "Appointment not found" });
-
+    await sendWithRole(role, appointment, 'bị hủy');
     await appointment.destroy();
-
     req.io.to(`doctor_${appointment.doctorId}`).emit("appointmentDeleted", appointmentId);
     req.io.to(`patient_${appointment.patientId}`).emit("appointmentDeleted", appointmentId);
     res.status(200).json({ message: "Appointment deleted successfully" });
@@ -121,6 +122,34 @@ const deleteAppointmentById = async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
+
+const sendWithRole = async (role, appointment, tex) => {
+  if (role !== 'doctor' && role !== 'patient') {
+      return res.status(400).json({ message: "Invalid role" });
+    }
+    if (role === 'doctor') {
+      const em = await Patient.findByPk(appointment.patientId);
+      const mailData = {
+        form: "Hệ thống đặt lịch trực tuyến",
+        receiver: em?.email,
+        subject: "Thông báo hủy lịch hẹn",
+        message: `<p> Lịch hẹn của bạn vào ngày ${appointment.appointmentDate} từ ${appointment.startTime} đến ${appointment.endTime} đã bị hủy.</p>`,
+        appointmentId: appointment.AppointmentId
+      };
+      await sendEmailAndLog(mailData);
+    } else if (role === 'patient') {
+      const em2 = await Doctor.findByPk(appointment.doctorId);
+      const mailData2 = {
+        form: "Hệ thống đặt lịch trực tuyến",
+        receiver: em2?.email,
+        subject: "Thông báo hủy lịch hẹn",
+        message: `<p> Lịch hẹn của bạn vào ngày ${appointment.appointmentDate} từ ${appointment.startTime} đến ${appointment.endTime} đã ${tex}.</p>`,
+        appointmentId: appointment.AppointmentId
+      };
+      await sendEmailAndLog(mailData2);
+    }
+
+}
 
 module.exports = {
   createAppointment,

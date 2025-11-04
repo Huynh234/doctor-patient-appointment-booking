@@ -15,6 +15,7 @@ const Auth = (req, res, next) => {
                 next()
             } else {
                 res.status(400).send({ "err": err })
+                console.log("err",err)
             }
         });
     }

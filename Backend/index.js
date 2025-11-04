@@ -1,6 +1,6 @@
 //index.js
 const http = require('http');
-const  express=require('express');
+const express=require('express');
 const sequelize = require("./Config/data");
 const DoctorRouter = require('./Routes/Doctor.route');
 const swaggerDocs = require("./Config/swagger"); 
