@@ -23,7 +23,8 @@ const registerDoctor = async (req, res) => {
       ...rest,
       email,
       password: hashedPassword,
-      profile: getRandomDoctorImage()
+      profile: getRandomDoctorImage(),
+      status: false
     });
 
     res.status(201).json({ newDoctor, message: "Doctor registration successful", status: true });
@@ -43,6 +44,8 @@ const loginDoctor = async (req, res) => {
 
     const match = await bcrypt.compare(password, doctor.password);
     if (!match) return res.status(400).json({ message: "Incorrect password!", status: false });
+
+    if(!doctor.status) return res.status(401).json({message:"Doctor is not active", status: false})
 
     const token = jwt.sign({ id: doctor.doctorId, role: "doctor" }, process.env.secretKey, { expiresIn: "2h" });
 

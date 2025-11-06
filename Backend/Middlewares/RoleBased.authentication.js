@@ -20,4 +20,13 @@ const PatientAuth=(req,res,next)=>{
         res.status(403).json({ message: 'Admin or Doctor can acsess',status:true });
     }
 }
-module.exports={DoctorAuth,PatientAuth}
+
+const AdminAuth=(req,res,next)=>{
+    let {role}=req.body
+    if(role=="admin"){
+        next()
+    }else{
+        res.status(403).json({ message: 'Admin can access',status:true });
+    }
+}
+module.exports={DoctorAuth,PatientAuth,AdminAuth}
