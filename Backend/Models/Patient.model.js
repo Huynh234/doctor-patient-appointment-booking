@@ -44,6 +44,10 @@ const Patient = sequelize.define("Patient", {
   bloodGroup: {
     type: DataTypes.STRING(5),
     allowNull: false
+  },
+  status: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false
   }
 }, {
   tableName: "Patients",

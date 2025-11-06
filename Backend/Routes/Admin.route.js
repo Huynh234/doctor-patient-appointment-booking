@@ -1,8 +1,10 @@
 const express=require("express");
 
 const AdminRouter=express.Router()
-
+const {approveDoctor, toggleUserStatus, assignRole, getSystemStats, exportReport, viewAdminLogs} = require("../Controllers/Admin.controller");
 const jwt=require("jsonwebtoken")
+const Auth = require("../Middlewares/JWT.authentication");
+const { AdminAuth } = require("../Middlewares/RoleBased.authentication");
 require("dotenv").config()
 
 /**
@@ -74,4 +76,171 @@ AdminRouter.post("/login",async(req,res)=>{
         res.status(500).json({ message: 'Internal server error' });
     }
 })
+
+// Duyệt bác sĩ
+/**
+ * @swagger
+ * /admin/approve-doctor:
+ *   patch:
+ *     summary: Duyệt hoặc từ chối tài khoản bác sĩ
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - doctorId
+ *               - approve
+ *             properties:
+ *               doctorId:
+ *                 type: integer
+ *                 example: 5
+ *               approve:
+ *                 type: boolean
+ *                 example: true
+ *     responses:
+ *       200:
+ *         description: Cập nhật trạng thái bác sĩ thành công
+ *       404:
+ *         description: Không tìm thấy bác sĩ
+ */
+AdminRouter.patch("/approve-doctor",Auth, AdminAuth, approveDoctor);
+
+// Khóa/mở tài khoản
+/**
+ * @swagger
+ * /admin/toggle-user-status:
+ *   patch:
+ *     summary: Kích hoạt hoặc khóa tài khoản người dùng
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - userType
+ *               - userId
+ *               - status
+ *             properties:
+ *               userType:
+ *                 type: string
+ *                 enum: [doctor, patient]
+ *                 example: doctor
+ *               userId:
+ *                 type: integer
+ *                 example: 3
+ *               status:
+ *                 type: boolean
+ *                 example: false
+ *     responses:
+ *       200:
+ *         description: Cập nhật trạng thái người dùng thành công
+ */
+AdminRouter.patch("/toggle-user-status",Auth, AdminAuth, toggleUserStatus);
+
+// Phân quyền
+/**
+ * @swagger
+ * /admin/assign-role:
+ *   patch:
+ *     summary: Phân quyền cho người dùng (bác sĩ hoặc bệnh nhân)
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - userType
+ *               - userId
+ *               - role
+ *             properties:
+ *               userType:
+ *                 type: string
+ *                 enum: [doctor, patient]
+ *               userId:
+ *                 type: integer
+ *                 example: 2
+ *               role:
+ *                 type: string
+ *                 example: "moderator"
+ *     responses:
+ *       200:
+ *         description: Gán quyền thành công
+ */
+AdminRouter.patch("/assign-role",Auth, AdminAuth, assignRole);
+
+// Thống kê
+/**
+ * @swagger
+ * /admin/stats:
+ *   get:
+ *     summary: Lấy thống kê tổng quan hệ thống
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Dữ liệu thống kê hệ thống
+ *       500:
+ *         description: Lỗi khi lấy thống kê
+ */
+AdminRouter.get("/stats",Auth, AdminAuth, getSystemStats);
+
+// Xuất báo cáo
+/**
+ * @swagger
+ * /admin/export-report:
+ *   get:
+ *     summary: Xuất báo cáo hoạt động hệ thống
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: from
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Ngày bắt đầu lọc dữ liệu (yyyy-mm-dd)
+ *         example: 2024-01-01
+ *       - in: query
+ *         name: to
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Ngày kết thúc lọc dữ liệu (yyyy-mm-dd)
+ *         example: 2024-12-31
+ *     responses:
+ *       200:
+ *         description: Báo cáo được xuất thành công
+ */
+AdminRouter.get("/export-report",Auth, AdminAuth, exportReport);
+
+// Xem log
+/**
+ * @swagger
+ * /admin/logs:
+ *   get:
+ *     summary: Xem log hoạt động của quản trị viên
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Danh sách log hoạt động
+ */
+AdminRouter.get("/logs",Auth, AdminAuth, viewAdminLogs);
+
 module.exports=AdminRouter
