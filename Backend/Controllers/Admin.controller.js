@@ -3,6 +3,7 @@ const Doctor = require("../Models/Doctor.model");
 const Patient = require("../Models/Patient.model");
 const Appointment = require("../Models/Appointment.model");
 const { Op } = require("sequelize");
+const bcrypt = require("bcrypt");
 const fs = require("fs");
 const path = require("path");
 
@@ -65,27 +66,59 @@ const toggleUserStatus = async (req, res) => {
  * ✅ PHÂN QUYỀN (ví dụ: set role)
  * Gợi ý: bạn có thể có thêm trường "role" trong bảng người dùng (ở đây giả lập)
  */
-const assignRole = async (req, res) => {
+const createUserAccount = async (req, res) => {
   try {
-    const { userType, userId, role } = req.body;
+    const { userType, firstName, lastName, email, password, specialty, clinicLocation, contactNumber, licenseCode, bloodGroup, dateOfBirth, gender, address, city } = req.body;
+
     let model = null;
 
     if (userType === "doctor") model = Doctor;
     else if (userType === "patient") model = Patient;
     else return res.status(400).json({ message: "Invalid user type" });
 
-    const user = await model.findByPk(userId);
-    if (!user) return res.status(404).json({ message: "User not found" });
+    // Kiểm tra email tồn tại
+    const existing = await model.findOne({ where: { email } });
+    if (existing) return res.status(400).json({ message: "Email already exists" });
 
-    // giả sử ta có cột "role" bổ sung trong DB
-    user.role = role;
-    await user.save();
+    // Mã hóa mật khẩu
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-    logAction(req.adminId, "Assign Role", `Type=${userType}, ID=${userId}, Role=${role}`);
-    res.json({ message: "Role assigned successfully", user });
+    let newUser = null;
+
+    if (userType === "doctor") {
+      newUser = await model.create({
+        firstName,
+        lastName,
+        email,
+        password: hashedPassword,
+        specialty,
+        clinicLocation,
+        contactNumber,
+        licenseCode,
+        workingHours: "08:00 - 17:00",
+        status: true, // mặc định kích hoạt
+      });
+    } else {
+      newUser = await model.create({
+        firstName,
+        lastName,
+        email,
+        password: hashedPassword,
+        dateOfBirth,
+        gender,
+        contactNumber,
+        address,
+        city,
+        bloodGroup,
+        status: true,
+      });
+    }
+
+    logAction(req.adminId, "Create User Account", `Type=${userType}, Email=${email}`);
+    res.status(201).json({ message: `${userType} account created successfully`, user: newUser });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Error assigning role" });
+    res.status(500).json({ message: "Error creating account" });
   }
 };
 
@@ -178,7 +211,7 @@ const viewAdminLogs = (req, res) => {
 module.exports = {
     approveDoctor,
     toggleUserStatus,
-    assignRole,
+    createUserAccount,
     getSystemStats,
     exportReport,
     viewAdminLogs
