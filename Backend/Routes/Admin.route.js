@@ -1,7 +1,7 @@
 const express=require("express");
 
 const AdminRouter=express.Router()
-const {approveDoctor, toggleUserStatus, assignRole, getSystemStats, exportReport, viewAdminLogs} = require("../Controllers/Admin.controller");
+const {approveDoctor, toggleUserStatus, createUserAccount, getSystemStats, exportReport, viewAdminLogs} = require("../Controllers/Admin.controller");
 const jwt=require("jsonwebtoken")
 const Auth = require("../Middlewares/JWT.authentication");
 const { AdminAuth } = require("../Middlewares/RoleBased.authentication");
@@ -146,12 +146,12 @@ AdminRouter.patch("/approve-doctor",Auth, AdminAuth, approveDoctor);
  */
 AdminRouter.patch("/toggle-user-status",Auth, AdminAuth, toggleUserStatus);
 
-// Phân quyền
+// Thêm tài khoản mới (Doctor hoặc Patient)
 /**
  * @swagger
- * /admin/assign-role:
- *   patch:
- *     summary: Phân quyền cho người dùng (bác sĩ hoặc bệnh nhân)
+ * /admin/create-user:
+ *   post:
+ *     summary: Thêm mới tài khoản bác sĩ hoặc bệnh nhân
  *     tags: [Admin]
  *     security:
  *       - bearerAuth: []
@@ -163,23 +163,65 @@ AdminRouter.patch("/toggle-user-status",Auth, AdminAuth, toggleUserStatus);
  *             type: object
  *             required:
  *               - userType
- *               - userId
- *               - role
+ *               - firstName
+ *               - lastName
+ *               - email
+ *               - password
  *             properties:
  *               userType:
  *                 type: string
  *                 enum: [doctor, patient]
- *               userId:
- *                 type: integer
- *                 example: 2
- *               role:
+ *                 example: "doctor"
+ *               firstName:
  *                 type: string
- *                 example: "moderator"
+ *                 example: "Nguyen"
+ *               lastName:
+ *                 type: string
+ *                 example: "An"
+ *               email:
+ *                 type: string
+ *                 example: "doctor.an@example.com"
+ *               password:
+ *                 type: string
+ *                 example: "123456"
+ *               specialty:
+ *                 type: string
+ *                 example: "Cardiology"
+ *               clinicLocation:
+ *                 type: string
+ *                 example: "Hanoi General Hospital"
+ *               contactNumber:
+ *                 type: string
+ *                 example: "0905123456"
+ *               licenseCode:
+ *                 type: string
+ *                 example: "LIC12345"
+ *               bloodGroup:
+ *                 type: string
+ *                 example: "O+"
+ *               dateOfBirth:
+ *                 type: string
+ *                 format: date
+ *                 example: "1999-02-15"
+ *               gender:
+ *                 type: string
+ *                 enum: [male, female, other]
+ *                 example: "male"
+ *               address:
+ *                 type: string
+ *                 example: "123 Nguyen Trai, Hanoi"
+ *               city:
+ *                 type: string
+ *                 example: "Hanoi"
  *     responses:
- *       200:
- *         description: Gán quyền thành công
+ *       201:
+ *         description: Tạo tài khoản thành công
+ *       400:
+ *         description: Dữ liệu không hợp lệ hoặc email đã tồn tại
+ *       500:
+ *         description: Lỗi máy chủ
  */
-AdminRouter.patch("/assign-role",Auth, AdminAuth, assignRole);
+AdminRouter.post("/create-user", Auth, AdminAuth, createUserAccount);
 
 // Thống kê
 /**
