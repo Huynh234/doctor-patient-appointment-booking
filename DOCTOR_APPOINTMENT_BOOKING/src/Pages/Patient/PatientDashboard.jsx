@@ -6,15 +6,28 @@ import Breadcrumb from "../../components/Breadcrumb";
 import Footer from "../../components/Footer";
 import { AuthContext } from "../../Context/AuthContext";
 import { io } from "socket.io-client";
+import { TabMenu } from 'primereact/tabmenu';
+import newLogo from '../../assets/newLogo.svg';
+import { Button } from 'primereact/button';
+import IntroDashBoard from "../../Pages/Patient/IntroDashBoard";
+import MyAppointments from "../../Pages/Patient/MyAppointment";
 const PatientDashboard = () => {
   const [doctors, setDoctors] = useState([]);
   const [totalAppointments, setTotalAppointments] = useState(0);
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
+
+  const [activeIndex, setActiveIndex] = useState(0);
   // console.log("Token:", token);
   const { logout } = useContext(AuthContext);
 
-    const fetchDoctors = async () => {
+  const items = [
+    { label: 'Giới thiệu', icon: 'pi pi-home' },
+    { label: 'Đặt lịch khám', icon: 'pi pi-calendar-clock' },
+    { label: 'Xem lịch khám', icon: 'pi pi-list' }
+  ];
+
+  const fetchDoctors = async () => {
     try {
       const response = await axios.get("http://localhost:8080/doctors/all", {
         headers: { Authorization: `Bearer ${token}` },
@@ -90,46 +103,57 @@ const PatientDashboard = () => {
 
   return (
     <>
-      <header className="bg-blue-600 text-white py-4 fixed top-0 w-full z-10 flex justify-between items-center">
-        <div className="container mx-auto text-center">
-          <h1 className="text-3xl font-semibold">
-            <i className="pi pi-user-md mr-2 text-4xl" />
-            Doctor Directory
-          </h1>
+      <header className="card bg-white fixed top-0 w-full z-10 flex justify-between items-center box-border shadow-md">
+        <div className="flex w-full">
+          <div className="flex ml-8 items-center justify-start">
+            <div><img src={newLogo} alt="Logo" className="mx-auto md:w-16 lg:w-20" /></div>
+            <div className="flex flex-col ml-7 text-left">
+              <div className=""><p className="md:text-xl lg:text-3xl text-blue-500 font-bold">MedBooking</p></div>
+              <div>
+                <span className="text-gray-600 md:text-sm lg:text-base">Hệ thống đặt lịch khám trực tuyến</span>
+              </div>
+            </div>
+          </div>
+          <div className="lg:flex-1"></div>
+          <div className="flex bottom-0 justify-end items-center mr-8">
+            <div className="h-full flex items-end">
+              <TabMenu model={items} activeIndex={activeIndex} onTabChange={(e) => setActiveIndex(e.index)} className="lg:text-base md:text-sm" />
+            </div>
+          <button
+              className="bg-red-600 hover:bg-red-700 text-white py-1 px-4 rounded-full focus:outline-none focus:shadow-outline-red active:bg-red-800 transform hover:scale-105 transition-transform duration-300 ease-in-out mr-4 flex"
+              onClick={handleLogout}
+            >
+              <i className="pi pi-sign-out mr-2 mt-1" />
+              <h1>Logout</h1>
+            </button>
+          </div>
         </div>
-        <button
-          className="bg-red-600 hover:bg-red-700 text-white py-1 px-4 rounded-full focus:outline-none focus:shadow-outline-red active:bg-red-800 transform hover:scale-105 transition-transform duration-300 ease-in-out mr-4 flex"
-          onClick={handleLogout}
-        >
-          <i className="pi pi-sign-out mr-2 mt-1" />
-          <h1>Logout</h1>
-        </button>
+
       </header>
 
-      <div className="container mx-auto max-w-screen-xl p-8 mt-12">
-        <div className="mt-18 text-right flex items-center justify-end space-x-2 relative sm:mt-26 md:mt-26">
-          <button
-            className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-full focus:outline-none focus:shadow-outline-indigo active:bg-indigo-800 transform hover:scale-105 transition-transform duration-300 ease-in-out "
-            onClick={() => {
-              navigate("/myappointment");
-            }}
-          >
-            <i className="pi pi-calendar-plus mr-2" />
-            My Appointment
-            {totalAppointments > 0 && (
-              <div className="absolute top-0 right-0  text-indigo-700 rounded-full w-6 h-6 flex items-center justify-center -mt-2 -mr-2 p-3 text-sm border-2 z-10 bg-white border-indigo-700">
-                {totalAppointments}
-              </div>
-            )}
-          </button>
-        </div>
-        <Breadcrumb items={breadcrumbs} />
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {doctors.map((doctor) => (
-            <DoctorCard key={doctor.doctorId} doctor={doctor} />
-          ))}
-        </div>
-      </div>
+      <main className="mt-24">
+        {/* Tab 0: Giới thiệu */}
+        {activeIndex === 0 && (
+          <IntroDashBoard />
+        )}
+
+        {/* Tab 1: Đặt lịch khám */}
+        {activeIndex === 1 && (
+          <div className="container mx-auto max-w-screen-xl p-8 mt-12">
+            <Breadcrumb items={breadcrumbs} />
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {doctors.map((doctor) => (
+                <DoctorCard key={doctor.doctorId} doctor={doctor} />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Tab 2: Xem lịch khám */}
+        {activeIndex === 2 && (
+          <MyAppointments />
+        )}
+      </main>
 
       <Footer />
     </>
