@@ -10,16 +10,16 @@ const EmailNotification = sequelize.define("EmailNotification", {
     primaryKey: true
   },
   sender: {
-    type: DataTypes.STRING(150),
+    type: "NVARCHAR(150)",
     allowNull: false,
     defaultValue: "no-reply@medicalsystem.com"
   },
   receiver: {
-    type: DataTypes.STRING(150),
+    type: "NVARCHAR(150)",
     allowNull: false
   },
   subject: {
-    type: DataTypes.STRING(255),
+    type: "NVARCHAR(255)",
     allowNull: false
   },
   message: {

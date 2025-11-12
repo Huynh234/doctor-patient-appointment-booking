@@ -9,47 +9,48 @@ const Doctor = sequelize.define("Doctor", {
     primaryKey: true
   },
   profile: {
-    type: DataTypes.STRING,
+    type: "NVARCHAR",
     allowNull: true
   },
   firstName: {
-    type: DataTypes.STRING(100),
+    type: "NVARCHAR(100)",
     allowNull: false
   },
   lastName: {
-    type: DataTypes.STRING(100),
+    type: "NVARCHAR(100)",
     allowNull: false
   },
   email: {
-    type: DataTypes.STRING(150),
+    type: "NVARCHAR(150)",
     allowNull: false,
     unique: true
   },
   password: {
-    type: DataTypes.STRING,
+    type: "NVARCHAR",
     allowNull: false
   },
   specialty: {
-    type: DataTypes.STRING(100),
+    type: "NVARCHAR(100)",
     allowNull: false
   },
   clinicLocation: {
-    type: DataTypes.STRING(255),
+    type: "NVARCHAR(255)",
     allowNull: false
   },
   contactNumber: {
-    type: DataTypes.STRING(20),
+    type: "NVARCHAR(20)",
     allowNull: false
   },
   workingHours: {
-    type: DataTypes.STRING(100),
+    type: "NVARCHAR(100)",
     allowNull: true
   },
   about: {
-    type: DataTypes.TEXT
+    type: " NVARCHAR(500)",
+    allowNull: true
   },
   licenseCode: {
-    type: DataTypes.STRING(50),
+    type: "NVARCHAR(50)",
     allowNull: false,
   },
   status: {
