@@ -33,16 +33,16 @@ const Patient = sequelize.define("Patient", {
     defaultValue: "other"
   },
   contactNumber: {
-    type: DataTypes.STRING(20)
+    type: "NVARCHAR(20)"
   },
   address: {
-    type: DataTypes.STRING(255)
+    type: "NVARCHAR(255)"
   },
   city: {
-    type: DataTypes.STRING(100)
+    type: "NVARCHAR(100)"
   },
   bloodGroup: {
-    type: DataTypes.STRING(5),
+    type: "NVARCHAR(5)",
     allowNull: false
   },
   status: {
