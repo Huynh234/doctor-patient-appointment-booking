@@ -31,9 +31,7 @@ const DoctorDashboard = () => {
     try {
       const response = await axios.get(
         `http://localhost:8080/appointments/doctor/${doctorId}`,
-        {
-          headers: { Authorization: `Bearer ${token}` }
-        }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
       setAppointments(response.data);
     } catch (error) {
@@ -41,108 +39,6 @@ const DoctorDashboard = () => {
     }
   };
 
-  // useEffect(() => {
-  //   const doctorId = localStorage.getItem("userId");
-
-  //   if (doctorId) {
-  //     axios
-  //       .get(
-  //         `http://localhost:8080/appointments/doctor/${doctorId}`,
-  //         {
-  //           role: "docotor",
-  //           headers: {
-  //             Authorization: `Bearer ${token}`
-  //           }
-  //         }
-  //       )
-  //       .then((response) => {
-  //         const data = response.data;
-  //         console.log("response", data);
-  //         // setDoctor(data.appointment[0].doctor);
-  //         setAppointments(data);
-  //       })
-  //       .catch((error) => {
-  //         console.error("Error fetching doctor data:", error);
-  //       });
-  //   }
-  // }, [token]);
-
-  // useEffect(() => {
-  //   const doctorId = localStorage.getItem("userId");
-  //   // console.log("doctorId: ", doctorId, token);
-  //   if (doctorId) {
-  //     axios
-  //       .get(
-  //         `http://localhost:8080/doctors/${doctorId}`,
-  //         {
-  //           headers: {
-  //             Authorization: `Bearer ${token}`
-  //           }
-  //         }
-  //       )
-  //       .then((response) => {
-  //         const data = response.data;
-  //         console.log("response", data);
-  //         setDoctor(data);
-  //       })
-  //       .catch((error) => {
-  //         console.error("Error fetching doctor data:", error);
-  //       });
-  //   }
-  // }, [token]);
-
-  // Lấy thông tin bác sĩ
-  useEffect(() => {
-    const doctorId = localStorage.getItem("userId");
-    if (!doctorId) return;
-
-    axios
-      .get(`http://localhost:8080/doctors/${doctorId}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
-      .then((res) => setDoctor(res.data))
-      .catch((err) => console.error("Error fetching doctor data:", err));
-
-    // Gọi lần đầu load lịch hẹn
-    fetchAppointments(doctorId);
-  }, [token]);
-
-   // Thiết lập Socket.IO realtime
-  useEffect(() => {
-    const doctorId = localStorage.getItem("userId");
-    if (!doctorId) return;
-
-    // Kết nối socket
-    const socket = io("http://localhost:8080", {
-      transports: ["websocket"]
-    });
-
-    // Join vào phòng riêng của bác sĩ
-    socket.emit("joinRoom", `doctor_${doctorId}`);
-    console.log("Joined room: doctor_" + doctorId);
-
-    // Khi có thay đổi lịch hẹn
-    socket.on("appointmentAdded", () => {
-      console.log("Appointment added — refreshing data...");
-      fetchAppointments(doctorId);
-    });
-
-    socket.on("appointmentUpdated", () => {
-      console.log("Appointment updated — refreshing data...");
-      fetchAppointments(doctorId);
-    });
-
-    socket.on("appointmentDeleted", () => {
-      console.log("Appointment deleted — refreshing data...");
-      fetchAppointments(doctorId);
-    });
-
-    return () => {
-      socket.disconnect();
-    };
-  }, [fetchAppointments]);
-
-  const updateDoctorDetail = async (field, value) => {
     // console.log("Doctorid", doctor._id);
     const token = localStorage.getItem("token");
     const userId = localStorage.getItem("userId");
