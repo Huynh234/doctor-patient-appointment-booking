@@ -1,11 +1,138 @@
-import React from 'react'
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import { DataTable } from "primereact/datatable";
+import { Column } from "primereact/column";
+import { InputText } from "primereact/inputtext";
+import { Dropdown } from "primereact/dropdown";
+import { Button } from "primereact/button";
 
 const AdminDashboard = () => {
+  const [users, setUsers] = useState([]);
+  const [totalRecords, setTotalRecords] = useState(0);
+
+  const [contact, setContact] = useState("");
+  const [type, setType] = useState(null);
+  const [status, setStatus] = useState(null);
+
+  const [page, setPage] = useState(1);
+  const [rows, setRows] = useState(10);
+
+  // Options cho Dropdown
+  const typeOptions = [
+    { label: "All", value: null },
+    { label: "Doctor", value: "doctor" },
+    { label: "Patient", value: "patient" },
+  ];
+
+  const statusOptions = [
+    { label: "All", value: null },
+    { label: "Active", value: true },
+    { label: "Inactive", value: false },
+  ];
+
+const fetchUsers = async () => {
+  try {
+    // Tạo object params chỉ chứa những field có giá trị
+    const params = {
+      page,
+      limit: rows,
+      sort: "desc", // nếu muốn mặc định desc
+    };
+
+    if (contact && contact.trim() !== "") {
+      params.contact = contact.trim();
+    }
+
+    if (type && type !== "") {
+      params.type = type;
+    }
+
+    if (status !== null && status !== undefined && status !== "") {
+      params.status = status; // gửi số 0 hoặc 1
+    }
+
+    const response = await axios.get("http://localhost:8080/admin/allusers", {
+      params,
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`, // JWT nếu dùng
+      },
+    });
+
+    setUsers(response.data.users);
+    setTotalRecords(response.data.total);
+  } catch (error) {
+    console.error("Error fetching users:", error);
+  }
+};
+
+
+  // Gọi API khi load trang hoặc filter/page/rows thay đổi
+  useEffect(() => {
+    fetchUsers();
+  }, [contact, type, status, page, rows]);
+
   return (
-    <div>
-      AdminDashboard
+    <div className="card p-4">
+      <h2 className="mb-4">User Management</h2>
+
+      {/* Bộ lọc */}
+      <div className="flex gap-3 mb-4 flex-wrap">
+        <InputText
+          value={contact}
+          onChange={(e) => setContact(e.target.value)}
+          placeholder="Search by email or contact"
+          className="w-full md:w-20rem"
+        />
+
+        <Dropdown
+          value={type}
+          onChange={(e) => setType(e.value)}
+          options={typeOptions}
+          optionLabel="label"
+          placeholder="Select Type"
+          className="w-full md:w-14rem"
+        />
+
+        <Dropdown
+          value={status}
+          onChange={(e) => setStatus(e.value)}
+          options={statusOptions}
+          optionLabel="label"
+          placeholder="Select Status"
+          className="w-full md:w-14rem"
+        />
+
+        <Button label="Reset Filters" onClick={() => { setContact(""); setType(null); setStatus(null); setPage(1); }} />
+      </div>
+
+      {/* DataTable */}
+      <DataTable
+        value={users}
+        paginator
+        rows={rows}
+        totalRecords={totalRecords}
+        first={(page - 1) * rows}
+        onPage={(e) => {
+          setPage(e.page + 1);
+          setRows(e.rows);
+        }}
+        rowsPerPageOptions={[5, 10, 25, 50]}
+        tableStyle={{ minWidth: "50rem" }}
+        responsiveLayout="scroll"
+      >
+        <Column field="name" header="Name" style={{ width: "5%" }} />
+        <Column field="email" header="Email" style={{ width: "10%" }} />
+        <Column field="contactNumber" header="Contact" style={{ width: "15%" }} />
+        <Column field="userType" header="Type" style={{ width: "10%" }} />
+        <Column field="createdAt" header="Created At" style={{ width: "10%" }} />
+        <Column field="userType" header="Type" style={{ width: "10%" }} />
+        <Column field="status" header="Status" style={{ width: "10%" }} body={(row) => (row.status ? "Active" : "Inactive")} />
+        <Column field="specialty" header="Specialty" style={{ width: "20%" }} />
+      </DataTable>
     </div>
   )
 }
 
 export default AdminDashboard
+
+
