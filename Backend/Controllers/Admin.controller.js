@@ -207,6 +207,132 @@ const viewAdminLogs = (req, res) => {
   }
 };
 
+const getAllUsers = async (req, res) => {
+  try {
+    const {
+      type,            // 'doctor' | 'patient'
+      contact,         // tìm theo email hoặc contactNumber
+      status,          // lọc trạng thái
+      page = 1,        // phân trang
+      limit = 10,
+      sort = "desc",   // sắp xếp theo ngày tạo
+    } = req.query;
+
+    // ---- Xây điều kiện lọc chung ----
+    const buildFilter = () => {
+      const filter = {};
+      if (contact) {
+        filter[Op.or] = [
+          { email: { [Op.like]: `%${contact}%` } },
+          { contactNumber: { [Op.like]: `%${contact}%` } },
+        ];
+      }
+      if (status !== undefined) filter.status = status;
+      return filter;
+    };
+
+    const filter = buildFilter();
+
+    // ---- Truy vấn 2 bảng song song ----
+    const [doctors, patients] = await Promise.all([
+      (!type || type === "doctor")
+        ? Doctor.findAll({
+            where: filter,
+            attributes: [
+              "doctorId",
+              "firstName",
+              "lastName",
+              "email",
+              "specialty",
+              "clinicLocation",
+              "contactNumber",
+              "profile",
+              "about",
+              "licenseCode",
+              "status",
+              "createdAt",
+            ],
+          })
+        : Promise.resolve([]),
+
+      (!type || type === "patient")
+        ? Patient.findAll({
+            where: filter,
+            attributes: [
+              "patientId",
+              "firstName",
+              "lastName",
+              "email",
+              "dateOfBirth",
+              "gender",
+              "contactNumber",
+              "address",
+              "city",
+              "bloodGroup",
+              "status",
+              "createdAt",
+            ],
+          })
+        : Promise.resolve([]),
+    ]);
+
+    // ---- Chuẩn hóa dữ liệu về cùng format ----
+    const formattedDoctors = doctors.map((d) => ({
+      id: d.doctorId,
+      name: `${d.firstName} ${d.lastName}`,
+      email: d.email,
+      contactNumber: d.contactNumber,
+      status: d.status,
+      userType: "doctor",
+      specialty: d.specialty,
+      clinicLocation: d.clinicLocation,
+      profile: d.profile,
+      about: d.about,
+      licenseCode: d.licenseCode,
+      createdAt: d.createdAt,
+    }));
+
+    const formattedPatients = patients.map((p) => ({
+      id: p.patientId,
+      name: `${p.firstName} ${p.lastName}`,
+      email: p.email,
+      contactNumber: p.contactNumber,
+      status: p.status,
+      userType: "patient",
+      dateOfBirth: p.dateOfBirth,
+      gender: p.gender,
+      address: p.address,
+      city: p.city,
+      bloodGroup: p.bloodGroup,
+      createdAt: p.createdAt,
+    }));
+
+    // ---- Gộp tất cả lại ----
+    let allUsers = [...formattedDoctors, ...formattedPatients];
+
+    // ---- Sắp xếp theo ngày tạo ----
+    allUsers.sort((a, b) =>
+      sort === "asc"
+        ? new Date(a.createdAt) - new Date(b.createdAt)
+        : new Date(b.createdAt) - new Date(a.createdAt)
+    );
+
+    // ---- Phân trang ----
+    const start = (page - 1) * limit;
+    const end = start + Number(limit);
+    const paginatedUsers = allUsers.slice(start, end);
+
+    res.status(200).json({
+      total: allUsers.length,
+      page: Number(page),
+      limit: Number(limit),
+      users: paginatedUsers,
+    });
+  } catch (error) {
+    console.error("Error in getAllUsers:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
 
 module.exports = {
     approveDoctor,
@@ -214,5 +340,6 @@ module.exports = {
     createUserAccount,
     getSystemStats,
     exportReport,
-    viewAdminLogs
+    viewAdminLogs,
+    getAllUsers
 }

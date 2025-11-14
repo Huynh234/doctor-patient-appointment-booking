@@ -45,14 +45,14 @@ const Login = () => {
     setIsLoading(true);
     try {
       const response = await axios.post(
-        `http://localhost:8080/${formData.role}s/login`,
+        formData.role === "admin" ? `http://localhost:8080/admin/login` : `http://localhost:8080/${formData.role}s/login`,
         formData
       );
 
       if (response.data.status) {
         toast.success("Login successful!");
         localStorage.setItem("token", response.data.token);
-        localStorage.setItem("userId", response.data.user.patientId || response.data.user.doctorId || "admin");
+        formData.role !== "admin" && localStorage.setItem("userId", response.data.user.patientId || response.data.user.doctorId );
 
         if (formData.role === "patient") {
           history("/patient-dashboard");

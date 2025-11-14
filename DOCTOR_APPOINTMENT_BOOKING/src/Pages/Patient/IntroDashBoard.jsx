@@ -21,11 +21,11 @@ const IntroDashBoard = () => {
                 { title: "Mạng lưới rộng khắp", header: <Button icon="pi pi-map-marker" rounded severity="info" aria-label="User" className="m-5" size="large" /> , detail:"Kết nối với hàng trăm bệnh viện, phòng khám uy tín trên toàn quốc, giúp bạn dễ dàng tìm kiếm địa điểm phù hợp." }
                 ].map((item, index) => (
                     <Card key={index} title={item.title} header={item.header} className="md:w-25rem p-5">
-                        <p className="m-0">
-                            <p className="m-0">
+                        <div className="m-0">
+                            <div className="m-0">
                                 {item.detail}
-                            </p>
-                        </p>
+                            </div>
+                        </div>
                     </Card>
                 ))}
             </div>

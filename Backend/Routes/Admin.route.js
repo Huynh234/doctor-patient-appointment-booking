@@ -1,7 +1,7 @@
 const express=require("express");
 
 const AdminRouter=express.Router()
-const {approveDoctor, toggleUserStatus, createUserAccount, getSystemStats, exportReport, viewAdminLogs} = require("../Controllers/Admin.controller");
+const {approveDoctor, toggleUserStatus, createUserAccount, getSystemStats, exportReport, viewAdminLogs, getAllUsers} = require("../Controllers/Admin.controller");
 const jwt=require("jsonwebtoken")
 const Auth = require("../Middlewares/JWT.authentication");
 const { AdminAuth } = require("../Middlewares/RoleBased.authentication");
@@ -284,5 +284,137 @@ AdminRouter.get("/export-report",Auth, AdminAuth, exportReport);
  *         description: Danh sách log hoạt động
  */
 AdminRouter.get("/logs",Auth, AdminAuth, viewAdminLogs);
+
+/**
+ * @swagger
+ * /admin/allusers:
+ *   get:
+ *     summary: "Lấy danh sách tất cả người dùng (bác sĩ và bệnh nhân)"
+ *     description: "API này cho phép admin lấy danh sách người dùng, có thể lọc theo loại tài khoản (doctor/patient), contact (email/sđt), trạng thái, phân trang và sắp xếp."
+ *     tags: ["Admin"]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: type
+ *         schema:
+ *           type: string
+ *           enum: ["doctor", "patient"]
+ *         description: "Loại tài khoản cần lọc (doctor hoặc patient). Nếu không có sẽ trả về cả hai."
+ *       - in: query
+ *         name: contact
+ *         schema:
+ *           type: string
+ *         description: "Tìm kiếm theo email hoặc số điện thoại."
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: integer
+ *           example: 1
+ *         description: "Trạng thái tài khoản (1 = hoạt động, 0 = bị khóa hoặc chưa kích hoạt)."
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *         description: "Trang hiện tại (phân trang)."
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 10
+ *         description: "Số lượng người dùng mỗi trang."
+ *       - in: query
+ *         name: sort
+ *         schema:
+ *           type: string
+ *           enum: ["asc", "desc"]
+ *           default: "desc"
+ *         description: "Thứ tự sắp xếp theo ngày tạo."
+ *     responses:
+ *       200:
+ *         description: "Danh sách người dùng trả về thành công."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 total:
+ *                   type: integer
+ *                   example: 25
+ *                 page:
+ *                   type: integer
+ *                   example: 1
+ *                 limit:
+ *                   type: integer
+ *                   example: 10
+ *                 users:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: integer
+ *                         example: 1
+ *                       name:
+ *                         type: string
+ *                         example: "Vũ Huỳnh"
+ *                       email:
+ *                         type: string
+ *                         example: "huynhdoctor@gmail.com"
+ *                       contactNumber:
+ *                         type: string
+ *                         example: "0562143165"
+ *                       status:
+ *                         type: integer
+ *                         example: 1
+ *                       userType:
+ *                         type: string
+ *                         enum: ["doctor", "patient"]
+ *                       specialty:
+ *                         type: string
+ *                         nullable: true
+ *                         example: "Phụ khoa"
+ *                       clinicLocation:
+ *                         type: string
+ *                         nullable: true
+ *                         example: "Trạm y tế xã Cẩm Giàng"
+ *                       profile:
+ *                         type: string
+ *                         nullable: true
+ *                         example: "https://images.pexels.com/photo.jpg"
+ *                       about:
+ *                         type: string
+ *                         nullable: true
+ *                         example: "Một bác sĩ yêu nghề"
+ *                       dateOfBirth:
+ *                         type: string
+ *                         format: date
+ *                         nullable: true
+ *                         example: "1999-09-15"
+ *                       gender:
+ *                         type: string
+ *                         nullable: true
+ *                         example: "female"
+ *                       bloodGroup:
+ *                         type: string
+ *                         nullable: true
+ *                         example: "O+"
+ *                       address:
+ *                         type: string
+ *                         nullable: true
+ *                         example: "Hai Duong, Cam Hung"
+ *                       city:
+ *                         type: string
+ *                         nullable: true
+ *                         example: "Hai Duong"
+ *                       createdAt:
+ *                         type: string
+ *                         format: date-time
+ *                         example: "2025-11-12T13:36:23.515Z"
+ *       500:
+ *         description: "Lỗi hệ thống."
+ */
+AdminRouter.get("/allusers",Auth, AdminAuth, getAllUsers);
 
 module.exports=AdminRouter
