@@ -31,7 +31,7 @@ const Footer = () => {
             <ul>
               <li className="flex items-center m-2">
                 <i className="pi pi-map-marker"></i>
-                <p>Đức hỷ, hải phòng</p>
+                <p> Cầu Giấy, Hà Nội</p>
               </li>
               <li className="flex items-center m-2">
                 <i className="pi pi-phone"></i>
@@ -39,11 +39,11 @@ const Footer = () => {
               </li>
               <li className="flex items-center m-2">
                 <i className="pi pi-envelope"></i>
-                <p>huhhhh@gmail.com</p>
+                <p> stu725105091@gmail.com</p>
               </li>
               <li className="flex items-center m-2">
                 <i className="pi pi-globe"></i>
-                <p>www.medbooking.com</p>
+                <p> https://medbooking.aerin2412.id.vn/</p>
               </li>
             </ul>
           </div>
