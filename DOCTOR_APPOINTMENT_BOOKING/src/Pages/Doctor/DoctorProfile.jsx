@@ -525,7 +525,7 @@ const DoctorProfile = () => {
                         <i className="pi pi-clock text-blue-600 mr-2 w-5 h-5"></i>
                         <p className="text-lg text-gray-600">Working Hours:</p>
                         <p className="text-lg ml-2">
-          kj                {doctor.workingHours} hours per day
+                        {doctor.workingHours} hours per day
                         </p>
                         <button
                           className="text-blue-600 ml-2"
