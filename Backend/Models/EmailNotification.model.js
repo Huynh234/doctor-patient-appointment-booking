@@ -15,7 +15,7 @@ const EmailNotification = sequelize.define("EmailNotification", {
     defaultValue: "no-reply@medicalsystem.com"
   },
   receiver: {
-    type: "NVARCHAR(150)",
+    type: "NVARCHAR(250)",
     allowNull: false
   },
   subject: {
