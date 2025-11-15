@@ -12,6 +12,7 @@ import { InputMask } from 'primereact/inputmask';
 import { IconField } from 'primereact/iconfield';
 import { InputIcon } from 'primereact/inputicon';
 import { InputTextarea } from 'primereact/inputtextarea';
+import { FaUserMd } from 'react-icons/fa';
 
 const RegistrationForm = () => {
   const navigate = useNavigate();
@@ -133,10 +134,10 @@ const RegistrationForm = () => {
     <div className="bg-[url(https://healthworldnet.com/imagesHealthCloudBusinessofHealthHospitalsClinicshospital_800.jpg)] bg-cover py-10 ">
       <div className="mx-auto max-w-screen-md bg-white bg-opacity-90 rounded-lg shadow-lg">
         <ToastContainer />
-        <div className="bg-blue-600 rounded-t-lg !w-full h-16 md:h-20 lg:h-28 flex items-center justify-center">
+        <div className="bg-indigo-600 rounded-t-lg !w-full h-16 md:h-20 lg:h-28 flex items-center justify-center">
           <div>
             <h2 className="text-xl md:text-2xl lg:text-3xl font-bold text-center text-white mb-1 md:mb-2 lg:mb-4">Đăng ký</h2>
-            <p className="text-center text-white text-xs font-medium md:text-sm lg:text-base">Tạo tài khoản mới cho hệt thống đạt lịch phòng khám</p>
+            <p className="text-center text-white text-xs font-medium md:text-sm lg:text-base">Tạo tài khoản mới cho hệ thống đặt lịch phòng khám</p>
           </div>
         </div>
         <div className="ml-8 mr-8 mt-2">
@@ -174,7 +175,7 @@ const RegistrationForm = () => {
                   >
                     <div>
                       <div className="flex flex-col items-center justify-center w-28 md:w-48 lg:w-60">
-                        <i className="font-extrabold text-4xl text-white">&#129658;</i>
+                          <FaUserMd className="text-4xl" />
                         <span className="ml-2">Bác sĩ</span>
                       </div>
                     </div>
@@ -201,7 +202,7 @@ const RegistrationForm = () => {
                     name="firstName"
                     value={formRegister.firstName}
                     onChange={handleInputChange}
-                    placeholder="Enter first name"
+                    placeholder="Nhập Họ"
                     required
                   />
                 </IconField>
@@ -218,7 +219,7 @@ const RegistrationForm = () => {
                     name="lastName"
                     value={formRegister.lastName}
                     onChange={handleInputChange}
-                    placeholder="Enter last name"
+                    placeholder="Nhập Tên"
                     required
                   />
                 </IconField>
@@ -239,7 +240,7 @@ const RegistrationForm = () => {
                     type="email"
                     value={formRegister.email}
                     onChange={handleInputChange}
-                    placeholder="Enter email"
+                    placeholder="Nhập Email"
                     required
                   />
                 </IconField>
@@ -252,7 +253,7 @@ const RegistrationForm = () => {
                   <InputIcon className="pi pi-phone"> </InputIcon>
                   <InputMask
                     className="w-full"
-                    mask="999-999-9999" placeholder="999-99-9999"
+                    mask="999-999-9999" placeholder="Nhập Số điện thoại"
                     id="contactNumber"
                     name="contactNumber"
                     value={formRegister.contactNumber}
@@ -275,7 +276,7 @@ const RegistrationForm = () => {
                     value={formRegister.password}
                     onChange={handleInputChange}
                     type="password"
-                    placeholder="Enter password"
+                    placeholder="Nhập mật khẩu"
                     required
                   />
                 </IconField>
@@ -293,7 +294,7 @@ const RegistrationForm = () => {
                     value={formRegister.repass}
                     onChange={handleInputChange}
                     type="password"
-                    placeholder="Enter password"
+                    placeholder="Nhập lại mật khẩu"
                     required
                     width="100%"
                   />
@@ -318,7 +319,7 @@ const RegistrationForm = () => {
                   }
                   showIcon
                   dateFormat="yy-mm-dd"
-                  placeholder="Select your birth date"
+                  placeholder="Chọn ngày sinh"
                 />
               </div>
               <div className="flex flex-col gap-2">
@@ -336,7 +337,7 @@ const RegistrationForm = () => {
                       gender: e.value,
                     }))
                   }
-                  placeholder="Select gender"
+                  placeholder="Chọn giới tính"
                   className="w-full"
                   required
                 />
@@ -361,7 +362,7 @@ const RegistrationForm = () => {
                       bloodGroup: e.value,
                     }))
                   }
-                  placeholder="Select blood group"
+                  placeholder="Chọn nhóm máu"
                   className="w-full"
                   required
                 />
@@ -383,7 +384,7 @@ const RegistrationForm = () => {
                       name={field}
                       value={formRegister[field]}
                       onChange={handleInputChange}
-                      placeholder={`Enter ${field}`}
+                      placeholder={`Nhập ${field === "address" ? "địa chỉ" : "thành phố"}`}
                     />
                   </IconField>
                 </div>
@@ -394,16 +395,16 @@ const RegistrationForm = () => {
           <div
             className={`mb-4 ${role === "doctor" ? "" : "hidden"}`}
           >
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               {[
                 { label: "Họ", name: "firstName", type: "text", icon: "pi-user" },
                 { label: "Tên", name: "lastName", type: "text", icon: "pi-user" },
                 { label: "Email", name: "email", type: "email", icon: "pi-envelope" },
                 { label: "Số điện thoại", name: "contactNumber", type: "tel", icon: "pi-phone" },
               ].map((f) => (
-                <div key={f.name} className="mb-4">
-                  <label className="block text-indigo-700 text-sm font-bold mb-2">
-                    {f.label}
+                <div key={f.name} className="flex flex-col gap-2">
+                  <label className="text-indigo-600 font-bold">
+                    {f.label} <sub className="text-red-500">*</sub>
                   </label>
                   <IconField iconPosition="left">
                     <InputIcon className={`pi ${f.icon}`}> </InputIcon>
@@ -413,7 +414,7 @@ const RegistrationForm = () => {
                       value={formRegister[f.name]}
                       onChange={handleInputChange}
                       className="w-full"
-                      placeholder={`Enter ${f.label}`}
+                      placeholder={`Nhập ${f.label}`}
                       required
                     />
                   </IconField>
@@ -434,7 +435,7 @@ const RegistrationForm = () => {
                     value={formRegister.password}
                     onChange={handleInputChange}
                     type="password"
-                    placeholder="Enter password"
+                    placeholder="Nhập mật khẩu"
                     required
                   />
                 </IconField>
@@ -452,20 +453,20 @@ const RegistrationForm = () => {
                     value={formRegister.repass}
                     onChange={handleInputChange}
                     type="password"
-                    placeholder="Enter password"
+                    placeholder="Nhập lại mật khẩu"
                     required
                     width="100%"
                   />
                 </IconField>
               </div>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               {[
                 { label: "Chuyên khoa", name: "specialty", type: "text", icon: "pi-briefcase" },
                 { label: "Nơi làm việc / Phòng khám", name: "clinicLocation", type: "text", icon: "pi-building" },
               ].map((field) => (
-                <div key={field.name} className="mb-4">
-                  <label className="block text-indigo-700 text-sm font-bold mb-2">
+                <div key={field.name} className="flex flex-col gap-2">
+                  <label className="text-indigo-600 font-bold">
                     {field.label} <sub className="text-red-500">*</sub>
                   </label>
                   <IconField iconPosition="left">
@@ -476,7 +477,7 @@ const RegistrationForm = () => {
                       value={formRegister[field.name]}
                       onChange={handleInputChange}
                       className="w-full"
-                      placeholder={`Enter ${field.label}`}
+                      placeholder={`Nhập ${field.label}`}
                       required
                     />
                   </IconField>
@@ -495,13 +496,13 @@ const RegistrationForm = () => {
                   name="licenseCode"
                   value={formRegister.licenseCode}
                   onChange={handleInputChange}
-                  placeholder="Enter password"
+                  placeholder="Nhập mã chứng chỉ hành nghề"
                   required
                 />
               </IconField>
             </div>
-            <div className="mb-2">
-              <label className="block text-indigo-700 text-sm font-bold mb-2">
+            <div className="flex flex-col gap-2">
+              <label className="text-indigo-600 font-bold">
                 Giới thiệu
               </label>
               <InputTextarea
@@ -509,7 +510,7 @@ const RegistrationForm = () => {
                 value={formRegister.about}
                 onChange={handleInputChange}
                 className="w-full"
-                placeholder="Tell us about yourself"
+                placeholder="Giới thiệu về bản thân"
                 rows="4"
               />
             </div>
@@ -526,10 +527,10 @@ const RegistrationForm = () => {
               className="bg-indigo-600 border-none hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-full focus:outline-none mt-6 w-full transform hover:scale-105 transition-transform duration-300 ease-in-out"
             />
           </div>
-          <div className="text-center mt-4">
-            <span className="text-black">Already registered?</span>{" "}
-            <Link to="/login" className="text-indigo-700 font-bold">
-              Login here.
+          <div className="text-center mt-4 ml-6 mr-6 pb-6 ">
+            <span className="text-black">Bạn đã có tài khoản?</span>{" "}
+            <Link to="/login" className="text-indigo-700 font-bold hover:underline">
+              Đăng nhập tại đây.
             </Link>
           </div>
         </div>

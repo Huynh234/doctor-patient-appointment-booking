@@ -9,7 +9,7 @@ import { Button } from "primereact/button";
 import { ButtonGroup } from "primereact/buttongroup";
 import { IconField } from 'primereact/iconfield';
 import { InputIcon } from 'primereact/inputicon';
-
+import { FaUserMd } from 'react-icons/fa';
 const Login = () => {
   const history = useNavigate();
   const [formData, setFormData] = useState({
@@ -78,9 +78,10 @@ const Login = () => {
 
 
   return (
-    <div className="flex justify-center items-center h-screen bg-[url(https://healthworldnet.com/imagesHealthCloudBusinessofHealthHospitalsClinicshospital_800.jpg)] bg-cover">
+    <div className="bg-[url(https://healthworldnet.com/imagesHealthCloudBusinessofHealthHospitalsClinicshospital_800.jpg)] 
+     bg-cover py-10 min-h-screen flex justify-center items-center">
       <div className="bg-opacity-95 bg-white backdrop-blur-xl w-full max-w-2xl rounded-lg shadow-lg">
-        <div className="bg-blue-600 rounded-t-lg !w-full h-16 md:h-20 lg:h-28 flex items-center justify-center">
+        <div className="bg-indigo-600 rounded-t-lg !w-full h-16 md:h-20 lg:h-28 flex items-center justify-center">
           <div>
             <h2 className="text-xl md:text-2xl lg:text-3xl font-bold text-center text-white mb-1 md:mb-2 lg:mb-4">Đăng nhập hệ thống</h2>
             <p className="text-center text-white text-xs font-medium md:text-sm lg:text-base">Đăng nhập vào hệ thống đặt lịch khám trực tuyến</p>
@@ -117,7 +118,7 @@ const Login = () => {
                     }`}
                 >
                   <div className="flex flex-col items-center justify-center w-20 md:w-32 lg:w-44">
-                    <i className="font-extrabold text-4xl">&#129658;</i>
+                     <FaUserMd className="text-4xl" />
                     <span className="mt-1 text-sm md:text-base lg:text-lg">Bác sĩ</span>
                   </div>
                 </Button>
@@ -154,14 +155,14 @@ const Login = () => {
                     value={formData.email}
                     onChange={handleInputChange}
                     className="w-full"
-                    placeholder="Enter your email"
+                    placeholder="Nhập email"
                     required
                   />
               </IconField>
             </div>
             <div className="mb-4">
               <label className="block text-indigo-700 text-sm font-bold mb-2">
-                Password<span className="text-red-500">*</span>
+                Mật khẩu<span className="text-red-500">*</span>
               </label>
               <IconField iconPosition="left">
                 <InputIcon className="pi pi-lock" ></InputIcon>
@@ -171,14 +172,14 @@ const Login = () => {
                     value={formData.password}
                     onChange={handleInputChange}
                     className="w-full"
-                    placeholder="Enter your password"
+                    placeholder="Nhập mật khẩu"
                     required
                   />
               </IconField>
             </div>
             <div className="text-center">
               <Button
-                label={isLoading ? "Please wait, logging in..." : "Login"}
+                label={isLoading ? "Đang đăng nhập..." : "Đăng nhập"}
                 type="submit"
                 onClick={handleLogin}
                 className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-full focus:outline-none focus:shadow-outline-indigo active:bg-indigo-800 mt-10 w-full transform hover:scale-105 transition-transform duration-300 ease-in-out"
@@ -187,9 +188,9 @@ const Login = () => {
 
             </div>
             <div className="text-center mt-4">
-              New user?
-              <Link to="/" className="text-indigo-700 hover:underline">
-                Register here.
+              Bạn chưa có tài khoản?{" "}
+              <Link to="/" className="text-indigo-700 font-bold hover:underline">
+                Đăng ký tại đây.
               </Link>
             </div>
           </div>

@@ -7,7 +7,7 @@ import Footer from "../../components/Footer";
 import { AuthContext } from "../../Context/AuthContext";
 import { io } from "socket.io-client";
 import { TabMenu } from 'primereact/tabmenu';
-import newLogo from '../../assets/newLogo.svg';
+import newLogo from '../../assets/Logo_Medbooking.png';
 import { Button } from 'primereact/button';
 import IntroDashBoard from "../../Pages/Patient/IntroDashBoard";
 import MyAppointments from "../../Pages/Patient/MyAppointment";
