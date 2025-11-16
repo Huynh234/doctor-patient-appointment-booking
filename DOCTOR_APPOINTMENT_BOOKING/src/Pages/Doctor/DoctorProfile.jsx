@@ -92,20 +92,25 @@ const DoctorProfile = () => {
   // }, [token]);
 
   // Lấy thông tin bác sĩ
-  useEffect(() => {
-    const doctorId = localStorage.getItem("userId");
-    if (!doctorId) return;
+  
+ useEffect(() => {
+  const doctorId = localStorage.getItem("userId");
+  if (!doctorId) return;
 
-    axios
-      .get(`http://localhost:8080/doctors/${doctorId}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
-      .then((res) => setDoctor(res.data))
-      .catch((err) => console.error("Error fetching doctor data:", err));
+  axios
+    .get(`http://localhost:8080/doctors/${doctorId}`, {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+    .then((res) => {
+      // Sửa lại để truy cập đúng vào res.data.doctor
+      setDoctor(res.data.doctor || res.data);
+      console.log("Doctor data loaded:", res.data);
+    })
+    .catch((err) => console.error("Error fetching doctor data:", err));
 
-    // Gọi lần đầu load lịch hẹn
-    fetchAppointments(doctorId);
-  }, [token]);
+  // Gọi lần đầu load lịch hẹn
+  fetchAppointments(doctorId);
+}, [token]);
 
    // Thiết lập Socket.IO realtime
   useEffect(() => {
@@ -520,7 +525,7 @@ const DoctorProfile = () => {
                         <i className="pi pi-clock text-blue-600 mr-2 w-5 h-5"></i>
                         <p className="text-lg text-gray-600">Working Hours:</p>
                         <p className="text-lg ml-2">
-                          {doctor.workingHours} hours per day
+                        {doctor.workingHours} hours per day
                         </p>
                         <button
                           className="text-blue-600 ml-2"
@@ -615,71 +620,43 @@ const DoctorProfile = () => {
           </h2>
           {doctor ? (
             <>
-              <p className="text-lg border border-gray-300 p-6 rounded-lg mt-4">
-                Dr. {doctor.firstName} {doctor.lastName} is a highly respected
-                and accomplished medical professional in the field of{" "}
-                {doctor.specialty}. With an extensive background in{" "}
-                {doctor.specialty}, Dr. {doctor.lastName} has garnered a
-                reputation for excellence and a commitment to improving the
-                health and well-being of patients. Graduating with top honors
-                from a renowned medical institution, Dr. {doctor.lastName}{" "}
-                brings a wealth of knowledge and skill to every patient
-                interaction.
-              </p>
+            <p className="text-lg border border-gray-300 p-6 rounded-lg mt-4">
+              Bác sĩ {doctor.firstName} {doctor.lastName} là một chuyên gia y tế dày dặn kinh nghiệm và được đánh giá rất cao trong lĩnh vực {doctor.specialty}. 
+              Với kinh nghiệm sâu rộng trong {doctor.specialty}, bác sĩ {doctor.lastName} đã xây dựng được danh tiếng về sự tận tâm, chuyên nghiệp và hết lòng vì sức khỏe của bệnh nhân. 
+              Tốt nghiệp với thành tích xuất sắc từ một cơ sở đào tạo y khoa uy tín, bác sĩ {doctor.lastName} luôn mang đến kiến thức và kỹ năng vững vàng trong mọi lần thăm khám.
+            </p>
 
-              <p className="text-lg border border-gray-300 p-6 rounded-lg mt-4">
-                The journey of healing and healthcare begins at{" "}
-                {doctor.clinicLocation}, where Dr. {doctor.lastName} operates a
-                modern and well-equipped medical practice. Patients can trust in
-                the expertise and compassionate care provided by Dr.{" "}
-                {doctor.lastName} and the dedicated team.
-              </p>
+            <p className="text-lg border border-gray-300 p-6 rounded-lg mt-4">
+              Hành trình chăm sóc sức khỏe bắt đầu tại {doctor.clinicLocation}, nơi bác sĩ {doctor.lastName} vận hành một phòng khám hiện đại và được trang bị đầy đủ. 
+              Bệnh nhân hoàn toàn có thể tin tưởng vào chuyên môn và sự tận tâm của bác sĩ {doctor.lastName} cùng đội ngũ hỗ trợ chuyên nghiệp.
+            </p>
 
-              <p className="text-lg border border-gray-300 p-6 rounded-lg mt-4">
-                Dr. {doctor.lastName} believes in the importance of
-                accessibility and is readily available to patients via phone at{" "}
-                {doctor.contactNumber}. Whether you need to schedule an
-                appointment or seek medical advice, Dr. {doctor.lastName} is
-                just a call away.
-              </p>
+            <p className="text-lg border border-gray-300 p-6 rounded-lg mt-4">
+              Bác sĩ {doctor.lastName} luôn coi trọng tính kết nối và sự thuận tiện cho bệnh nhân, vì vậy bạn có thể dễ dàng liên hệ qua số điện thoại {doctor.contactNumber}. 
+              Dù bạn muốn đặt lịch hay cần tư vấn y khoa, bác sĩ {doctor.lastName} luôn sẵn sàng hỗ trợ.
+            </p>
 
-              <p className="text-lg border border-gray-300 p-6 rounded-lg mt-4">
-                With a commitment to the well-being of the community, Dr.{" "}
-                {doctor.lastName}
-                dedicates {doctor.workingHours} hours every day to patient care,
-                ensuring that no medical concern goes unattended. This
-                dedication extends to providing personalized treatment plans,
-                tailored to meet the unique needs of each patient.
-              </p>
+            <p className="text-lg border border-gray-300 p-6 rounded-lg mt-4">
+              Với sự cam kết vì sức khỏe cộng đồng, bác sĩ {doctor.lastName} dành {doctor.workingHours} giờ mỗi ngày để chăm sóc bệnh nhân, đảm bảo mọi mối lo ngại về sức khỏe đều được giải quyết chu đáo. 
+              Sự tận tâm đó còn được thể hiện qua các phác đồ điều trị cá nhân hóa, phù hợp với nhu cầu của từng bệnh nhân.
+            </p>
 
-              <p className="text-lg border border-gray-300 p-6 rounded-lg mt-4">
-                Beyond the clinical setting, Dr. {doctor.lastName} is known for
-                involvement in health education and awareness programs,
-                demonstrating a passion for improving public health. Patients
-                not only receive expert medical care but also benefit from Dr.{" "}
-                {doctor.lastName}'s guidance on preventive health measures.
-              </p>
+            <p className="text-lg border border-gray-300 p-6 rounded-lg mt-4">
+              Ngoài công việc tại phòng khám, bác sĩ {doctor.lastName} còn tích cực tham gia các chương trình giáo dục và nâng cao nhận thức sức khỏe cho cộng đồng, thể hiện niềm đam mê cải thiện sức khỏe cộng đồng. 
+              Bệnh nhân không chỉ nhận được sự chăm sóc chuyên môn mà còn được bác sĩ {doctor.lastName} hướng dẫn về các biện pháp phòng bệnh hiệu quả.
+            </p>
 
-              <p className="text-lg border border-gray-300 p-6 rounded-lg mt-4">
-                Dr. {doctor.lastName} takes pride in fostering a welcoming and
-                inclusive environment for patients of all backgrounds, ensuring
-                that everyone feels comfortable and respected during
-                consultations. Patients consistently commend Dr.{" "}
-                {doctor.lastName} for exceptional bedside manner and the ability
-                to explain complex medical concepts in an understandable way.
-              </p>
+            <p className="text-lg border border-gray-300 p-6 rounded-lg mt-4">
+              Bác sĩ {doctor.lastName} tự hào xây dựng một môi trường thân thiện và cởi mở dành cho mọi bệnh nhân, đảm bảo ai cũng cảm thấy thoải mái và được tôn trọng trong suốt quá trình thăm khám. 
+              Bệnh nhân luôn đánh giá cao thái độ tận tâm và khả năng giải thích các khái niệm y khoa phức tạp một cách dễ hiểu của bác sĩ {doctor.lastName}.
+            </p>
 
-              <p className="text-lg border border-gray-300 p-6 rounded-lg mt-4">
-                If you're looking for a healthcare provider who combines
-                expertise, compassion, and a commitment to excellence, Dr.{" "}
-                {doctor.lastName} is the ideal choice. Your health and
-                well-being are the top priorities, and Dr. {doctor.lastName} is
-                dedicated to guiding you on your path to optimal health.
-                Experience the difference of patient-centered care with Dr.{" "}
-                {doctor.firstName} {doctor.lastName}. Schedule your appointment
-                today and embark on a journey toward a healthier, happier life
-                under the care of a trusted medical professional.
-              </p>
+            <p className="text-lg border border-gray-300 p-6 rounded-lg mt-4">
+              Nếu bạn đang tìm kiếm một bác sĩ kết hợp giữa chuyên môn, sự thấu hiểu và tinh thần cống hiến, bác sĩ {doctor.lastName} sẽ là lựa chọn lý tưởng. 
+              Sức khỏe và sự an tâm của bạn luôn được đặt lên hàng đầu, và bác sĩ {doctor.lastName} sẽ đồng hành cùng bạn trên hành trình hướng tới cuộc sống khỏe mạnh hơn. 
+              Hãy trải nghiệm sự khác biệt trong mô hình chăm sóc lấy bệnh nhân làm trung tâm với bác sĩ {doctor.firstName} {doctor.lastName}. 
+              Đặt lịch hẹn ngay hôm nay để bắt đầu hành trình hướng đến một cuộc sống tốt đẹp hơn dưới sự chăm sóc của một chuyên gia y tế đáng tin cậy.
+            </p>
             </>
           ) : null}
 
@@ -801,7 +778,6 @@ const DoctorProfile = () => {
           ) : null}
         </div>
       </div>
-      <Footer />
     </>
   );
 };
