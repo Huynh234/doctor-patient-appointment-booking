@@ -20,7 +20,8 @@ const registerPatient = async (req, res) => {
     const newPatient = await Patient.create({
       ...rest,
       email,
-      password: hashedPassword
+      password: hashedPassword,
+      status:true
     });
 
     res.status(201).json({ newPatient, message: "Registration successful", status: true });
@@ -40,6 +41,8 @@ const loginPatient = async (req, res) => {
 
     const match = await bcrypt.compare(password, patient.password);
     if (!match) return res.status(400).json({ message: "Incorrect password!", status: false });
+
+    if (!patient?.status) return res.status(401).json({message: "Not active", status: false});
 
     const token = jwt.sign({ id: patient.patientId, role: "patient" }, process.env.secretKey, { expiresIn: "2h" });
 
@@ -75,8 +78,8 @@ const updatePatientById = async (req, res) => {
   try {
     const patientId = req.params.patientId;
 
-    const [updated] = await Patient.update(req.body, {
-      where: { id: patientId },
+    const updated = await Patient.update(req.body, {
+      where: { patientId: patientId },
     });
 
     if (!updated) {

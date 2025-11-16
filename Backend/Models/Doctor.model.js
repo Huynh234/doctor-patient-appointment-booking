@@ -55,6 +55,10 @@ const Doctor = sequelize.define("Doctor", {
   },
   status: {
     type: DataTypes.BOOLEAN,
+    defaultValue: true
+  },
+  approve:{
+    type: DataTypes.BOOLEAN,
     defaultValue: false
   }
 }, {

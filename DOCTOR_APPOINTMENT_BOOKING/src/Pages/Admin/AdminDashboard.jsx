@@ -5,6 +5,8 @@ import { Column } from "primereact/column";
 import { InputText } from "primereact/inputtext";
 import { Dropdown } from "primereact/dropdown";
 import { Button } from "primereact/button";
+import { SelectButton } from "primereact/selectbutton";
+import { Chip } from 'primereact/chip';
 
 const AdminDashboard = () => {
   const [users, setUsers] = useState([]);
@@ -30,40 +32,114 @@ const AdminDashboard = () => {
     { label: "Inactive", value: false },
   ];
 
-const fetchUsers = async () => {
-  try {
-    // Tạo object params chỉ chứa những field có giá trị
-    const params = {
-      page,
-      limit: rows,
-      sort: "desc", // nếu muốn mặc định desc
-    };
+  const fetchUsers = async () => {
+    try {
+      // Tạo object params chỉ chứa những field có giá trị
+      const params = {
+        page,
+        limit: rows,
+        sort: "desc", // nếu muốn mặc định desc
+      };
 
-    if (contact && contact.trim() !== "") {
-      params.contact = contact.trim();
+      if (contact && contact.trim() !== "") {
+        params.contact = contact.trim();
+      }
+
+      if (type && type !== "") {
+        params.type = type;
+      }
+
+      if (status !== null && status !== undefined && status !== "") {
+        params.status = status; // gửi số 0 hoặc 1
+      }
+
+      const response = await axios.get("http://localhost:8080/admin/allusers", {
+        params,
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`, // JWT nếu dùng
+        },
+      });
+
+      setUsers(response.data.users);
+      setTotalRecords(response.data.total);
+    } catch (error) {
+      console.error("Error fetching users:", error);
     }
-
-    if (type && type !== "") {
-      params.type = type;
-    }
-
-    if (status !== null && status !== undefined && status !== "") {
-      params.status = status; // gửi số 0 hoặc 1
-    }
-
-    const response = await axios.get("http://localhost:8080/admin/allusers", {
-      params,
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`, // JWT nếu dùng
-      },
-    });
-
-    setUsers(response.data.users);
-    setTotalRecords(response.data.total);
-  } catch (error) {
-    console.error("Error fetching users:", error);
   }
-};
+  const op = [
+    { label: 'Khóa', value: false },
+    { label: 'Mở khóa', value: true }
+  ];
+
+  const auth = (rowData) => (
+    <SelectButton
+      value={rowData.status}
+      options={op}
+      onChange={(e) => updateStatus(rowData, e.value)}
+    />
+  );
+
+  const op2 = [
+    { label: 'Từ chối', value: false },
+    { label: 'Phê duyệt', value: true }
+  ];
+
+  const Appove = (rowData) => (
+    rowData.approve == null ? <Chip label="Bệnh nhân" /> :
+      <SelectButton
+        value={rowData.approve}
+        options={op2}
+        onChange={(e) => updateAppove(rowData, e.value)}
+      />
+  );
+
+  const updateAppove = async (r, v) => {
+    try {
+      await axios.patch(
+        'http://localhost:8080/admin/approve-doctor',
+        {
+          doctorId: r.id,
+          approve: v
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`
+          }
+        }
+      );
+
+      // Sau khi cập nhật → load lại danh sách
+      fetchUsers();
+
+    } catch (err) {
+      console.error("Update status failed:", err);
+    }
+  }
+
+  const updateStatus = async (r, v) => {
+    try {
+      await axios.patch(
+        'http://localhost:8080/admin/toggle-user-status',
+        {
+          userType: r.userType,
+          userId: r.id,
+          status: v
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`
+          }
+        }
+      );
+
+      // Sau khi cập nhật → load lại danh sách
+      fetchUsers();
+
+    } catch (err) {
+      console.error("Update status failed:", err);
+    }
+  }
+
 
 
   // Gọi API khi load trang hoặc filter/page/rows thay đổi
@@ -120,19 +196,17 @@ const fetchUsers = async () => {
         tableStyle={{ minWidth: "50rem" }}
         responsiveLayout="scroll"
       >
-        <Column field="name" header="Name" style={{ width: "5%" }} />
+        <Column field="name" header="Tên" style={{ width: "10%" }} />
         <Column field="email" header="Email" style={{ width: "10%" }} />
-        <Column field="contactNumber" header="Contact" style={{ width: "15%" }} />
-        <Column field="userType" header="Type" style={{ width: "10%" }} />
-        <Column field="createdAt" header="Created At" style={{ width: "10%" }} />
-        <Column field="userType" header="Type" style={{ width: "10%" }} />
-        <Column field="status" header="Status" style={{ width: "10%" }} body={(row) => (row.status ? "Active" : "Inactive")} />
-        <Column field="specialty" header="Specialty" style={{ width: "20%" }} />
+        <Column field="contactNumber" header="Số điện thoại" style={{ width: "8%" }} />
+        <Column field="userType" header="loại" style={{ width: "3%" }} />
+        <Column field="createdAt" header="Thời gian" style={{ width: "10%" }} />
+        <Column field="specialty" header="Chuyên ngành" style={{ width: "10%" }} />
+        <Column field="status" header="Trạng thái" style={{ width: "15%" }} body={auth} />
+        <Column field="approve" header="Phê duyệt" style={{ width: "15%" }} body={Appove} />
       </DataTable>
     </div>
   )
 }
 
 export default AdminDashboard
-
-
