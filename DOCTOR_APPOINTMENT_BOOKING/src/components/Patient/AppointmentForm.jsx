@@ -5,7 +5,7 @@ import "react-toastify/dist/ReactToastify.css";
 const AppointmentForm = ({ doctor, onSubmit, onCancel }) => {
   const [appointmentData, setAppointmentData] = useState({
     patient: "",
-    doctor: doctor._id,
+    doctor: doctor.doctorId,
     appointmentDate: "",
     startTime: "",
     endTime: "",
