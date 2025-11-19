@@ -32,7 +32,7 @@ const createAppointment = async (req, res) => {
     res.status(201).json(newAppointment);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Internal server error" });
+    res.status(500).json({ message: error.message });
   }
 };
 
@@ -125,7 +125,7 @@ const deleteAppointmentById = async (req, res) => {
 
 const sendWithRole = async (role, appointment, tex) => {
   if (role !== 'doctor' && role !== 'patient') {
-      return res.status(400).json({ message: "Invalid role" });
+      return {message: "Invalid role" };
     }
     if (role === 'doctor') {
       const em = await Patient.findByPk(appointment.patientId);

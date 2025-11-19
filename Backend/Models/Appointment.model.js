@@ -15,15 +15,15 @@ const Appointment = sequelize.define("Appointment", {
     allowNull: false 
   },
   startTime: { 
-    type: "NVARCHAR(20)", 
+    type: "NVARCHAR(30)", 
     allowNull: false 
   },
   endTime: { 
-    type: "NVARCHAR(20)", 
+    type: "NVARCHAR(30)", 
     allowNull: false 
   },
   status: {
-    type: "NVARCHAR(20)",   // dùng STRING thay vì ENUM cho MSSQL
+    type: "NVARCHAR(30)",   // dùng STRING thay vì ENUM cho MSSQL
     allowNull: false,
     defaultValue: "scheduled"
   },

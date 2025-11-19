@@ -103,8 +103,7 @@ const MyAppointment = () => {
       const userId = localStorage.getItem("userId");
       // console.log("token userId", token, userId);
       const requestBody = {
-        [field]: value,
-        role: "patient"
+        [field]: value
       };
 
       const response = await axios.patch(
@@ -640,7 +639,7 @@ const MyAppointment = () => {
                 <div className="w-96 h-96 mx-auto relative rounded-full overflow-hidden">
                   <img
                     src={
-                      patient ? patient.gender === "female" ? "https://png.pngtree.com/png-vector/20190130/ourlarge/pngtree-cute-girl-avatar-material-png-image_678035.jpg" : "https://yt3.googleusercontent.com/ytc/AGIKgqNO2Cz7ILUFn2DRPVjta3eANRPAhbI8eMeqcSjA=s900-c-k-c0x00ffffff-no-rj": ""
+                      patient ? patient.gender === "female" ? "https://png.pngtree.com/png-vector/20190130/ourlarge/pngtree-cute-girl-avatar-material-png-image_678035.jpg" : "https://yt3.googleusercontent.com/ytc/AGIKgqNO2Cz7ILUFn2DRPVjta3eANRPAhbI8eMeqcSjA=s900-c-k-c0x00ffffff-no-rj": "https://cdn-media.sforum.vn/storage/app/media/THANHAN/avatar-trang-99.jpg"
                     }
                     alt={
                       patient ? `${patient.firstName} ${patient.lastName}` : ""

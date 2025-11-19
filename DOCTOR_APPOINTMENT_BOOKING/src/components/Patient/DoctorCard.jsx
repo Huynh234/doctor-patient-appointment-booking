@@ -12,19 +12,19 @@ const DoctorCard = ({ doctor }) => {
   const openModal = () => {
     setIsModalOpen(true);
   };
-
+  console.log(doctor);
   const closeModal = () => {
     setIsModalOpen(false);
   };
 
   const handleAppointmentSubmit = (appointmentData) => {
-    const patientId = localStorage.getItem("userId");
+    const patientId = JSON.parse(localStorage.getItem("userId"));
 
     appointmentData.patient = patientId;
-
+    appointmentData.doctor = doctor.doctorId; 
     axios
       .post(
-        "https://doctor-appointment-hpp0.onrender.com/appointment/",
+        "http://localhost:8080/appointments/",
         appointmentData
       )
       .then((response) => {
@@ -39,59 +39,59 @@ const DoctorCard = ({ doctor }) => {
       });
   };
 
-  // const updateDoctorAppointments = (doctorId, appointmentId) => {
-  //   const token = localStorage.getItem("token");
-  //   console.log("Updating doctor appointments. Doctor ID:", doctorId, token);
+  const updateDoctorAppointments = (doctorId, appointmentId) => {
+    const token = localStorage.getItem("token");
+    console.log("Updating doctor appointments. Doctor ID:", doctorId, token);
 
-  //   const requestBody = {
-  //     appointmentId: appointmentId,
-  //     role: "doctor"
-  //   };
+    const requestBody = {
+      appointmentId: appointmentId,
+      role: "doctor"
+    };
 
-  //   axios
-  //     .patch(
-  //       `https://doctor-appointment-hpp0.onrender.com/doctor/appointment/${doctorId}`,
-  //       requestBody,
-  //       {
-  //         headers: {
-  //           Authorization: `Bearer ${token}`
-  //         }
-  //       }
-  //     )
-  //     .then((response) => {
-  //       toast.success("Doctor's appointments updated successfully");
-  //     })
-  //     .catch((error) => {
-  //       toast.error("Error updating doctor's appointments");
-  //       console.error("Error updating doctor's appointments:", error);
-  //     });
-  // };
+    axios
+      .patch(
+        `http://localhost:8080/appointments/${doctorId}`,
+        requestBody,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
+      )
+      .then((response) => {
+        toast.success("Doctor's appointments updated successfully");
+      })
+      .catch((error) => {
+        toast.error("Error updating doctor's appointments");
+        console.error("Error updating doctor's appointments:", error);
+      });
+  };
 
-  // const updatePatientAppointments = (patientId, appointmentId) => {
-  //   const token = localStorage.getItem("token");
-  //   console.log("Updating patient appointments. Patient ID:", patientId, token);
-  //   const requestBody = {
-  //     appointmentId: appointmentId,
-  //     role: "doctor"
-  //   };
-  //   axios
-  //     .patch(
-  //       `https://doctor-appointment-hpp0.onrender.com/patient/appointment/${patientId}`,
-  //       requestBody,
-  //       {
-  //         headers: {
-  //           Authorization: `Bearer ${token}`
-  //         }
-  //       }
-  //     )
-  //     .then((response) => {
-  //       toast.success("Patient's appointments updated successfully");
-  //     })
-  //     .catch((error) => {
-  //       toast.error("Error updating patient's appointments");
-  //       console.error("Error updating patient's appointments:", error);
-  //     });
-  // };
+  const updatePatientAppointments = (patientId, appointmentId) => {
+    const token = localStorage.getItem("token");
+    console.log("Updating patient appointments. Patient ID:", patientId, token);
+    const requestBody = {
+      appointmentId: appointmentId,
+      role: "doctor"
+    };
+    axios
+      .patch(
+        `http://localhost:8080/appointments/${patientId}`,
+        requestBody,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
+      )
+      .then((response) => {
+        toast.success("Patient's appointments updated successfully");
+      })
+      .catch((error) => {
+        toast.error("Error updating patient's appointments");
+        console.error("Error updating patient's appointments:", error);
+      });
+  };
 
   return (
     <div className="bg-white p-4 rounded-lg shadow-lg mb-4">

@@ -9,11 +9,11 @@ const Patient = sequelize.define("Patient", {
     primaryKey: true
   },
   firstName: {
-    type: DataTypes.STRING(100),
+    type: "NVARCHAR(250)",
     allowNull: false
   },
   lastName: {
-    type: DataTypes.STRING(100),
+    type: "NVARCHAR(250)",
     allowNull: false
   },
   email: {
@@ -39,10 +39,10 @@ const Patient = sequelize.define("Patient", {
     type: "NVARCHAR(255)"
   },
   city: {
-    type: "NVARCHAR(100)"
+    type: "NVARCHAR(255)"
   },
   bloodGroup: {
-    type: "NVARCHAR(5)",
+    type: "NVARCHAR(10)",
     allowNull: false
   },
   status: {

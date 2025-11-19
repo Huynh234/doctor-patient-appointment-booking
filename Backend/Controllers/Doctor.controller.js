@@ -24,7 +24,8 @@ const registerDoctor = async (req, res) => {
       email,
       password: hashedPassword,
       profile: getRandomDoctorImage(),
-      status: false
+      status: true,
+      approve : false
     });
 
     res.status(201).json({ newDoctor, message: "Doctor registration successful", status: true });
@@ -44,7 +45,7 @@ const loginDoctor = async (req, res) => {
 
     const match = await bcrypt.compare(password, doctor.password);
     if (!match) return res.status(400).json({ message: "Incorrect password!", status: false });
-
+    if(!doctor.approve) return res.status(401).json({message:"Doctor is not approve", status: false})
     if(!doctor.status) return res.status(401).json({message:"Doctor is not active", status: false})
 
     const token = jwt.sign({ id: doctor.doctorId, role: "doctor" }, process.env.secretKey, { expiresIn: "2h" });
@@ -78,7 +79,7 @@ const updateDoctor = async (req, res) => {
   try {
     const doctorId = req.params.doctorId;
 
-    const [updated] = await Doctor.update(req.body, { where: { doctorId: doctorId } });
+    const updated = await Doctor.update(req.body, { where: { doctorId: doctorId } });
     if (!updated) {
       return res.status(404).json({ message: "Doctor not found" });
     }
@@ -97,6 +98,7 @@ const findDoctor = async (req, res) => {
     const doctorId = req.params.doctorId;
 
     const doctor = await Doctor.findByPk(doctorId, {
+      where: {status : true},
       include: [Appointment],
     });
 
@@ -114,7 +116,7 @@ const findDoctor = async (req, res) => {
 // Lấy tất cả bác sĩ
 const getAllDoctors = async (req, res) => {
   try {
-    const doctors = await Doctor.findAll();
+    const doctors = await Doctor.findAll({where :{status : true}});
     res.status(200).json({ doctors });
   } catch (error) {
     console.error(error);

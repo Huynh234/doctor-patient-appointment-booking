@@ -25,11 +25,10 @@ const approveDoctor = async (req, res) => {
     const doctor = await Doctor.findByPk(doctorId);
     if (!doctor) return res.status(404).json({ message: "Doctor not found" });
 
-    doctor.status = approve ? true : false;
+    doctor.approve = approve;
     await doctor.save();
 
-    logAction(req.adminId, "Approve Doctor", `DoctorId=${doctorId}, Approved=${approve}`);
-    res.json({ message: approve ? "Doctor approved" : "Doctor rejected", doctor });
+    res.status(200).json({ message: approve ? "Doctor approved" : "Doctor rejected", doctor });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Error approving doctor" });
@@ -54,11 +53,10 @@ const toggleUserStatus = async (req, res) => {
     user.status = status;
     await user.save();
 
-    logAction(req.adminId, "Toggle User Status", `Type=${userType}, ID=${userId}, Status=${status}`);
-    res.json({ message: `User ${status ? "activated" : "deactivated"} successfully`, user });
+    res.status(200).json({ message: `User ${status ? "activated" : "deactivated"} successfully`, user });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Error updating user status" });
+    res.status(500).json({ message: error.message });
   }
 };
 
@@ -250,6 +248,7 @@ const getAllUsers = async (req, res) => {
               "about",
               "licenseCode",
               "status",
+              "approve",
               "createdAt",
             ],
           })
@@ -283,6 +282,7 @@ const getAllUsers = async (req, res) => {
       email: d.email,
       contactNumber: d.contactNumber,
       status: d.status,
+      approve: d.approve,
       userType: "doctor",
       specialty: d.specialty,
       clinicLocation: d.clinicLocation,
@@ -297,6 +297,7 @@ const getAllUsers = async (req, res) => {
       name: `${p.firstName} ${p.lastName}`,
       email: p.email,
       contactNumber: p.contactNumber,
+      approve: null,
       status: p.status,
       userType: "patient",
       dateOfBirth: p.dateOfBirth,

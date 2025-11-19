@@ -9,7 +9,7 @@ const Doctor = sequelize.define("Doctor", {
     primaryKey: true
   },
   profile: {
-    type: "NVARCHAR",
+    type: "NVARCHAR(500)",
     allowNull: true
   },
   firstName: {
@@ -26,7 +26,7 @@ const Doctor = sequelize.define("Doctor", {
     unique: true
   },
   password: {
-    type: "NVARCHAR",
+    type: DataTypes.STRING,
     allowNull: false
   },
   specialty: {
@@ -54,6 +54,10 @@ const Doctor = sequelize.define("Doctor", {
     allowNull: false,
   },
   status: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: true
+  },
+  approve:{
     type: DataTypes.BOOLEAN,
     defaultValue: false
   }
