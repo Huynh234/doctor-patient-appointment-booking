@@ -8,6 +8,7 @@ const {
   getDoctorAppointmentById
 } = require("../Controllers/Appointment.controller");
 const Auth = require("../Middlewares/JWT.authentication");
+const { DoctorAuth } = require("../Middlewares/RoleBased.authentication");
 
 /**
  * @swagger
@@ -200,7 +201,7 @@ AppointmentRouter.get("/doctor/:doctorId", getDoctorAppointmentById);
 AppointmentRouter.get("/patient/:patientId", getPatientAppointmentById);
 
 // Update an appointment by ID
-AppointmentRouter.patch("/:appointmentId", Auth, updateAppointmentById);   
+AppointmentRouter.patch("/:appointmentId", Auth, DoctorAuth, updateAppointmentById);   
 
 // Delete an appointment by ID
 AppointmentRouter.delete("/:appointmentId", Auth, deleteAppointmentById);

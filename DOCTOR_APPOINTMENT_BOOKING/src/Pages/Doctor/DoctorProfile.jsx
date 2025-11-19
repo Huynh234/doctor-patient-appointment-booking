@@ -148,7 +148,7 @@ const DoctorProfile = () => {
   }, [fetchAppointments]);
 
   const updateDoctorDetail = async (field, value) => {
-    // console.log("Doctorid", doctor._id);
+    // console.log("Doctorid", doctor.appointmentId);
     const token = localStorage.getItem("token");
     const userId = localStorage.getItem("userId");
     // console.log("token userId", token, userId);
@@ -190,7 +190,7 @@ const DoctorProfile = () => {
 
   const handleStatusChange = (event, appointment) => {
     const newStatus = event.target.value;
-    updateEditedStatus(appointment._id, newStatus);
+    updateEditedStatus(appointment.appointmentId, newStatus);
   };
 
   const saveEditedStatus = async (appointmentId) => {
@@ -202,6 +202,7 @@ const DoctorProfile = () => {
       status: newStatus,
       role: "doctor"
     };
+    console.log("requestBody", requestBody);
     try {
       const response = await axios.patch(
         `http://localhost:8080/appointments/${appointmentId}`,
@@ -215,7 +216,7 @@ const DoctorProfile = () => {
 
       if (response.status === 200) {
         const updatedAppointments = appointments.map((appointment) =>
-          appointment._id === appointmentId
+          appointment.appointmentId === appointmentId
             ? { ...appointment, status: newStatus }
             : appointment
         );
@@ -245,7 +246,7 @@ const DoctorProfile = () => {
 
       if (response.status === 200) {
         const updatedAppointments = appointments.filter(
-          (appointment) => appointment._id !== appointmentId
+          (appointment) => appointment.appointmentId !== appointmentId
         );
         setAppointments(updatedAppointments);
         toast.success("Appointment deleted successfully");
@@ -700,11 +701,11 @@ const DoctorProfile = () => {
                           </div>
                         </td>
                         <td className="px-6 py-4 text-lg">
-                          {editingField === appointment._id ? (
+                          {editingField === appointment.appointmentId ? (
                             <div className="flex items-center">
                               <select
                                 value={
-                                  editedStatus[appointment._id] ||
+                                  editedStatus[appointment.appointmentId] ||
                                   appointment.status
                                 }
                                 onChange={(event) =>
@@ -719,7 +720,7 @@ const DoctorProfile = () => {
                               <button
                                 className="text-blue-600"
                                 onClick={() => {
-                                  saveEditedStatus(appointment._id);
+                                  saveEditedStatus(appointment.appointmentId);
                                   setEditingField(null);
                                 }}
                               >
@@ -749,10 +750,10 @@ const DoctorProfile = () => {
                                   statusColors[appointment.status]
                                 } ml-2 text-sm`}
                                 onClick={() => {
-                                  setEditingField(appointment._id);
+                                  setEditingField(appointment.appointmentId);
                                   setEditedStatus({
                                     ...editedStatus,
-                                    [appointment._id]: appointment.status
+                                    [appointment.appointmentId]: appointment.status
                                   });
                                 }}
                               >
@@ -764,7 +765,7 @@ const DoctorProfile = () => {
                         <td className="px-6 py-4 text-lg">
                           <button
                             className="text-red-600 ml-2"
-                            onClick={() => deleteAppointment(appointment._id)}
+                            onClick={() => deleteAppointment(appointment.appointmentId)}
                           >
                             <i className="pi pi-trash"></i>
                           </button>
