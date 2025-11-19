@@ -196,13 +196,12 @@ const AdminDashboard = () => {
       </header>
 
       {/* Main Content */}
-      <main className="mt-24 min-h-screen bg-gray-50">
+      <main className="mt-24 min-h-screen bg-gray-50 flex flex-col items-center w-full">
         {activeIndex === 0 && (
-          <div className="container mx-auto px-4 py-6">
-            <div className="card bg-white shadow-lg rounded-lg p-6">
-              <div className="mb-6">
+          <div className="flex flex-col items-center mb-12 mt-16 w-full">
+            <div className="card w-11/12 bg-white shadow-lg rounded-lg p-6">
+              <div className="m-6">
                 <h2 className="text-3xl font-bold text-gray-800 flex items-center">
-      
                   Quản lý người dùng
                 </h2>
                 <p className="text-gray-600 mt-2">Quản lý thông tin bác sĩ và bệnh nhân trong hệ thống</p>

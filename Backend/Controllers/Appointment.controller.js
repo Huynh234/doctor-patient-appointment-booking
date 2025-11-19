@@ -83,8 +83,8 @@ const updateAppointmentById = async (req, res) => {
   try {
     const appointmentId = req.params.appointmentId;
     const role = req.body.role;
-    const [updated] = await Appointment.update(req.body, {
-      where: { id: appointmentId },
+    const updated = await Appointment.update(req.body, {
+      where: { appointmentId: appointmentId },
     });
 
     if (!updated) {
@@ -98,10 +98,10 @@ const updateAppointmentById = async (req, res) => {
     await sendWithRole(role, updatedAppointment, 'được cập nhật');
     req.io.to(`doctor_${updatedAppointment.doctorId}`).emit("appointmentUpdated", updatedAppointment);
     req.io.to(`patient_${updatedAppointment.patientId}`).emit("appointmentUpdated", updatedAppointment);
-    res.status(200).json(updatedAppointment);
+    res.status(200).json({ success: updatedAppointment });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Internal server error" });
+    res.status(500).json({ error: error.message });
   }
 };
 
@@ -133,8 +133,8 @@ const sendWithRole = async (role, appointment, tex) => {
         form: "Hệ thống đặt lịch trực tuyến",
         receiver: em?.email,
         subject: "Thông báo hủy lịch hẹn",
-        message: `<p> Lịch hẹn của bạn vào ngày ${appointment.appointmentDate} từ ${appointment.startTime} đến ${appointment.endTime} đã bị hủy.</p>`,
-        appointmentId: appointment.AppointmentId
+        message: `<p> Lịch hẹn của bạn vào ngày ${appointment.appointmentDate} từ ${appointment.startTime} đến ${appointment.endTime} đã ${tex}.</p>`,
+        appointmentId: appointment.appointmentId
       };
       await sendEmailAndLog(mailData);
     } else if (role === 'patient') {
@@ -142,13 +142,12 @@ const sendWithRole = async (role, appointment, tex) => {
       const mailData2 = {
         form: "Hệ thống đặt lịch trực tuyến",
         receiver: em2?.email,
-        subject: "Thông báo hủy lịch hẹn",
+        subject: "Thông tin lịch hẹn",
         message: `<p> Lịch hẹn của bạn vào ngày ${appointment.appointmentDate} từ ${appointment.startTime} đến ${appointment.endTime} đã ${tex}.</p>`,
-        appointmentId: appointment.AppointmentId
+        appointmentId: appointment.appointmentId
       };
       await sendEmailAndLog(mailData2);
     }
-
 }
 
 module.exports = {
