@@ -189,7 +189,7 @@ const Login = () => {
             </div>
             <div className="text-center mt-4">
               Bạn chưa có tài khoản?{" "}
-              <Link to="/" className="text-indigo-700 font-bold hover:underline">
+              <Link to="/register" className="text-indigo-700 font-bold hover:underline">
                 Đăng ký tại đây.
               </Link>
             </div>

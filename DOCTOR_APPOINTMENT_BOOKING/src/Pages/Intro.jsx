@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Calendar, Clock, Users, Heart, CheckCircle, Star, ArrowRight, Shield, Smartphone, Zap } from 'lucide-react';
-import newLogo from '../../assets/Logo_Medbooking.png';
-import Footer from "../../components/Footer";
+import Footer from "../components/Footer";
+import logo from "../assets/Logo_Medbooking.png"
+import { useNavigate } from "react-router-dom";
 const MedBookingLanding = () => {
   const [scrolled, setScrolled] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -83,7 +85,7 @@ const MedBookingLanding = () => {
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center">
-              <img src={newLogo} alt="Logo" className="mx-auto md:w-16 lg:w-20" />
+              <img src={logo} alt="Logo" className="mx-auto md:w-16 lg:w-20" />
             </div>
             <div>
               <h1 className="text-2xl font-bold text-blue-600">MedBooking</h1>
@@ -91,10 +93,10 @@ const MedBookingLanding = () => {
             </div>
           </div>
           <div className="flex gap-3">
-            <button className="px-6 py-2 text-blue-600 font-semibold hover:bg-blue-50 rounded-full transition-all duration-300">
+            <button className="px-6 py-2 text-blue-600 font-semibold hover:bg-blue-50 rounded-full transition-all duration-300" onClick={() => {navigate("/login")}}>
               Đăng nhập
             </button>
-            <button className="px-6 py-2 bg-blue-600 text-white font-semibold rounded-full hover:bg-blue-700 transform hover:scale-105 transition-all duration-300 shadow-lg">
+            <button onClick={() => {navigate("/register")}} className="px-6 py-2 bg-blue-600 text-white font-semibold rounded-full hover:bg-blue-700 transform hover:scale-105 transition-all duration-300 shadow-lg">
               Đăng ký
             </button>
           </div>
@@ -115,7 +117,7 @@ const MedBookingLanding = () => {
             Kết nối bạn với các bác sĩ chuyên khoa hàng đầu. Đặt lịch trực tuyến, tiết kiệm thời gian, nâng cao trải nghiệm chăm sóc sức khỏe.
           </p>
           <div className="flex gap-4 justify-center flex-wrap">
-            <button className="px-8 py-4 bg-blue-600 text-white font-bold rounded-full hover:bg-blue-700 transform hover:scale-105 transition-all duration-300 shadow-xl flex items-center gap-2">
+            <button onClick={() => {navigate("/login")}} className="px-8 py-4 bg-blue-600 text-white font-bold rounded-full hover:bg-blue-700 transform hover:scale-105 transition-all duration-300 shadow-xl flex items-center gap-2">
               Đặt lịch ngay <ArrowRight className="w-5 h-5" />
             </button>
             <button className="px-8 py-4 bg-white text-blue-600 font-bold rounded-full border-2 border-blue-600 hover:bg-blue-50 transition-all duration-300">
