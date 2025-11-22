@@ -44,8 +44,8 @@ const AppointmentForm = ({ doctor, onSubmit, onCancel }) => {
   };
 
   return (
-    <div className="fixed top-0 left-0 w-full h-full flex items-center justify-center z-50 bg-opacity-10 backdrop-blur-xs">
-      <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md bg-opacity-20 backdrop-blur-3xl">
+    <div className="w-full h-full flex items-center justify-center z-50 bg-opacity-10 backdrop-blur-xs">
+      <div className="bg-white p-4 w-full max-w-md bg-opacity-20 backdrop-blur-3xl">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-3xl font-semibold text-indigo-600">
             Book Appointment

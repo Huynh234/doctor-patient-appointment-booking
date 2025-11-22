@@ -1,7 +1,7 @@
 import React, { useContext, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
-import { toast } from "react-toastify";
+import {  ToastContainer , toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { AuthContext } from "../Context/AuthContext";
 import { InputText } from "primereact/inputtext";
@@ -80,6 +80,7 @@ const Login = () => {
   return (
     <div className="bg-[url(https://healthworldnet.com/imagesHealthCloudBusinessofHealthHospitalsClinicshospital_800.jpg)] 
      bg-cover py-10 min-h-screen flex justify-center items-center">
+       <ToastContainer position="top-right" autoClose={3000} />{" "}
       <div className="bg-opacity-95 bg-white backdrop-blur-xl w-full max-w-2xl rounded-lg shadow-lg">
         <div className="bg-indigo-600 rounded-t-lg !w-full h-16 md:h-20 lg:h-28 flex items-center justify-center">
           <div>

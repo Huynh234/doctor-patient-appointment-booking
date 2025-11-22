@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { toast } from "react-toastify";
+import {  ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 const EditAppointmentModal = ({
@@ -7,11 +7,11 @@ const EditAppointmentModal = ({
   closeModal,
   updateAppointment
 }) => {
-  const doctorFirstName = appointment.doctor.firstName || "";
-  const doctorLastName = appointment.doctor.lastName || "";
+  const doctorFirstName = appointment.Doctor.firstName || "";
+  const doctorLastName = appointment.Doctor.lastName || "";
 
   const [editedData, setEditedData] = useState({
-    doctorId: appointment.doctor._id,
+    doctorId: appointment.Doctor.doctorId,
     doctorFirstName: doctorFirstName,
     doctorLastName: doctorLastName,
     appointmentDate: appointment.appointmentDate,
@@ -162,6 +162,7 @@ const EditAppointmentModal = ({
           </button>
         </div>
       </div>
+       <ToastContainer position="top-right" autoClose={3000} />{" "}
     </div>
   );
 };
