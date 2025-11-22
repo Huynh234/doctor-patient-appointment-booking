@@ -26,7 +26,7 @@ const createAppointment = async (req, res) => {
       disease,
     });
     // ====> Gửi thông báo realtime đến doctor & patient <====
-    await sendWithRole(role, newAppointment, 'được tạo');
+    await sendWithRole(role, newAppointment, 'được tạo bạn hãy quay lại trang web để xem chi tiết');
     req.io.to(`doctor_${newAppointment.doctorId}`).emit("appointmentAdded", newAppointment);
     req.io.to(`patient_${newAppointment.patientId}`).emit("appointmentAdded", newAppointment);
     res.status(201).json(newAppointment);
@@ -95,7 +95,7 @@ const updateAppointmentById = async (req, res) => {
       include: [Doctor, Patient],
     });
     // Emit event cập nhật
-    await sendWithRole(role, updatedAppointment, 'được cập nhật');
+    await sendWithRole(role, updatedAppointment, 'được cập nhật trạng thái vui lòng vào trang web để xem chi tiết ');
     req.io.to(`doctor_${updatedAppointment.doctorId}`).emit("appointmentUpdated", updatedAppointment);
     req.io.to(`patient_${updatedAppointment.patientId}`).emit("appointmentUpdated", updatedAppointment);
     res.status(200).json({ success: updatedAppointment });
@@ -112,7 +112,7 @@ const deleteAppointmentById = async (req, res) => {
     const appointment = await Appointment.findByPk(appointmentId);
     const role = req.body.role;
     if (!appointment) return res.status(404).json({ message: "Appointment not found" });
-    await sendWithRole(role, appointment, 'bị hủy');
+    await sendWithRole(role, appointment, 'bị hủy chi tiết hãy xem tại trang web');
     await appointment.destroy();
     req.io.to(`doctor_${appointment.doctorId}`).emit("appointmentDeleted", appointmentId);
     req.io.to(`patient_${appointment.patientId}`).emit("appointmentDeleted", appointmentId);
@@ -132,8 +132,8 @@ const sendWithRole = async (role, appointment, tex) => {
       const mailData = {
         form: "Hệ thống đặt lịch trực tuyến",
         receiver: em?.email,
-        subject: "Thông báo hủy lịch hẹn",
-        message: `<p> Lịch hẹn của bạn vào ngày ${appointment.appointmentDate} từ ${appointment.startTime} đến ${appointment.endTime} đã ${tex}.</p>`,
+        subject: "Thông tin lịch hẹn",
+        message: `<p> Lịch hẹn của ${appointment.Patient.firstName + " " + appointment.Patient.lastName} vào ngày ${appointment.appointmentDate} từ ${appointment.startTime} đến ${appointment.endTime} với bác sỹ ${appointment.Doctor.firstName + " " + appointment.Doctor.lastName} đã ${tex}.</p>`,
         appointmentId: appointment.appointmentId
       };
       await sendEmailAndLog(mailData);
@@ -143,7 +143,7 @@ const sendWithRole = async (role, appointment, tex) => {
         form: "Hệ thống đặt lịch trực tuyến",
         receiver: em2?.email,
         subject: "Thông tin lịch hẹn",
-        message: `<p> Lịch hẹn của bạn vào ngày ${appointment.appointmentDate} từ ${appointment.startTime} đến ${appointment.endTime} đã ${tex}.</p>`,
+        message: `<p> Lịch hẹn của ${appointment.Patient.firstName + " " + appointment.Patient.lastName} vào ngày ${appointment.appointmentDate} từ ${appointment.startTime} đến ${appointment.endTime} với bác sỹ ${appointment.Doctor.firstName + " " + appointment.Doctor.lastName} đã ${tex}.</p>`,
         appointmentId: appointment.appointmentId
       };
       await sendEmailAndLog(mailData2);
