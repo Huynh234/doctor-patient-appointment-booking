@@ -282,27 +282,8 @@ const MyAppointment = () => {
 
   return (
     <>
-      <div className="bg-gray-100 min-h-screen font-sans">
+      <div className=" bg-gray-100 min-h-screen font-sans">
         <ToastContainer position="top-right" autoClose={3000} />{" "}
-        {/* <header className="bg-blue-600 text-white py-4 fixed top-0 w-full z-10 flex justify-between items-center">
-          <div className="container mx-auto text-center">
-            <h1 className="text-3xl font-semibold">
-              <i className="pi pi-user mr-2 text-4xl" />
-              Welcome,{" "}
-              {patient
-                ? `${patient.firstName} ${patient.lastName}`
-                : "Loading..."}
-            </h1>
-           
-          </div>
-          <button
-            className="bg-red-600 hover:bg-red-700 text-white py-1 px-4 rounded-full focus:outline-none focus:shadow-outline-red active:bg-red-800 transform hover:scale-105 transition-transform duration-300 ease-in-out mr-4 flex"
-            onClick={handleLogout}
-          >
-            <i className="pi pi-sign-out mr-2 mt-1" />
-            <h1>Logout</h1>
-          </button>
-        </header> */}
         <div className="container mx-auto py-8 mt-12 w-[95%]">
           <Breadcrumb items={breadcrumbs} />
           <div className="border border-gray-300 p-6 rounded-lg">

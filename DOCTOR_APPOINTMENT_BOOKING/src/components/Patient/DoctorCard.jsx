@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 import AppointmentForm from "./AppointmentForm";
-import { toast } from "react-toastify";
+import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { Dialog } from "primereact/dialog";  
 
@@ -94,7 +94,8 @@ const DoctorCard = ({ doctor }) => {
   };
 
   return (
-    <div className="bg-white p-4 rounded-lg shadow-lg mb-4">
+    <div className=" bg-white p-4 rounded-lg shadow-lg mb-4">
+      <ToastContainer position="top-right" autoClose={3000} />{" "}
       <div className="relative h-64 mb-4">
         <img
           src={doctor.profile}
@@ -138,8 +139,8 @@ const DoctorCard = ({ doctor }) => {
       <Dialog
         header={`Book Appointment with Dr. ${doctor.firstName}`}
         visible={isModalOpen}
-        style={{ width: "40vw" }}
         modal
+        closable = {false}
         draggable={false}
         onHide={closeModal}
       >
