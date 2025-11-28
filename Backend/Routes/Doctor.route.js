@@ -220,7 +220,7 @@ DoctorRouter.delete("/:doctorId", Auth, DoctorAuth, deleteDoctor);
 
 // Doctor Update
 // DoctorRouter.patch("/:doctorId", Auth, DoctorAuth, updateDoctor);
-DoctorRouter.patch("/:doctorId",Auth,DoctorAuth, updateDoctor);
+DoctorRouter.patch("/:doctorId",Auth, updateDoctor);
 
 // All Doctors Data
 DoctorRouter.get("/all",Auth, getAllDoctors);
