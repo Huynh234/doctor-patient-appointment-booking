@@ -713,9 +713,9 @@ const DoctorProfile = () => {
                                 }
                                 className="mr-2"
                               >
-                                <option value="scheduled">Scheduled</option>
-                                <option value="completed">Completed</option>
-                                <option value="canceled">Canceled</option>
+                                <option value="scheduled">Đã lên lịch</option>
+                                <option value="completed">Hoàn thành</option>
+                                <option value="canceled">Đã hủy</option>
                               </select>
                               <button
                                 className="text-blue-600"
@@ -733,7 +733,11 @@ const DoctorProfile = () => {
                                 statusColors[appointment.status]
                               }`}
                             >
-                              {appointment.status}
+                              {appointment.status === "scheduled"
+                                ? "Đã lên lịch"
+                                : appointment.status === "completed"
+                                ? "Hoàn thành"
+                                : "Đã hủy "}
                               <span className="mr-2 ml-3">
                                 {appointment.status === "scheduled" && (
                                   <i className="pi pi-clock"></i>

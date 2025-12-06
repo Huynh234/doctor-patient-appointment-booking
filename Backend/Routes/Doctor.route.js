@@ -79,12 +79,26 @@ const { DoctorAuth } = require("../Middlewares/RoleBased.authentication");
  *     tags: [Doctors]
  *     security:
  *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: dn
+ *         schema:
+ *           type: string
+ *         required: false
+ *         description: Filter by last name (contains)
+ *       - in: query
+ *         name: dm
+ *         schema:
+ *           type: string
+ *         required: false
+ *         description: Filter by specialty (contains)
  *     responses:
  *       200:
- *         description: List of all doctors
+ *         description: List of doctors
  *       403:
  *         description: Unauthorized
  */
+
 
 /**
  * @swagger
