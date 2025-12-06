@@ -12,7 +12,6 @@ const DoctorCard = ({ doctor }) => {
   const openModal = () => {
     setIsModalOpen(true);
   };
-  console.log(doctor);
   const closeModal = () => {
     setIsModalOpen(false);
   };

@@ -1,9 +1,10 @@
 const { request } = require("express");
 const bcrypt = require('bcrypt')
-const jwt=require("jsonwebtoken")
+const jwt = require("jsonwebtoken")
 const Doctor = require("../Models/Doctor.model");
 const Appointment = require("../Models/Appointment.model");
 const getRandomDoctorImage = require("../Utils/StaticData");
+const { Op, Sequelize } = require("sequelize");
 require("dotenv").config();
 // controllers/Doctor.controller.js
 
@@ -25,7 +26,7 @@ const registerDoctor = async (req, res) => {
       password: hashedPassword,
       profile: getRandomDoctorImage(),
       status: true,
-      approve : false
+      approve: false
     });
 
     res.status(201).json({ newDoctor, message: "Doctor registration successful", status: true });
@@ -45,8 +46,8 @@ const loginDoctor = async (req, res) => {
 
     const match = await bcrypt.compare(password, doctor.password);
     if (!match) return res.status(400).json({ message: "Incorrect password!", status: false });
-    if(!doctor.approve) return res.status(401).json({message:"Doctor is not approve", status: false})
-    if(!doctor.status) return res.status(401).json({message:"Doctor is not active", status: false})
+    if (!doctor.approve) return res.status(401).json({ message: "Doctor is not approve", status: false })
+    if (!doctor.status) return res.status(401).json({ message: "Doctor is not active", status: false })
 
     const token = jwt.sign({ id: doctor.doctorId, role: "doctor" }, process.env.secretKey, { expiresIn: "2h" });
 
@@ -98,7 +99,7 @@ const findDoctor = async (req, res) => {
     const doctorId = req.params.doctorId;
 
     const doctor = await Doctor.findByPk(doctorId, {
-      where: {status : true},
+      where: { status: true },
       include: [Appointment],
     });
 
@@ -115,15 +116,38 @@ const findDoctor = async (req, res) => {
 
 // Lấy tất cả bác sĩ
 const getAllDoctors = async (req, res) => {
+  const dn = req.query.dn;
+  const dm = req.query.dm;
+
   try {
-    const doctors = await Doctor.findAll({where :{status : true}});
-    res.status(200).json({ doctors });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Internal server error" });
+    let where = { status: true };
+    // nếu có query
+    if (dn || dm) {
+      where[Op.and] = [];
+      if (dn) {
+        where[Op.and].push(
+          Sequelize.where(
+            Sequelize.fn(
+              "concat",
+              Sequelize.col("firstName"),
+              " ",
+              Sequelize.col("lastName")
+            ),
+            { [Op.like]: `%${dn}%` }
+          )
+        );
+      }
+      if (dm) {
+        where[Op.and].push({ specialty: { [Op.like]: `%${dm}%` } });
+      }
+    }
+    const doctors = await Doctor.findAll({ where });
+    res.json({ doctors });
+  } catch (e) {
+    console.log(e);
+    res.status(500).json({ message: "error" });
   }
 };
-
 // Thêm lịch hẹn cho bác sĩ
 const updateAppointment = async (req, res) => {
   try {

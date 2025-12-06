@@ -175,7 +175,7 @@ const RegistrationForm = () => {
                   >
                     <div>
                       <div className="flex flex-col items-center justify-center w-28 md:w-48 lg:w-60">
-                          <FaUserMd className="text-4xl" />
+                        <FaUserMd className="text-4xl" />
                         <span className="ml-2">Bác sĩ</span>
                       </div>
                     </div>
@@ -462,8 +462,11 @@ const RegistrationForm = () => {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               {[
-                { label: "Chuyên khoa", name: "specialty", type: "text", icon: "pi-briefcase" },
-                { label: "Nơi làm việc / Phòng khám", name: "clinicLocation", type: "text", icon: "pi-building" },
+                {
+                  label: "Chuyên khoa", name: "specialty", type: "text", icon: "pi-briefcase", i: true, department: [
+                    { code: 'Đa khoa', name: "specialty", }, { code: 'Tim mạch', name: "specialty", }, { code: 'Ngoại khoa', name: "specialty", }, { code: 'Nội khoa', name: "specialty", }, { code: 'Da liễu', name: "specialty", }, { code: 'Mắt', name: "specialty", }, { code: 'Khoa nhi', name: "specialty", }, { code: 'Răng hàm mặt', name: "specialty", }, { code: 'Sản phụ khoa', name: "specialty", }, { code: 'Thần kinh', name: "specialty", }, { code: 'Tai mũi họng', name: "specialty", }, { code: 'Tâm thần', name: "specialty", }, { code: 'Phục hồi chức năng', name: "specialty", },]
+                },
+                { label: "Nơi làm việc / Phòng khám", name: "clinicLocation", type: "text", icon: "pi-building", i: false },
               ].map((field) => (
                 <div key={field.name} className="flex flex-col gap-2">
                   <label className="text-indigo-600 font-bold">
@@ -471,15 +474,33 @@ const RegistrationForm = () => {
                   </label>
                   <IconField iconPosition="left">
                     <InputIcon className={`pi ${field.icon}`}> </InputIcon>
-                    <InputText
-                      type={field.type}
-                      name={field.name}
-                      value={formRegister[field.name]}
-                      onChange={handleInputChange}
-                      className="w-full"
-                      placeholder={`Nhập ${field.label}`}
-                      required
-                    />
+                    {field.i == false ? (
+                      <InputText
+                        type={field.type}
+                        name={field.name}
+                        value={formRegister[field.name]}
+                        onChange={handleInputChange}
+                        className="w-full"
+                        placeholder={`Nhập ${field.label}`}
+                        required
+                      />
+                    ) : (
+                      <Dropdown
+                        value={formRegister[field.name]}
+                        onChange={(e) => {
+                          setFormRegister(prev => ({
+                            ...prev,
+                            [field.name]: e.value,
+                          }));
+                        }}
+                        options={field.department}
+                        optionLabel="code"
+                        optionValue="code" 
+                        placeholder={`Nhập ${field.label}`}
+                        className="w-full md:w-14rem"
+                      />
+                    )
+                    }
                   </IconField>
                 </div>
               ))}
