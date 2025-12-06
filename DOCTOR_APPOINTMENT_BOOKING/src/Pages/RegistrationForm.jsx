@@ -374,7 +374,7 @@ const RegistrationForm = () => {
               {["address", "city"].map((field) => (
                 <div key={field} className="flex flex-col gap-2">
                   <label className="text-indigo-600 font-bold" htmlFor={field}>
-                    {field === "address" ? "Địa chỉ" : "Thành phố"} <sub className="text-red-500">*</sub>
+                    {field === "address" ? "Địa chỉ" : "Thành phố"}
                   </label>
                   <IconField iconPosition="left">
                     <InputIcon className={field === "address" ? "pi pi-home" : "pi pi-map-marker"}> </InputIcon>
