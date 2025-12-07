@@ -3,7 +3,7 @@ import { Card } from 'primereact/card';
 import { Button } from 'primereact/button';
 const IntroDashBoard = () => {
     return (
-        <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
+        <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-indigo-90">
             <div className="p-8 m-4 w-full md:w-4/5 lg:w-3/5">
                 <h1 className="lg:text-5xl md:text-2xl text-blue-500 font-bold mb-4 text-center text-xl">Chào mừng đến với MedBooking</h1>
                 <p className="text-lg text-gray-600 text-center">MedBooking là nền tảng đặt lịch khám bệnh trực tuyến hàng đầu, giúp bạn dễ dàng kết nối với các

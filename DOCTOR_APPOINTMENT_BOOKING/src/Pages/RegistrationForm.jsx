@@ -123,7 +123,7 @@ const RegistrationForm = () => {
       }
     } catch (error) {
       console.error("Error registering:", error);
-      toast.error("Lỗi hệ thống, vui lòng thử lại sau.");
+      toast.error("Vui lòng điền đầy đủ thông tin!");
     } finally {
       setIsLoading(false);
     }
