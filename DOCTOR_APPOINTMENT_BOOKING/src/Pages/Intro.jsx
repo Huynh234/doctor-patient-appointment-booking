@@ -15,6 +15,13 @@ const MedBookingLanding = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  const forCusEl = () => {
+    window.scrollTo({
+      top: 750,
+      behavior: 'smooth'
+    });
+  };
+
   const features = [
     {
       icon: <Calendar className="w-8 h-8" />,
@@ -83,7 +90,7 @@ const MedBookingLanding = () => {
       {/* Header */}
       <header className={`fixed top-0 w-full z-50 transition-all duration-300 ${scrolled ? 'bg-white shadow-md' : 'bg-transparent'}`}>
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 cursor-pointer" onClick={() => {navigate("/")}}>
             <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center">
               <img src={logo} alt="Logo" className="mx-auto md:w-16 lg:w-20" />
             </div>
@@ -120,7 +127,7 @@ const MedBookingLanding = () => {
             <button onClick={() => {navigate("/login")}} className="px-8 py-4 bg-blue-600 text-white font-bold rounded-full hover:bg-blue-700 transform hover:scale-105 transition-all duration-300 shadow-xl flex items-center gap-2">
               Đặt lịch ngay <ArrowRight className="w-5 h-5" />
             </button>
-            <button className="px-8 py-4 bg-white text-blue-600 font-bold rounded-full border-2 border-blue-600 hover:bg-blue-50 transition-all duration-300">
+            <button onClick={forCusEl} className="px-8 py-4 bg-white text-blue-600 font-bold rounded-full border-2 border-blue-600 hover:bg-blue-50 transition-all duration-300">
               Tìm hiểu thêm
             </button>
           </div>

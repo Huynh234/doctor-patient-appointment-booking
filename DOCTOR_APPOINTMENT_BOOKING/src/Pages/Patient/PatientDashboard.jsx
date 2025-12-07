@@ -13,6 +13,8 @@ import IntroDashBoard from "../../Pages/Patient/IntroDashBoard";
 import MyAppointments from "../../Pages/Patient/MyAppointment";
 import { InputText } from "primereact/inputtext";
 import { MultiSelect } from 'primereact/multiselect';
+import { Paginator } from 'primereact/paginator';
+
 const PatientDashboard = () => {
   const [doctors, setDoctors] = useState([]);
   const [totalAppointments, setTotalAppointments] = useState(0);
@@ -32,6 +34,21 @@ const PatientDashboard = () => {
     { label: 'Xem lịch khám', icon: 'pi pi-list' }
   ];
 
+  const [first, setFirst] = useState(0);
+  const [rows, setRows] = useState(6);
+  const [totalRecord, setTotalRecords] = useState(0);
+
+  const onPageChange = (event) => {
+    setFirst(event.first);
+    setRows(event.rows);
+    fetchDoctors();
+  };
+
+  useEffect(() => {
+    fetchDoctors();
+  }, [first, rows]);
+
+
   const fetchDoctors = async (keyword = "", specialties = "") => {
     try {
       const response = await axios.get("http://localhost:8080/doctors/all", {
@@ -39,16 +56,20 @@ const PatientDashboard = () => {
         params: {
           dn: keyword || undefined,
           dm: specialties || undefined,
+          page: first / rows,  // tính trang
+          limit: rows
         },
       });
 
-      if (response.data.doctors) {
-        setDoctors(response.data.doctors.reverse());
+      if (response.data.data) {
+        setDoctors(response.data.data);
+        setTotalRecords(response.data.total); // nhớ set thêm
       }
     } catch (error) {
       console.error("Error fetching doctors:", error);
     }
   };
+
 
 
 
@@ -117,7 +138,7 @@ const PatientDashboard = () => {
     <>
       <header className="card bg-white fixed top-0 w-full z-10 flex justify-between items-center box-border shadow-md">
         <div className="flex w-full">
-          <div className="flex ml-8 items-center justify-start">
+          <div className="flex ml-8 items-center justify-start cursor-pointer" onClick={() => {navigate("/patient-dashboard"); setActiveIndex(0);}}>
             <div><img src={newLogo} alt="Logo" className="mx-auto md:w-16 lg:w-20" /></div>
             <div className="flex flex-col ml-7 text-left">
               <div className=""><p className="md:text-xl lg:text-3xl text-blue-500 font-bold">MedBooking</p></div>
@@ -179,23 +200,29 @@ const PatientDashboard = () => {
               </div>
               <div className="flex-0">
                 <div>
-                  <leabel className="block mb-2 text-lg font-medium text-gray-900">
+                  <p className="block mb-2 text-lg font-medium text-gray-900">
                     Xóa bộ lọc
-                  </leabel>
+                  </p>
                   <Button label="Reset" icon="pi pi-refresh" className="p-button-primary" onClick={() => {
                     setSearchText("");
                     setdatadm(null);
-                    fetchDoctors();
+                    setFirst(0);
+                    setRows(6);
                   }} />
                 </div>
               </div>
             </div>
-            <div className="h-[36rem]">
-              <Breadcrumb items={breadcrumbs} />
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {doctors.map((doctor) => (
-                  <DoctorCard key={doctor.doctorId} doctor={doctor} />
-                ))}
+            <div>
+              <div className="card h-[68rem] overflow-hidden overflow-y-auto overflow-x-auto">
+                <Breadcrumb items={breadcrumbs} />
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {doctors.map((doctor) => (
+                    <DoctorCard key={doctor.doctorId} doctor={doctor} />
+                  ))}
+                </div>
+              </div>
+              <div className="card">
+                <Paginator first={first} rows={rows} totalRecords={totalRecord} rowsPerPageOptions={6} onPageChange={onPageChange} />
               </div>
             </div>
           </div>

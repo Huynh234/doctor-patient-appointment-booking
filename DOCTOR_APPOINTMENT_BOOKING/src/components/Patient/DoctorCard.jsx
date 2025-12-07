@@ -107,7 +107,7 @@ const DoctorCard = ({ doctor }) => {
         </div>
       </div>
       <div className="text-indigo-700 font-semibold mb-2">
-        Dr. {doctor.firstName} {doctor.lastName}
+        Bs. {doctor.firstName} {doctor.lastName}
       </div>
       <div className="text-gray-700 text-sm mb-2">
         <i className="pi pi-map-marker mr-2"></i>
@@ -119,7 +119,7 @@ const DoctorCard = ({ doctor }) => {
       </div>
       <div className="text-gray-700 text-sm mb-2">
         <i className="pi pi-clock mr-2"></i>
-        Working Hours: {doctor.workingHours}
+        Giờ làm việc: {doctor.workingHours}
       </div>
       <div className="text-gray-700 text-sm mb-2">
         <i className="pi pi-user mr-2"></i>
@@ -131,12 +131,12 @@ const DoctorCard = ({ doctor }) => {
           className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-full focus:outline-none focus:shadow-outline-indigo active:bg-indigo-800 transform hover:scale-105 transition-transform duration-300 ease-in-out"
         >
           <i className="pi pi-calendar mr-2"></i>
-          Book Appointment
+          Đặt lịch hẹn
         </button>
       </div>
 
       <Dialog
-        header={`Book Appointment with Dr. ${doctor.firstName}`}
+        header={`Đặt lịch hẹn với Bs. ${doctor.lastName}`}
         visible={isModalOpen}
         modal
         closable = {false}
