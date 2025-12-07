@@ -60,7 +60,7 @@ const RegistrationForm = () => {
     "AB-",
     "O+",
     "O-",
-    "Other",
+    "Khác",
   ].map((bg) => ({ label: bg, value: bg }));
 
   const handleRoleChange = (e) => {

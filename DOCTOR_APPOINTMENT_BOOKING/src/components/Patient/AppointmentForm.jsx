@@ -48,7 +48,7 @@ const AppointmentForm = ({ doctor, onSubmit, onCancel }) => {
       <div className="bg-white p-4 w-full max-w-md bg-opacity-20 backdrop-blur-3xl">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-3xl font-semibold text-indigo-600">
-            Book Appointment
+            Đặt lịch hẹn
           </h2>
           <button
             type="button"
@@ -62,7 +62,7 @@ const AppointmentForm = ({ doctor, onSubmit, onCancel }) => {
           <div className="mb-4">
             <label className="block text-indigo-600 text-bold text-sm font-bold mb-2">
               <i className="pi pi-calendar mr-2 text-indigo-600"></i>
-              Appointment Date
+              Ngày hẹn
             </label>
             <input
               type="date"
@@ -76,7 +76,7 @@ const AppointmentForm = ({ doctor, onSubmit, onCancel }) => {
           <div className="mb-4">
             <label className="block text-indigo-600 text-sm font-bold mb-2">
               <i className="pi pi-clock mr-2 text-indigo-600"></i>
-              Start Time
+              Giờ bắt đầu
             </label>
             <input
               type="time"
@@ -90,7 +90,7 @@ const AppointmentForm = ({ doctor, onSubmit, onCancel }) => {
           <div className="mb-4">
             <label className="block text-indigo-600 text-sm font-bold mb-2">
               <i className="pi pi-clock mr-2 text-indigo-600"></i>
-              End Time
+              Giờ kết thúc
             </label>
             <input
               type="time"
@@ -104,7 +104,7 @@ const AppointmentForm = ({ doctor, onSubmit, onCancel }) => {
           <div className="mb-4">
             <label className="block text-indigo-600 text-sm font-bold mb-2">
               <i className="pi pi-exclamation-circle mr-2 text-indigo-600"></i>
-              Disease
+              Bệnh án
             </label>
             <input
               type="text"
@@ -121,7 +121,7 @@ const AppointmentForm = ({ doctor, onSubmit, onCancel }) => {
               className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-lg focus:outline-none focus:shadow-outline-indigo active:bg-indigo-800 transform hover:scale-105 transition-transform duration-300 ease-in-out"
             >
              <i className="pi pi-save mr-2"></i>
-              Book Appointment
+              Đặt lịch hẹn
             </button>
           </div>
         </form>
