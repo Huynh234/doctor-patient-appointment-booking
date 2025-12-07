@@ -46,8 +46,8 @@ const loginDoctor = async (req, res) => {
 
     const match = await bcrypt.compare(password, doctor.password);
     if (!match) return res.status(400).json({ message: "Incorrect password!", status: false });
-    if (!doctor.approve) return res.status(401).json({ message: "Doctor is not approve", status: false })
-    if (!doctor.status) return res.status(401).json({ message: "Doctor is not active", status: false })
+    if (!doctor.approve) return res.status(401).json({ message: "Tài khoản đang chờ phê duyệt", status: false })
+    if (!doctor.status) return res.status(401).json({ message: "Tài khoản bị khóa", status: false })
 
     const token = jwt.sign({ id: doctor.doctorId, role: "doctor" }, process.env.secretKey, { expiresIn: "2h" });
 
@@ -119,35 +119,50 @@ const getAllDoctors = async (req, res) => {
   const dn = req.query.dn;
   const dm = req.query.dm;
 
+  const page = parseInt(req.query.page) || 0;   // page index
+  const limit = parseInt(req.query.limit) || 10;
+  const offset = page * limit;
+
   try {
     let where = { status: true };
-    // nếu có query
+
     if (dn || dm) {
       where[Op.and] = [];
+
       if (dn) {
         where[Op.and].push(
           Sequelize.where(
-            Sequelize.fn(
-              "concat",
-              Sequelize.col("firstName"),
-              " ",
-              Sequelize.col("lastName")
-            ),
+            Sequelize.fn("concat", Sequelize.col("firstName"), " ", Sequelize.col("lastName")),
             { [Op.like]: `%${dn}%` }
           )
         );
       }
+
       if (dm) {
         where[Op.and].push({ specialty: { [Op.like]: `%${dm}%` } });
       }
     }
-    const doctors = await Doctor.findAll({ where });
-    res.json({ doctors });
+
+    const { rows, count } = await Doctor.findAndCountAll({
+      where,
+      limit,
+      offset,
+      order: [["doctorId", "DESC"]]
+    });
+
+    res.json({
+      data: rows,
+      total: count,
+      page,
+      limit
+    });
+
   } catch (e) {
     console.log(e);
     res.status(500).json({ message: "error" });
   }
 };
+
 // Thêm lịch hẹn cho bác sĩ
 const updateAppointment = async (req, res) => {
   try {

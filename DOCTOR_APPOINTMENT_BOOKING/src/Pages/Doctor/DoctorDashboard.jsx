@@ -10,6 +10,7 @@ import newLogo from '../../assets/Logo_Medbooking.png';
 import { Button } from 'primereact/button';
 import IntroDashBoard from "../../Pages/Doctor/IntroDashBoard";
 import DoctorProfile from "../../Pages/Doctor/DoctorProfile";
+import DoctorDashboard_vercu from "./DoctorDashboard_vercu";
 
 const DoctorDashboard = () => {
   const [doctors, setDoctors] = useState([]);
@@ -104,7 +105,7 @@ const DoctorDashboard = () => {
     <>
       <header className="card bg-white fixed top-0 w-full z-10 flex justify-between items-center box-border shadow-md">
         <div className="flex w-full">
-          <div className="flex ml-8 items-center justify-start">
+          <div className="flex ml-8 items-center justify-start cursor-pointer" onClick={() => {navigate("/doctor-dashboard"); setActiveIndex(0);}}>
             <div>
               <img src={newLogo} alt="Logo" className="mx-auto md:w-16 lg:w-20" />
             </div>
@@ -146,7 +147,7 @@ const DoctorDashboard = () => {
 
         {/* Tab 1: Quản lý lịch hẹn */}
         {activeIndex === 1 && (
-          <IntroDashBoard />
+          <DoctorDashboard_vercu />
         )}
 
         {/* Tab 2: Hồ sơ của tôi */}
