@@ -41,7 +41,7 @@ const MyProfile = () => {
         });
       }
     } catch (error) {
-      console.error("Error fetching patient data:", error);
+      console.error("Lỗi khi lấy dữ liệu bệnh nhân:", error);
     }
   };
 
@@ -99,7 +99,7 @@ const MyProfile = () => {
       if (error.response && error.response.status === 403) {
         toast.error("Bạn không có quyền cập nhật thông tin này.");
       } else {
-        console.error("Error updating patient info:", error);
+        console.error("Lỗi khi cập nhật thông tin bệnh nhân:", error);
         toast.error("Lỗi khi cập nhật thông tin!");
       }
     }
@@ -117,7 +117,7 @@ const MyProfile = () => {
         <div className="container mx-auto px-4 max-w-6xl">
           {/* Header Card */}
           <div className="bg-white rounded-2xl shadow-lg overflow-hidden mb-6">
-            <div className="bg-blue-500 py-6 px-8 py-6">
+            <div className="bg-blue-500 py-6 px-8">
               <div className="flex justify-between items-center">
                 <div>
                   <h1 className="text-3xl font-bold text-white mb-2">Hồ sơ cá nhân</h1>

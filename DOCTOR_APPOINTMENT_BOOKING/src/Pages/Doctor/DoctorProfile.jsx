@@ -37,59 +37,9 @@ const DoctorProfile = () => {
       );
       setAppointments(response.data);
     } catch (error) {
-      console.error("Error fetching doctor appointments:", error);
+      console.error("Lỗi khi lấy danh sách lịch hẹn:", error);
     }
   };
-
-  // useEffect(() => {
-  //   const doctorId = localStorage.getItem("userId");
-
-  //   if (doctorId) {
-  //     axios
-  //       .get(
-  //         `http://localhost:8080/appointments/doctor/${doctorId}`,
-  //         {
-  //           role: "docotor",
-  //           headers: {
-  //             Authorization: `Bearer ${token}`
-  //           }
-  //         }
-  //       )
-  //       .then((response) => {
-  //         const data = response.data;
-  //         console.log("response", data);
-  //         // setDoctor(data.appointment[0].doctor);
-  //         setAppointments(data);
-  //       })
-  //       .catch((error) => {
-  //         console.error("Error fetching doctor data:", error);
-  //       });
-  //   }
-  // }, [token]);
-
-  // useEffect(() => {
-  //   const doctorId = localStorage.getItem("userId");
-  //   // console.log("doctorId: ", doctorId, token);
-  //   if (doctorId) {
-  //     axios
-  //       .get(
-  //         `http://localhost:8080/doctors/${doctorId}`,
-  //         {
-  //           headers: {
-  //             Authorization: `Bearer ${token}`
-  //           }
-  //         }
-  //       )
-  //       .then((response) => {
-  //         const data = response.data;
-  //         console.log("response", data);
-  //         setDoctor(data);
-  //       })
-  //       .catch((error) => {
-  //         console.error("Error fetching doctor data:", error);
-  //       });
-  //   }
-  // }, [token]);
 
   // Lấy thông tin bác sĩ
   
@@ -106,7 +56,7 @@ const DoctorProfile = () => {
       setDoctor(res.data.doctor || res.data);
       console.log("Doctor data loaded:", res.data);
     })
-    .catch((err) => console.error("Error fetching doctor data:", err));
+    .catch((err) => console.error("Lỗi khi lấy thông tin bác sĩ:", err));
 
   // Gọi lần đầu load lịch hẹn
   fetchAppointments(doctorId);
@@ -171,13 +121,13 @@ const DoctorProfile = () => {
         const updatedDoctor = { ...doctor, [field]: value };
         setDoctor(updatedDoctor);
         setEditingField(null);
-        toast.success(`Successfully updated ${field}`);
+        toast.success(`Cập nhật ${field} thành công`);
       } else {
-        console.error("Failed to update patient detail");
+        console.error("Thất bại khi cập nhật thông tin bác sĩ");
       }
     } catch (error) {
-      console.error("Error updating patient detail:", error);
-      toast.error(`Error updating ${field}`);
+      console.error("Lỗi khi cập nhật thông tin bác sĩ:", error);
+      toast.error(`Lỗi khi cập nhật ${field}`);
     }
   };
 
@@ -221,13 +171,13 @@ const DoctorProfile = () => {
             : appointment
         );
         setAppointments(updatedAppointments);
-        toast.success("Appointment status updated successfully");
+        toast.success("Trạng thái lịch hẹn đã được cập nhật thành công");
       } else {
-        console.error("Failed to update appointment status");
+        console.error("Thất bại khi cập nhật trạng thái lịch hẹn");
       }
     } catch (error) {
-      console.error("Error updating appointment status:", error);
-      toast.error("Error updating appointment status");
+      console.error("Lỗi khi cập nhật trạng thái lịch hẹn:", error);
+      toast.error("Lỗi khi cập nhật trạng thái lịch hẹn");
     }
   };
 
@@ -249,13 +199,13 @@ const DoctorProfile = () => {
           (appointment) => appointment.appointmentId !== appointmentId
         );
         setAppointments(updatedAppointments);
-        toast.success("Appointment deleted successfully");
+        toast.success("Lịch hẹn đã được xóa thành công");
       } else {
-        console.error("Failed to delete appointment");
+        console.error("Thất bại khi xóa lịch hẹn");
       }
     } catch (error) {
-      console.error("Error deleting appointment:", error);
-      toast.error("Error deleting appointment");
+      console.error("Lỗi khi xóa lịch hẹn:", error);
+      toast.error("Lỗi khi xóa lịch hẹn");
     }
   };
 

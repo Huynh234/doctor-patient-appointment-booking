@@ -23,8 +23,6 @@ const DoctorDashboard = () => {
   const token = localStorage.getItem("token");
   const { logout } = useContext(AuthContext);
   const navigate = useNavigate();
-  // console.log("appointments", appointments, token);
-  // console.log("appointments", appointments);
 
     // Hàm load danh sách lịch hẹn của bác sĩ
   const fetchAppointments = async (doctorId) => {
@@ -37,59 +35,9 @@ const DoctorDashboard = () => {
       );
       setAppointments(response.data);
     } catch (error) {
-      console.error("Error fetching doctor appointments:", error);
+      console.error("Lỗi khi lấy danh sách lịch hẹn của bác sĩ:", error);
     }
   };
-
-  // useEffect(() => {
-  //   const doctorId = localStorage.getItem("userId");
-
-  //   if (doctorId) {
-  //     axios
-  //       .get(
-  //         `http://localhost:8080/appointments/doctor/${doctorId}`,
-  //         {
-  //           role: "docotor",
-  //           headers: {
-  //             Authorization: `Bearer ${token}`
-  //           }
-  //         }
-  //       )
-  //       .then((response) => {
-  //         const data = response.data;
-  //         console.log("response", data);
-  //         // setDoctor(data.appointment[0].doctor);
-  //         setAppointments(data);
-  //       })
-  //       .catch((error) => {
-  //         console.error("Error fetching doctor data:", error);
-  //       });
-  //   }
-  // }, [token]);
-
-  // useEffect(() => {
-  //   const doctorId = localStorage.getItem("userId");
-  //   // console.log("doctorId: ", doctorId, token);
-  //   if (doctorId) {
-  //     axios
-  //       .get(
-  //         `http://localhost:8080/doctors/${doctorId}`,
-  //         {
-  //           headers: {
-  //             Authorization: `Bearer ${token}`
-  //           }
-  //         }
-  //       )
-  //       .then((response) => {
-  //         const data = response.data;
-  //         console.log("response", data);
-  //         setDoctor(data);
-  //       })
-  //       .catch((error) => {
-  //         console.error("Error fetching doctor data:", error);
-  //       });
-  //   }
-  // }, [token]);
 
   // Lấy thông tin bác sĩ
   useEffect(() => {
@@ -101,7 +49,7 @@ const DoctorDashboard = () => {
         headers: { Authorization: `Bearer ${token}` }
       })
       .then((res) => setDoctor(res.data))
-      .catch((err) => console.error("Error fetching doctor data:", err));
+      .catch((err) => console.error("Lỗi khi lấy thông tin bác sĩ:", err));
 
     // Gọi lần đầu load lịch hẹn
     fetchAppointments(doctorId);
@@ -123,17 +71,17 @@ const DoctorDashboard = () => {
 
     // Khi có thay đổi lịch hẹn
     socket.on("appointmentAdded", () => {
-      console.log("Appointment added — refreshing data...");
+      console.log("Lịch hẹn đã được thêm — đang làm mới dữ liệu...");
       fetchAppointments(doctorId);
     });
 
     socket.on("appointmentUpdated", () => {
-      console.log("Appointment updated — refreshing data...");
+      console.log("Lịch hẹn đã được cập nhật — đang làm mới dữ liệu...");
       fetchAppointments(doctorId);
     });
 
     socket.on("appointmentDeleted", () => {
-      console.log("Appointment deleted — refreshing data...");
+      console.log("Lịch hẹn đã được xóa — đang làm mới dữ liệu...");
       fetchAppointments(doctorId);
     });
 
@@ -166,13 +114,13 @@ const DoctorDashboard = () => {
         const updatedDoctor = { ...doctor, [field]: value };
         setDoctor(updatedDoctor);
         setEditingField(null);
-        toast.success(`Successfully updated ${field}`);
+        toast.success(`Cập nhật ${field} thành công`);
       } else {
-        console.error("Failed to update patient detail");
+        console.error("Thất bại khi cập nhật thông tin bác sĩ");
       }
     } catch (error) {
-      console.error("Error updating patient detail:", error);
-      toast.error(`Error updating ${field}`);
+      console.error("Lỗi khi cập nhật thông tin bác sĩ:", error);
+      toast.error(`Lỗi khi cập nhật ${field}`);
     }
   };
 
@@ -185,7 +133,7 @@ const DoctorDashboard = () => {
 
   const handleStatusChange = (event, appointment) => {
     const newStatus = event.target.value;
-    updateEditedStatus(appointment._id, newStatus);
+    updateEditedStatus(appointment.appointmentId, newStatus);
   };
 
   const saveEditedStatus = async (appointmentId) => {
@@ -210,18 +158,18 @@ const DoctorDashboard = () => {
 
       if (response.status === 200) {
         const updatedAppointments = appointments.map((appointment) =>
-          appointment._id === appointmentId
+          appointment.appointmentId === appointmentId
             ? { ...appointment, status: newStatus }
             : appointment
         );
         setAppointments(updatedAppointments);
-        toast.success("Appointment status updated successfully");
+        toast.success("Cập nhật trạng thái lịch hẹn thành công");
       } else {
-        console.error("Failed to update appointment status");
+        console.error("Thất bại khi cập nhật trạng thái lịch hẹn");
       }
     } catch (error) {
-      console.error("Error updating appointment status:", error);
-      toast.error("Error updating appointment status");
+      console.error("Lỗi khi cập nhật trạng thái lịch hẹn:", error);
+      toast.error("Lỗi khi cập nhật trạng thái lịch hẹn");
     }
   };
 
@@ -240,17 +188,17 @@ const DoctorDashboard = () => {
 
       if (response.status === 200) {
         const updatedAppointments = appointments.filter(
-          (appointment) => appointment._id !== appointmentId
+          (appointment) => appointment.appointmentId !== appointmentId
         );
         setAppointments(updatedAppointments);
-        toast.success("Appointment deleted successfully");
+        toast.success("Xóa lịch hẹn thành công");
 
       } else {
-        console.error("Failed to delete appointment");
+        console.error("Thất bại khi xóa lịch hẹn");
       }
     } catch (error) {
-      console.error("Error deleting appointment:", error);
-      toast.error("Error deleting appointment");
+      console.error("Lỗi khi xóa lịch hẹn:", error);
+      toast.error("Lỗi khi xóa lịch hẹn");
     }
   };
 
@@ -263,7 +211,7 @@ const DoctorDashboard = () => {
     <>
       <div className="bg-gray-100 min-h-screen font-sans">
         <ToastContainer position="top-right" autoClose={3000} />{" "}
-        <div>
+        <div className="container mx-auto p-6">
           <div className="border border-gray-300 p-6 rounded-lg mt-8">
             <h2 className="text-3xl font-semibold mt-8 text-blue-600">
               <i className="pi pi-user-plus mr-2 text-4xl"></i>
@@ -277,8 +225,8 @@ const DoctorDashboard = () => {
           <hr className="my-6 border-t border-gray-300" />
           <h2 className="text-3xl font-semibold mt-8 text-blue-600">
             <i className="pi pi-info-circle mr-2 text-blue-600 text-4xl" />
-            Thông tin Bs. {appointments[0].Doctor ? appointments[0].Doctor.firstName : "Loading..."}{" "}
-            {appointments[0].Doctor ? appointments[0].Doctor.lastName : "Loading..."}
+            Thông tin Bs. {appointments[0]?.Doctor ? appointments[0].Doctor.firstName : "Loading..."}{" "}
+            {appointments[0]?.Doctor ? appointments[0].Doctor.lastName : "Loading..."}
           </h2>
 
           {appointments.length > 0 ? (
@@ -321,11 +269,11 @@ const DoctorDashboard = () => {
                           </div>
                         </td>
                         <td className="px-6 py-4 text-lg">
-                          {editingField === appointment._id ? (
+                          {editingField === appointment.appointmentId ? (
                             <div className="flex items-center">
                               <select
                                 value={
-                                  editedStatus[appointment._id] ||
+                                  editedStatus[appointment.appointmentId] ||
                                   appointment.status
                                 }
                                 onChange={(event) =>
@@ -333,14 +281,14 @@ const DoctorDashboard = () => {
                                 }
                                 className="mr-2"
                               >
-                                <option value="scheduled">Scheduled</option>
-                                <option value="completed">Completed</option>
-                                <option value="canceled">Canceled</option>
+                                <option value="scheduled">Đã lên lịch</option>
+                                <option value="completed">Hoàn thành</option>
+                                <option value="canceled">Đã hủy</option>
                               </select>
                               <button
                                 className="text-blue-600"
                                 onClick={() => {
-                                  saveEditedStatus(appointment._id);
+                                  saveEditedStatus(appointment.appointmentId);
                                   setEditingField(null);
                                 }}
                               >
@@ -353,7 +301,11 @@ const DoctorDashboard = () => {
                                 statusColors[appointment.status]
                               }`}
                             >
-                              {appointment.status}
+                              {appointment.status === "scheduled"
+                                ? "Đã lên lịch"
+                                : appointment.status === "completed"
+                                ? "Hoàn thành"
+                                : "Đã hủy"}
                               <span className="mr-2 ml-3">
                                 {appointment.status === "scheduled" && (
                                   <i className="pi pi-clock"></i>
@@ -370,10 +322,10 @@ const DoctorDashboard = () => {
                                   statusColors[appointment.status]
                                 } ml-2 text-sm`}
                                 onClick={() => {
-                                  setEditingField(appointment._id);
+                                  setEditingField(appointment.appointmentId);
                                   setEditedStatus({
                                     ...editedStatus,
-                                    [appointment._id]: appointment.status
+                                    [appointment.appointmentId]: appointment.status
                                   });
                                 }}
                               >
@@ -385,7 +337,7 @@ const DoctorDashboard = () => {
                         <td className="px-6 py-4 text-lg">
                           <button
                             className="text-red-600 ml-2"
-                            onClick={() => deleteAppointment(appointment._id)}
+                            onClick={() => deleteAppointment(appointment.appointmentId)}
                           >
                             <i className="pi pi-trash"></i>
                           </button>
