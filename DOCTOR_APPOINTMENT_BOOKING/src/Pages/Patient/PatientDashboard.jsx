@@ -66,7 +66,7 @@ const PatientDashboard = () => {
         setTotalRecords(response.data.total);
       }
     } catch (error) {
-      console.error("Error fetching doctors:", error);
+      console.error("Lỗi khi lấy danh sách bác sĩ:", error);
     }
   };
 
@@ -87,7 +87,7 @@ const PatientDashboard = () => {
         setTotalAppointments(data.length);
       }
     } catch (error) {
-      console.error("Error fetching patient data:", error);
+      console.error("Lỗi khi lấy dữ liệu bệnh nhân:", error);
     }
   };
 
