@@ -11,6 +11,7 @@ import newLogo from '../../assets/Logo_Medbooking.png';
 import { Button } from 'primereact/button';
 import IntroDashBoard from "../../Pages/Patient/IntroDashBoard";
 import MyAppointments from "../../Pages/Patient/MyAppointment";
+import MyProfile from "../../Pages/Patient/MyProfile";
 import { InputText } from "primereact/inputtext";
 import { MultiSelect } from 'primereact/multiselect';
 import { Paginator } from 'primereact/paginator';
@@ -25,13 +26,13 @@ const PatientDashboard = () => {
     { code: 'Đa khoa', name: "dm" }, { code: 'Tim mạch', name: "dm" }, { code: 'Ngoại khoa', name: "dm" }, { code: 'Nội khoa', name: "dm" }, { code: 'Da liễu', name: "dm" }, { code: 'Mắt', name: "dm" }, { code: 'Khoa nhi', name: "dm" }, { code: 'Răng hàm mặt', name: "dm" }, { code: 'Sản phụ khoa', name: "dm" }, { code: 'Thần kinh', name: "dm" }, { code: 'Tai mũi họng', name: "dm" }, { code: 'Tâm thần', name: "dm" }, { code: 'Phục hồi chức năng', name: "dm" }
   ];
   const [activeIndex, setActiveIndex] = useState(0);
-  // console.log("Token:", token);
   const { logout } = useContext(AuthContext);
   const [searchText, setSearchText] = useState("");
   const items = [
     { label: 'Giới thiệu', icon: 'pi pi-home' },
     { label: 'Đặt lịch khám', icon: 'pi pi-calendar-clock' },
-    { label: 'Xem lịch khám', icon: 'pi pi-list' }
+    { label: 'Xem lịch khám', icon: 'pi pi-list' },
+    { label: 'Hồ sơ cá nhân', icon: 'pi pi-user' }
   ];
 
   const [first, setFirst] = useState(0);
@@ -48,7 +49,6 @@ const PatientDashboard = () => {
     fetchDoctors();
   }, [first, rows]);
 
-
   const fetchDoctors = async (keyword = "", specialties = "") => {
     try {
       const response = await axios.get("http://localhost:8080/doctors/all", {
@@ -56,22 +56,19 @@ const PatientDashboard = () => {
         params: {
           dn: keyword || undefined,
           dm: specialties || undefined,
-          page: first / rows,  // tính trang
+          page: first / rows,
           limit: rows
         },
       });
 
       if (response.data.data) {
         setDoctors(response.data.data);
-        setTotalRecords(response.data.total); // nhớ set thêm
+        setTotalRecords(response.data.total);
       }
     } catch (error) {
       console.error("Error fetching doctors:", error);
     }
   };
-
-
-
 
   const fetchTotalAppointments = async () => {
     const patientId = localStorage.getItem("userId");
@@ -87,7 +84,6 @@ const PatientDashboard = () => {
         );
 
         const data = response.data;
-        //  console.log(data);
         setTotalAppointments(data.length);
       }
     } catch (error) {
@@ -100,7 +96,6 @@ const PatientDashboard = () => {
     fetchTotalAppointments();
   }, [token]);
 
-  // Thêm WebSocket realtime
   useEffect(() => {
     const patientId = localStorage.getItem("userId");
     if (!patientId) return;
@@ -112,7 +107,6 @@ const PatientDashboard = () => {
     socket.emit("joinRoom", `patient_${patientId}`);
     console.log(`Joined room: patient_${patientId}`);
 
-    // Lắng nghe các sự kiện realtime
     const refresh = () => {
       console.log("Appointment changed — updating total...");
       fetchTotalAppointments();
@@ -129,6 +123,7 @@ const PatientDashboard = () => {
   }, []);
 
   const breadcrumbs = [{ title: "Danh sách bác sĩ", link: "/patient-dashboard" }];
+  
   const handleLogout = () => {
     logout();
     navigate("/login");
@@ -157,11 +152,10 @@ const PatientDashboard = () => {
               onClick={handleLogout}
             >
               <i className="pi pi-sign-out mr-2 mt-1" />
-              <h1>Logout</h1>
+              <h1>Đăng xuất</h1>
             </button>
           </div>
         </div>
-
       </header>
 
       <main className="mt-24">
@@ -172,57 +166,112 @@ const PatientDashboard = () => {
 
         {/* Tab 1: Đặt lịch khám */}
         {activeIndex === 1 && (
-          <div className="container mx-auto max-w-screen-xl p-8 mt-12">
-            <div className="overflow-auto lg:flex gap-10 mb-4 border box-border shadow-sm rounded-sm p-4 justify-center items-center" >
-              <div className="flex-1">
-                <div>
-                  <label className="block mb-2 text-lg font-medium text-gray-900">
-                    Tìm kiếm bác sĩ
-                  </label>
-                  <InputText className="w-full" id="search" placeholder="Nhập tên bác sĩ" value={searchText}
-                    onChange={(e) => {
-                      setSearchText(e.target.value);
-                      fetchDoctors(e.target.value, datadm?.join(","));
-                    }} />
+          <div className="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
+            <div className="container mx-auto max-w-screen-xl p-8">
+              {/* Search and Filter Section */}
+              <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
+                <h2 className="text-2xl font-semibold text-blue-600 mb-4">
+                  <i className="pi pi-search mr-2" />
+                  Tìm kiếm bác sĩ
+                </h2>
+                
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-end">
+                  <div className="flex-1">
+                    <label className="block mb-2 text-base font-medium text-gray-700">
+                      <i className="pi pi-user-edit mr-2 text-blue-500" />
+                      Tên bác sĩ
+                    </label>
+                    <InputText 
+                      className="w-full p-3 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all" 
+                      id="search" 
+                      placeholder="Nhập tên bác sĩ" 
+                      value={searchText}
+                      onChange={(e) => {
+                        setSearchText(e.target.value);
+                        fetchDoctors(e.target.value, datadm?.join(","));
+                      }} 
+                    />
+                  </div>
+                  
+                  <div className="flex-1">
+                    <label className="block mb-2 text-base font-medium text-gray-700">
+                      <i className="pi pi-bookmark mr-2 text-blue-500" />
+                      Chuyên khoa
+                    </label>
+                    <MultiSelect 
+                      value={datadm} 
+                      options={dataSpecialty} 
+                      optionLabel="code" 
+                      optionValue="code" 
+                      display="chip"
+                      placeholder="Chọn chuyên khoa" 
+                      maxSelectedLabels={3} 
+                      className="w-full border-2 border-gray-200 rounded-lg focus:border-blue-500" 
+                      onChange={(e) => {
+                        setdatadm(e.value);
+                        fetchDoctors(searchText, e.value?.join(","));
+                      }} 
+                    />
+                  </div>
+                  
+                  <div className="flex-0">
+                    <Button 
+                      label="Xóa bộ lọc" 
+                      icon="pi pi-refresh" 
+                      className="bg-blue-500 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:shadow-lg transition-all transform hover:scale-105" 
+                      onClick={() => {
+                        setSearchText("");
+                        setdatadm(null);
+                        setFirst(0);
+                        setRows(6);
+                        fetchDoctors("", "");
+                      }} 
+                    />
+                  </div>
                 </div>
               </div>
-              <div className="flex-1">
-                <div>
-                  <label className="block mb-2 text-lg font-medium text-gray-900">
-                    Chuyên Khoa
-                  </label>
-                  <MultiSelect value={datadm} options={dataSpecialty} optionLabel="code" optionValue="code" display="chip"
-                    placeholder="Chọn chuyên khoa" maxSelectedLabels={3} className="w-full md:w-20rem" onChange={(e) => {
-                      setdatadm(e.value);
-                      fetchDoctors(searchText, e.value?.join(","));
-                    }} />
+
+              {/* Results Section */}
+              <div className="bg-white rounded-2xl shadow-lg p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-2xl font-semibold text-blue-600">
+                    <i className="pi pi-users mr-2" />
+                    Danh sách bác sĩ
+                  </h2>
+                  <span className="bg-blue-500 text-white px-4 py-2 rounded-full font-medium">
+                    {totalRecord} bác sĩ
+                  </span>
                 </div>
-              </div>
-              <div className="flex-0">
-                <div>
-                  <p className="block mb-2 text-lg font-medium text-gray-900">
-                    Xóa bộ lọc
-                  </p>
-                  <Button label="Reset" icon="pi pi-refresh" className="p-button-primary" onClick={() => {
-                    setSearchText("");
-                    setdatadm(null);
-                    setFirst(0);
-                    setRows(6);
-                  }} />
+                
+                <div className="min-h-[40rem]">
+                  {doctors.length > 0 ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {doctors.map((doctor) => (
+                        <DoctorCard key={doctor.doctorId} doctor={doctor} />
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center py-16">
+                      <i className="pi pi-user-minus text-gray-300 text-6xl mb-4" />
+                      <p className="text-xl text-gray-500">Không tìm thấy bác sĩ phù hợp</p>
+                      <p className="text-gray-400 mt-2">Vui lòng thử lại với từ khóa khác</p>
+                    </div>
+                  )}
                 </div>
-              </div>
-            </div>
-            <div>
-              <div className="card h-[68rem] overflow-hidden overflow-y-auto overflow-x-auto">
-                <Breadcrumb items={breadcrumbs} />
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {doctors.map((doctor) => (
-                    <DoctorCard key={doctor.doctorId} doctor={doctor} />
-                  ))}
-                </div>
-              </div>
-              <div className="card">
-                <Paginator first={first} rows={rows} totalRecords={totalRecord} rowsPerPageOptions={6} onPageChange={onPageChange} />
+
+                {/* Pagination */}
+                {totalRecord > rows && (
+                  <div className="mt-6 flex justify-center">
+                    <Paginator 
+                      first={first} 
+                      rows={rows} 
+                      totalRecords={totalRecord} 
+                      rowsPerPageOptions={[6, 12, 18]} 
+                      onPageChange={onPageChange}
+                      className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg shadow-sm"
+                    />
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -231,6 +280,11 @@ const PatientDashboard = () => {
         {/* Tab 2: Xem lịch khám */}
         {activeIndex === 2 && (
           <MyAppointments />
+        )}
+
+        {/* Tab 3: Xem hồ sơ */}
+        {activeIndex === 3 && (
+          <MyProfile />
         )}
       </main>
 

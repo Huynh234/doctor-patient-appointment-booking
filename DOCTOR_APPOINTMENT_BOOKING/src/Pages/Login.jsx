@@ -50,7 +50,7 @@ const Login = () => {
       );
 
       if (response.data.status) {
-        toast.success("Login successful!");
+        toast.success("Đăng nhập thành công!");
         localStorage.setItem("token", response.data.token);
         formData.role !== "admin" && localStorage.setItem("userId", response.data.user.patientId || response.data.user.doctorId );
 
@@ -64,12 +64,12 @@ const Login = () => {
 
         login();
       } else {
-        toast.error("Login failed. Please check your credentials.");
+        toast.error("Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.");
       }
     } catch (error) {
       console.error("Error logging in:", error);
       toast.error(
-        "An error occurred while logging in. Please try again later."
+        "Vui lòng điền đầy đủ thông tin!"
       );
     } finally {
       setIsLoading(false);

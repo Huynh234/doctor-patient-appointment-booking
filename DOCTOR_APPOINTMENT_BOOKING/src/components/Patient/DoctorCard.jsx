@@ -101,7 +101,7 @@ const DoctorCard = ({ doctor }) => {
           alt={`${doctor.firstName} ${doctor.lastName}`}
           className="w-full h-full rounded-lg"
         />
-        <div className="absolute bottom-0 left-0 p-2 bg-indigo-700 text-white rounded-tr-lg">
+        <div className="absolute bottom-0 left-0 p-2 bg-blue-500 text-white rounded-tr-lg">
           <i className="pi pi-heart mr-2"></i>
           {doctor.specialty}
         </div>
@@ -128,7 +128,7 @@ const DoctorCard = ({ doctor }) => {
       <div className="text-center">
         <button
           onClick={openModal}
-          className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-full focus:outline-none focus:shadow-outline-indigo active:bg-indigo-800 transform hover:scale-105 transition-transform duration-300 ease-in-out"
+          className="bg-blue-500 text-white font-bold py-2 px-4 rounded-full focus:outline-none focus:shadow-outline-indigo active:bg-indigo-800 transform hover:scale-105 transition-transform duration-300 ease-in-out"
         >
           <i className="pi pi-calendar mr-2"></i>
           Đặt lịch hẹn
