@@ -20,6 +20,7 @@ const MyProfile = () => {
   const token = localStorage.getItem("token");
   const navigate = useNavigate();
   const { logout } = useContext(AuthContext);
+  const today = new Date().toISOString().split('T')[0];
 
   const fetchPatientInfo = async () => {
     const patientId = localStorage.getItem("userId");
@@ -156,7 +157,7 @@ const MyProfile = () => {
                     <h2 className="text-2xl font-bold text-gray-800 mb-1">
                       {patient.firstName} {patient.lastName}
                     </h2>
-                    <p className="text-gray-500">Bệnh nhân</p>
+                    <p className="text-blue-500">Bệnh nhân</p>
                   </div>
                 </div>
 
@@ -165,7 +166,7 @@ const MyProfile = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {/* First Name */}
                     <div className="space-y-2">
-                      <label className="text-sm font-semibold text-gray-600 flex items-center gap-2">
+                      <label className="text-sm font-bold text-blue-600 flex items-center gap-2">
                         <i className="pi pi-user text-blue-600" />
                         Họ
                       </label>
@@ -185,7 +186,7 @@ const MyProfile = () => {
 
                     {/* Last Name */}
                     <div className="space-y-2">
-                      <label className="text-sm font-semibold text-gray-600 flex items-center gap-2">
+                      <label className="text-sm font-bold text-blue-600 flex items-center gap-2">
                         <i className="pi pi-user text-blue-600" />
                         Tên
                       </label>
@@ -205,7 +206,7 @@ const MyProfile = () => {
 
                     {/* Email */}
                     <div className="space-y-2 md:col-span-2">
-                      <label className="text-sm font-semibold text-gray-600 flex items-center gap-2">
+                      <label className="text-sm font-bold text-blue-600 flex items-center gap-2">
                         <i className="pi pi-envelope text-blue-600" />
                         Email
                       </label>
@@ -216,7 +217,7 @@ const MyProfile = () => {
 
                     {/* Contact Number */}
                     <div className="space-y-2">
-                      <label className="text-sm font-semibold text-gray-600 flex items-center gap-2">
+                      <label className="text-sm font-bold text-blue-600 flex items-center gap-2">
                         <i className="pi pi-phone text-blue-600" />
                         Số điện thoại
                       </label>
@@ -236,14 +237,15 @@ const MyProfile = () => {
 
                     {/* Date of Birth */}
                     <div className="space-y-2">
-                      <label className="text-sm font-semibold text-gray-600 flex items-center gap-2">
+                      <label className="text-sm font-bold text-blue-600 flex items-center gap-2">
                         <i className="pi pi-calendar text-blue-600" />
                         Ngày sinh
                       </label>
-                      {isEditing ? (
+                        {isEditing ? (
                         <input
                           type="date"
                           value={formData.dateOfBirth}
+                          max={today}
                           onChange={(e) => handleInputChange("dateOfBirth", e.target.value)}
                           className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                         />
@@ -256,7 +258,7 @@ const MyProfile = () => {
 
                     {/* Gender */}
                     <div className="space-y-2">
-                      <label className="text-sm font-semibold text-gray-600 flex items-center gap-2">
+                      <label className="text-sm font-bold text-blue-600 flex items-center gap-2">
                         <i className="pi pi-mars text-blue-600" />
                         Giới tính
                       </label>
@@ -292,7 +294,7 @@ const MyProfile = () => {
 
                     {/* Blood Group */}
                     <div className="space-y-2">
-                      <label className="text-sm font-semibold text-gray-600 flex items-center gap-2">
+                      <label className="text-sm font-bold text-blue-600 flex items-center gap-2">
                         <i className="pi pi-tint text-blue-600" />
                         Nhóm máu
                       </label>
@@ -325,7 +327,9 @@ const MyProfile = () => {
                     <div className="flex gap-4 mt-8 pt-6 border-t border-gray-200">
                       <button
                         onClick={handleUpdate}
-                        className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-3 rounded-lg font-semibold hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 shadow-md hover:shadow-lg flex items-center justify-center gap-2"
+                        className="flex-1 bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold 
+hover:bg-blue-700 transition-all duration-200 shadow-md hover:shadow-lg 
+flex items-center justify-center gap-2"
                       >
                         <i className="pi pi-check" />
                         Cập nhật

@@ -1,112 +1,100 @@
 import React, { useContext, useEffect, useState } from "react";
-
 import axios from "axios";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import Footer from "../../components/Footer";
 import { AuthContext } from "../../Context/AuthContext";
 import { useNavigate } from "react-router-dom";
-import { io } from "socket.io-client";
-
-const statusColors = {
-  scheduled: "text-blue-500 ",
-  completed: "text-green-500 ",
-  canceled: "text-red-500 "
-};
 
 const DoctorProfile = () => {
   const [doctor, setDoctor] = useState(null);
-  const [appointments, setAppointments] = useState([]);
-  const [editingField, setEditingField] = useState(null);
-  const [editedValue, setEditedValue] = useState("");
-  const [editedStatus, setEditedStatus] = useState({});
+  const [isEditing, setIsEditing] = useState(false);
+  const [formData, setFormData] = useState({
+    firstName: "",
+    lastName: "",
+    specialty: "",
+    clinicLocation: "",
+    contactNumber: "",
+    email: "",
+    workingHours: "",
+    about: ""
+  });
   const token = localStorage.getItem("token");
   const { logout } = useContext(AuthContext);
   const navigate = useNavigate();
-  // console.log("appointments", appointments, token);
-  // console.log("appointments", appointments);
 
-    // Hàm load danh sách lịch hẹn của bác sĩ
-  const fetchAppointments = async (doctorId) => {
+  const fetchDoctorInfo = async () => {
+    const doctorId = localStorage.getItem("userId");
     try {
-      const response = await axios.get(
-        `http://localhost:8080/appointments/doctor/${doctorId}`,
-        {
-          headers: { Authorization: `Bearer ${token}` }
-        }
-      );
-      setAppointments(response.data);
+      if (doctorId) {
+        const response = await axios.get(
+          `http://localhost:8080/doctors/${doctorId}`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        const doctorData = response.data.doctor || response.data;
+        setDoctor(doctorData);
+        setFormData({
+          firstName: doctorData.firstName || "",
+          lastName: doctorData.lastName || "",
+          specialty: doctorData.specialty || "",
+          clinicLocation: doctorData.clinicLocation || "",
+          contactNumber: doctorData.contactNumber || "",
+          email: doctorData.email || "",
+          workingHours: doctorData.workingHours || "",
+          about: doctorData.about || ""
+        });
+      }
     } catch (error) {
-      console.error("Lỗi khi lấy danh sách lịch hẹn:", error);
+      console.error("Error fetching doctor data:", error);
     }
   };
 
-  // Lấy thông tin bác sĩ
-  
- useEffect(() => {
-  const doctorId = localStorage.getItem("userId");
-  if (!doctorId) return;
-
-  axios
-    .get(`http://localhost:8080/doctors/${doctorId}`, {
-      headers: { Authorization: `Bearer ${token}` }
-    })
-    .then((res) => {
-      // Sửa lại để truy cập đúng vào res.data.doctor
-      setDoctor(res.data.doctor || res.data);
-      console.log("Doctor data loaded:", res.data);
-    })
-    .catch((err) => console.error("Lỗi khi lấy thông tin bác sĩ:", err));
-
-  // Gọi lần đầu load lịch hẹn
-  fetchAppointments(doctorId);
-}, [token]);
-
-   // Thiết lập Socket.IO realtime
   useEffect(() => {
-    const doctorId = localStorage.getItem("userId");
-    if (!doctorId) return;
+    fetchDoctorInfo();
+  }, [token]);
 
-    // Kết nối socket
-    const socket = io("http://localhost:8080", {
-      transports: ["websocket"]
-    });
+  const handleInputChange = (field, value) => {
+    setFormData((prev) => ({
+      ...prev,
+      [field]: value
+    }));
+  };
 
-    // Join vào phòng riêng của bác sĩ
-    socket.emit("joinRoom", `doctor_${doctorId}`);
-    console.log("Joined room: doctor_" + doctorId);
+  const handleEdit = () => {
+    setIsEditing(true);
+  };
 
-    // Khi có thay đổi lịch hẹn
-    socket.on("appointmentAdded", () => {
-      console.log("Appointment added — refreshing data...");
-      fetchAppointments(doctorId);
-    });
+  const handleCancel = () => {
+    setIsEditing(false);
+    // Reset form data to original doctor data
+    if (doctor) {
+      setFormData({
+        firstName: doctor.firstName || "",
+        lastName: doctor.lastName || "",
+        specialty: doctor.specialty || "",
+        clinicLocation: doctor.clinicLocation || "",
+        contactNumber: doctor.contactNumber || "",
+        email: doctor.email || "",
+        workingHours: doctor.workingHours || "",
+        about: doctor.about || ""
+      });
+    }
+  };
 
-    socket.on("appointmentUpdated", () => {
-      console.log("Appointment updated — refreshing data...");
-      fetchAppointments(doctorId);
-    });
+  const handleUpdate = async () => {
+    // Validate phone number
+    const phoneNumber = formData.contactNumber.replace(/\D/g, '');
+    if (phoneNumber.length < 10 || phoneNumber.length > 11) {
+      toast.error("Số điện thoại phải có từ 10 đến 11 số!");
+      return;
+    }
 
-    socket.on("appointmentDeleted", () => {
-      console.log("Appointment deleted — refreshing data...");
-      fetchAppointments(doctorId);
-    });
-
-    return () => {
-      socket.disconnect();
-    };
-  }, [fetchAppointments]);
-
-  const updateDoctorDetail = async (field, value) => {
-    // console.log("Doctorid", doctor.appointmentId);
-    const token = localStorage.getItem("token");
-    const userId = localStorage.getItem("userId");
-    // console.log("token userId", token, userId);
-    const requestBody = {
-      [field]: value,
-      role: "doctor"
-    };
     try {
+      const userId = localStorage.getItem("userId");
+      const requestBody = {
+        ...formData,
+        role: "doctor"
+      };
+
       const response = await axios.patch(
         `http://localhost:8080/doctors/${userId}`,
         requestBody,
@@ -118,94 +106,13 @@ const DoctorProfile = () => {
       );
 
       if (response.status === 200) {
-        const updatedDoctor = { ...doctor, [field]: value };
-        setDoctor(updatedDoctor);
-        setEditingField(null);
-        toast.success(`Cập nhật ${field} thành công`);
-      } else {
-        console.error("Thất bại khi cập nhật thông tin bác sĩ");
+        setDoctor({ ...doctor, ...formData });
+        setIsEditing(false);
+        toast.success("Cập nhật thông tin thành công!");
       }
     } catch (error) {
-      console.error("Lỗi khi cập nhật thông tin bác sĩ:", error);
-      toast.error(`Lỗi khi cập nhật ${field}`);
-    }
-  };
-
-  const updateEditedStatus = (appointmentId, status) => {
-    setEditedStatus((prevState) => ({
-      ...prevState,
-      [appointmentId]: status
-    }));
-  };
-
-  const handleStatusChange = (event, appointment) => {
-    const newStatus = event.target.value;
-    updateEditedStatus(appointment.appointmentId, newStatus);
-  };
-
-  const saveEditedStatus = async (appointmentId) => {
-    const newStatus = editedStatus[appointmentId];
-    const token = localStorage.getItem("token");
-    const userId = localStorage.getItem("userId");
-    // console.log("token userId", token, userId);
-    const requestBody = {
-      status: newStatus,
-      role: "doctor"
-    };
-    console.log("requestBody", requestBody);
-    try {
-      const response = await axios.patch(
-        `http://localhost:8080/appointments/${appointmentId}`,
-        requestBody,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        }
-      );
-
-      if (response.status === 200) {
-        const updatedAppointments = appointments.map((appointment) =>
-          appointment.appointmentId === appointmentId
-            ? { ...appointment, status: newStatus }
-            : appointment
-        );
-        setAppointments(updatedAppointments);
-        toast.success("Trạng thái lịch hẹn đã được cập nhật thành công");
-      } else {
-        console.error("Thất bại khi cập nhật trạng thái lịch hẹn");
-      }
-    } catch (error) {
-      console.error("Lỗi khi cập nhật trạng thái lịch hẹn:", error);
-      toast.error("Lỗi khi cập nhật trạng thái lịch hẹn");
-    }
-  };
-
-  const deleteAppointment = async (appointmentId) => {
-    const token = localStorage.getItem("token");
-    // console.log("token", token);
-    try {
-      const response = await axios.delete(
-        `http://localhost:8080/appointments/${appointmentId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        }
-      );
-
-      if (response.status === 200) {
-        const updatedAppointments = appointments.filter(
-          (appointment) => appointment.appointmentId !== appointmentId
-        );
-        setAppointments(updatedAppointments);
-        toast.success("Lịch hẹn đã được xóa thành công");
-      } else {
-        console.error("Thất bại khi xóa lịch hẹn");
-      }
-    } catch (error) {
-      console.error("Lỗi khi xóa lịch hẹn:", error);
-      toast.error("Lỗi khi xóa lịch hẹn");
+      console.error("Error updating doctor info:", error);
+      toast.error("Lỗi khi cập nhật thông tin!");
     }
   };
 
@@ -213,528 +120,281 @@ const DoctorProfile = () => {
     logout();
     navigate("/login");
   };
-  // console.log("A", appointments.length);
+
   return (
     <>
-      <div className="bg-gray-100 min-h-screen font-sans">
-        <ToastContainer position="top-right" autoClose={3000} />{" "}
-        <div className="container mx-auto py-8 mt-12 w-[95%]">
-          <div className="border border-gray-300 p-6 rounded-lg">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div className="md:col-span-1 flex items-center">
-                {doctor ? (
-                  <div>
-                    <h2 className="text-3xl font-semibold mb-2 text-blue-600">
-                      <i className="pi pi-user mr-2 text-4xl"></i>
-                      {doctor.firstName} {doctor.lastName}
-                    </h2>
-                    {/* Edit icon and logic for First Name */}
-                    {editingField === "firstName" ? (
-                      <div className="flex items-center mb-4">
-                        <input
-                          type="text"
-                          value={editedValue}
-                          onChange={(e) => setEditedValue(e.target.value)}
-                        />
-                        <button
-                          className="text-blue-600 ml-2"
-                          onClick={() =>
-                            updateDoctorDetail("firstName", editedValue)
-                          }
-                        >
-                          <i className="pi pi-save"></i>
-                        </button>
-                        <button
-                          className="text-red-600 ml-2"
-                          onClick={() => {
-                            setEditingField(null);
-                            setEditedValue("");
-                          }}
-                        >
-                          <i className="pi pi-times"></i>
-                        </button>
-                      </div>
-                    ) : (
-                      <div className="flex items-center mb-4">
-                        <i
-                          className="pi pi-user text-blue-600 mr-2 text-xl"
-                        />
-                        <p className="text-lg text-gray-600">First Name:</p>
-                        <p className="text-lg ml-2">{doctor.firstName}</p>
-                        <button
-                          className="text-blue-600 ml-2"
-                          onClick={() => {
-                            setEditingField("firstName");
-                            setEditedValue(doctor.firstName);
-                          }}
-                        >
-                          <i className="pi pi-pencil"></i>
-                        </button>
-                      </div>
-                    )}
-                    {/* Last Name */}
-                    {editingField === "lastName" ? (
-                      <div className="flex items-center mb-4">
-                        <input
-                          type="text"
-                          value={editedValue}
-                          onChange={(e) => setEditedValue(e.target.value)}
-                        />
-                        <button
-                          className="text-blue-600 ml-2"
-                          onClick={() =>
-                            updateDoctorDetail("lastName", editedValue)
-                          }
-                        >
-                          <i className="pi pi-save"></i>
-                        </button>
-                        <button
-                          className="text-red-600 ml-2"
-                          onClick={() => {
-                            setEditingField(null);
-                            setEditedValue("");
-                          }}
-                        >
-                          <i className="pi pi-times"></i>
-                        </button>
-                      </div>
-                    ) : (
-                      <div className="flex items-center mb-4">
-                        <i className="pi pi-user mr-2 text-xl text-blue-600"></i>
-                        <p className="text-lg text-gray-600">Last Name:</p>
-                        <p className="text-lg ml-2">{doctor.lastName}</p>
-                        <button
-                          className="text-blue-600 ml-2"
-                          onClick={() => {
-                            setEditingField("lastName");
-                            setEditedValue(doctor.lastName);
-                          }}
-                        >
-                          <i className="pi pi-pencil"></i>
-                        </button>
-                      </div>
-                    )}
-                    {/* Edit icon and logic for Specialty */}
-                    {editingField === "specialty" ? (
-                      <div className="flex items-center mb-4">
-                        <input
-                          type="text"
-                          value={editedValue}
-                          onChange={(e) => setEditedValue(e.target.value)}
-                        />
-                        <button
-                          className="text-blue-600 ml-2"
-                          onClick={() =>
-                            updateDoctorDetail("specialty", editedValue)
-                          }
-                        >
-                          <i className="pi pi-save"></i>
-                        </button>
-                        <button
-                          className="text-red-600 ml-2"
-                          onClick={() => {
-                            setEditingField(null);
-                            setEditedValue("");
-                          }}
-                        >
-                          <i className="pi pi-times"></i>
-                        </button>
-                      </div>
-                    ) : (
-                      <div className="flex items-center mb-4">
-                        {/* Display the doctor's specialty */}
-                        <i className=" text-blue-600 mr-2 w-5 h-5">&#129658;</i>
-                        <p className="text-lg text-gray-600">Specialty:</p>
-                        <p className="text-lg ml-2">{doctor.specialty}</p>
-                        <button
-                          className="text-blue-600 ml-2"
-                          onClick={() => {
-                            setEditingField("specialty");
-                            setEditedValue(doctor.specialty);
-                          }}
-                        >
-                          <i className="pi pi-pencil"></i>
-                        </button>
-                      </div>
-                    )}
-                    {/* Edit icon and logic for Clinic Location */}
-                    {editingField === "clinicLocation" ? (
-                      <div className="flex items-center mb-4">
-                        <input
-                          type="text"
-                          value={editedValue}
-                          onChange={(e) => setEditedValue(e.target.value)}
-                        />
-                        <button
-                          className="text-blue-600 ml-2"
-                          onClick={() =>
-                            updateDoctorDetail("clinicLocation", editedValue)
-                          }
-                        >
-                          <i className="pi pi-save"></i>
-                        </button>
-                        <button
-                          className="text-red-600 ml-2"
-                          onClick={() => {
-                            setEditingField(null);
-                            setEditedValue("");
-                          }}
-                        >
-                          <i className="pi pi-times"></i>
-                        </button>
-                      </div>
-                    ) : (
-                      <div className="flex items-center mb-4">
-                        <i className="pi pi-map-marker text-blue-600 mr-2 w-5 h-5"></i>
-                        <p className="text-lg text-gray-600">
-                          Clinic Location:
-                        </p>
-                        <p className="text-lg ml-2">{doctor.clinicLocation}</p>
-                        <button
-                          className="text-blue-600 ml-2"
-                          onClick={() => {
-                            setEditingField("clinicLocation");
-                            setEditedValue(doctor.clinicLocation);
-                          }}
-                        >
-                          <i className="pi pi-pencil"></i>
-                        </button>
-                      </div>
-                    )}
-
-                    {/* Edit icon and logic for Contact Number */}
-                    {editingField === "contactNumber" ? (
-                      <div className="flex items-center mb-4">
-                        <input
-                          type="text"
-                          value={editedValue}
-                          onChange={(e) => setEditedValue(e.target.value)}
-                        />
-                        <button
-                          className="text-blue-600 ml-2"
-                          onClick={() =>
-                            updateDoctorDetail("contactNumber", editedValue)
-                          }
-                        >
-                          <i className="pi pi-save"></i>
-                        </button>
-                        <button
-                          className="text-red-600 ml-2"
-                          onClick={() => {
-                            setEditingField(null);
-                            setEditedValue("");
-                          }}
-                        >
-                          <i className="pi pi-times"></i>
-                        </button>
-                      </div>
-                    ) : (
-                      <div className="flex items-center mb-4">
-                        <i className="pi pi-phone text-blue-600 mr-2 w-5 h-5"></i>
-                        <p className="text-lg text-gray-600">Contact Number:</p>
-                        <p className="text-lg ml-2">{doctor.contactNumber}</p>
-                        <button
-                          className="text-blue-600 ml-2"
-                          onClick={() => {
-                            setEditingField("contactNumber");
-                            setEditedValue(doctor.contactNumber);
-                          }}
-                        >
-                          <i className="pi pi-pencil"></i>
-                        </button>
-                      </div>
-                    )}
-
-                    {/* Edit icon and logic for Working Hours */}
-                    {editingField === "workingHours" ? (
-                      <div className="flex items-center mb-4">
-                        <input
-                          type="text"
-                          value={editedValue}
-                          onChange={(e) => setEditedValue(e.target.value)}
-                        />
-                        <button
-                          className="text-blue-600 ml-2"
-                          onClick={() =>
-                            updateDoctorDetail("workingHours", editedValue)
-                          }
-                        >
-                          <i className="pi pi-save"></i>
-                        </button>
-                        <button
-                          className="text-red-600 ml-2"
-                          onClick={() => {
-                            setEditingField(null);
-                            setEditedValue("");
-                          }}
-                        >
-                          <i className="pi pi-times"></i>
-                        </button>
-                      </div>
-                    ) : (
-                      <div className="flex items-center mb-4">
-                        <i className="pi pi-clock text-blue-600 mr-2 w-5 h-5"></i>
-                        <p className="text-lg text-gray-600">Working Hours:</p>
-                        <p className="text-lg ml-2">
-                        {doctor.workingHours} hours per day
-                        </p>
-                        <button
-                          className="text-blue-600 ml-2"
-                          onClick={() => {
-                            setEditingField("workingHours");
-                            setEditedValue(doctor.workingHours);
-                          }}
-                        >
-                          <i className="pi pi-pencil"></i>
-                        </button>
-                      </div>
-                    )}
-
-                    {/* Edit icon and logic for About */}
-                    {editingField === "about" ? (
-                      <div className="flex items-center mb-4">
-                        <textarea
-                          value={editedValue}
-                          onChange={(e) => setEditedValue(e.target.value)}
-                        />
-                        <button
-                          className="text-blue-600 ml-2"
-                          onClick={() =>
-                            updateDoctorDetail("about", editedValue)
-                          }
-                        >
-                          <i className="pi pi-save"></i>
-                        </button>
-                        <button
-                          className="text-red-600 ml-2"
-                          onClick={() => {
-                            setEditingField(null);
-                            setEditedValue("");
-                          }}
-                        >
-                          <i className="pi pi-times"></i>
-                        </button>
-                      </div>
-                    ) : (
-                      <div className="flex items-center mb-4">
-                        <i className="pi pi-info-circle text-blue-600 mr-2 w-5 h-5"></i>  
-                        <p className="text-lg text-gray-600">About:</p>
-                        <p className="text-lg ml-7">{doctor.about}</p>
-                        <button
-                          className="text-blue-600 ml-2"
-                          onClick={() => {
-                            setEditingField("about");
-                            setEditedValue(doctor.about);
-                          }}
-                        >
-                          <i className="pi pi-pencil"></i>
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  <p className="text-lg">Loading doctor data...</p>
+      <div className="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen font-sans py-8">
+        <ToastContainer position="top-right" autoClose={3000} />
+        <div className="container mx-auto px-4 max-w-6xl">
+          {/* Header Card */}
+          <div className="bg-white rounded-2xl shadow-lg overflow-hidden mb-6">
+            <div className="bg-blue-500 py-6 px-8">
+              <div className="flex justify-between items-center">
+                <div>
+                  <h1 className="text-4xl lg:text-5xl font-bold text-white mb-2">Hồ sơ bác sĩ</h1>
+                  <p className="text-blue-100">Quản lý thông tin cá nhân của bạn</p>
+                </div>
+                {!isEditing && (
+                  <button
+                    onClick={handleEdit}
+                    className="bg-white text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-blue-50 transition-all duration-200 shadow-md hover:shadow-lg flex items-center gap-2"
+                  >
+                    <i className="pi pi-pencil" />
+                    Chỉnh sửa
+                  </button>
                 )}
               </div>
+            </div>
+          </div>
 
-              <div className="md:col-span-1">
-                <div className="w-96 h-96 mx-auto relative rounded-full overflow-hidden">
-                  <img
-                    src={doctor ? doctor.profile : ""}
-                    alt={doctor ? `${doctor.firstName} ${doctor.lastName}` : ""}
-                    className="w-96 h-96 object-cover"
-                  />
-                  <div className="absolute inset-0 bg-black bg-opacity-50 hover:bg-opacity-70 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                    <p className="text-white text-lg font-semibold">
-                      View Profile
-                    </p>
+          {doctor ? (
+            <>
+              <div className="bg-white rounded-2xl shadow-lg overflow-hidden mb-6">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 p-8">
+                  {/* Avatar Section */}
+                  <div className="lg:col-span-1 flex flex-col items-center">
+                    <div className="w-48 h-48 rounded-full overflow-hidden shadow-xl border-4 border-blue-100 mb-4">
+                      <img
+                        src={doctor.profile}
+                        alt={`${doctor.firstName} ${doctor.lastName}`}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div className="text-center">
+                      <h2 className="text-2xl font-bold text-gray-800 mb-1">
+                        BS. {doctor.firstName} {doctor.lastName}
+                      </h2>
+                      <p className="text-blue-600 font-semibold">{doctor.specialty}</p>
+                    </div>
+                  </div>
+
+                  {/* Information Section */}
+                  <div className="lg:col-span-2">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {/* First Name */}
+                      <div className="space-y-2">
+                        <label className="text-sm font-bold text-blue-600 flex items-center gap-2">
+                          <i className="pi pi-user text-blue-600" />
+                          Họ
+                        </label>
+                        {isEditing ? (
+                          <input
+                            type="text"
+                            value={formData.firstName}
+                            onChange={(e) => handleInputChange("firstName", e.target.value)}
+                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                          />
+                        ) : (
+                          <p className="text-lg text-gray-800 bg-gray-50 px-4 py-3 rounded-lg border border-gray-300">
+                            {doctor.firstName}
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Last Name */}
+                      <div className="space-y-2">
+                        <label className="text-sm font-bold text-blue-600 flex items-center gap-2">
+                          <i className="pi pi-user text-blue-600" />
+                          Tên
+                        </label>
+                        {isEditing ? (
+                          <input
+                            type="text"
+                            value={formData.lastName}
+                            onChange={(e) => handleInputChange("lastName", e.target.value)}
+                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                          />
+                        ) : (
+                          <p className="text-lg text-gray-800 bg-gray-50 px-4 py-3 rounded-lg border border-gray-300">
+                            {doctor.lastName}
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Specialty */}
+                      <div className="space-y-2">
+                        <label className="text-sm font-bold text-blue-600 flex items-center gap-2">
+                          <i className="pi pi-map-marker text-blue-600" />
+                          Chuyên khoa
+                        </label>
+                        {isEditing ? (
+                          <input
+                            type="text"
+                            value={formData.specialty}
+                            onChange={(e) => handleInputChange("specialty", e.target.value)}
+                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                          />
+                        ) : (
+                          <p className="text-lg text-gray-800 bg-gray-50 px-4 py-3 rounded-lg border border-gray-300">
+                            {doctor.specialty}
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Contact Number */}
+                      <div className="space-y-2">
+                        <label className="text-sm font-bold text-blue-600 flex items-center gap-2">
+                          <i className="pi pi-phone text-blue-600" />
+                          Số điện thoại
+                        </label>
+                        {isEditing ? (
+                          <div>
+                            <input
+                              type="tel"
+                              value={formData.contactNumber}
+                              onChange={(e) => handleInputChange("contactNumber", e.target.value)}
+                              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                              placeholder="10-11 số"
+                            />
+                            <p className="text-xs text-gray-500 mt-1">Số điện thoại phải có từ 10 đến 11 số</p>
+                          </div>
+                        ) : (
+                          <p className="text-lg text-gray-800 bg-gray-50 px-4 py-3 rounded-lg border border-gray-300">
+                            {doctor.contactNumber}
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Email (read-only while editing) */}
+                      <div className="space-y-2">
+                        <label className="text-sm font-bold text-blue-600 flex items-center gap-2">
+                          <i className="pi pi-envelope text-blue-600" />
+                          Email
+                        </label>
+                        {isEditing ? (
+                          <input
+                            type="email"
+                            value={formData.email || doctor.email}
+                            disabled
+                            className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-700 cursor-not-allowed"
+                          />
+                        ) : (
+                          <p className="text-lg text-gray-800 bg-gray-50 px-4 py-3 rounded-lg border border-gray-300">
+                            {doctor.email}
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Working Hours (now shares row with Email) */}
+                      <div className="space-y-2">
+                        <label className="text-sm font-bold text-blue-600 flex items-center gap-2">
+                          <i className="pi pi-clock text-blue-600" />
+                          Giờ làm việc
+                        </label>
+                        {isEditing ? (
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="number"
+                              value={formData.workingHours}
+                              onChange={(e) => handleInputChange("workingHours", e.target.value)}
+                              className="w-32 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                              min="1"
+                              max="24"
+                            />
+                            <span className="text-gray-600">giờ/ngày</span>
+                          </div>
+                        ) : (
+                          <p className="text-lg text-gray-800 bg-gray-50 px-4 py-3 rounded-lg border border-gray-300">
+                            {doctor.workingHours} giờ/ngày
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Clinic Location */}
+                      <div className="space-y-2 md:col-span-2">
+                        <label className="text-sm font-bold text-blue-600 flex items-center gap-2">
+                          <i className="pi pi-map-marker text-blue-600" />
+                          Địa chỉ phòng khám
+                        </label>
+                        {isEditing ? (
+                          <input
+                            type="text"
+                            value={formData.clinicLocation}
+                            onChange={(e) => handleInputChange("clinicLocation", e.target.value)}
+                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                          />
+                        ) : (
+                          <p className="text-lg text-gray-800 bg-gray-50 px-4 py-3 rounded-lg border border-gray-300">
+                            {doctor.clinicLocation}
+                          </p>
+                        )}
+                      </div>
+
+                      {/* About */}
+                      <div className="space-y-2 md:col-span-2">
+                        <label className="text-sm font-bold text-blue-600 flex items-center gap-2">
+                          <i className="pi pi-info-circle text-blue-600" />
+                          Giới thiệu
+                        </label>
+                        {isEditing ? (
+                          <textarea
+                            value={formData.about}
+                            onChange={(e) => handleInputChange("about", e.target.value)}
+                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                            rows="4"
+                            placeholder="Giới thiệu về bản thân..."
+                          />
+                        ) : (
+                          <p className="text-lg text-gray-800 bg-gray-50 px-4 py-3 rounded-lg border border-gray-300">
+                            {doctor.about}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Action Buttons */}
+                    {isEditing && (
+                      <div className="flex gap-4 mt-8 pt-6 border-t border-gray-200">
+                        <button
+                          onClick={handleUpdate}
+                          className="flex-1 bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold 
+hover:bg-blue-700 transition-all duration-200 shadow-md hover:shadow-lg 
+flex items-center justify-center gap-2"
+                        >
+                          <i className="pi pi-check" />
+                          Cập nhật
+                        </button>
+                        <button
+                          onClick={handleCancel}
+                          className="flex-1 bg-gray-200 text-gray-700 px-6 py-3 rounded-lg font-semibold hover:bg-gray-300 transition-all duration-200 flex items-center justify-center gap-2"
+                        >
+                          <i className="pi pi-times" />
+                          Hủy
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
-            </div>
-          </div>
-          <div className="border border-gray-300 p-6 rounded-lg mt-8">
-            <h2 className="text-3xl font-semibold mt-8 text-blue-600">
-              <i className="pi pi-user-plus mr-2 text-4xl"></i>
-              Appointments
-            </h2>
-            <p className="text-lg text-gray-600">
-              Total Appointments: {appointments.length}
-            </p>
-          </div>
 
-          <hr className="my-6 border-t border-gray-300" />
-          <h2 className="text-3xl font-semibold mt-8 text-blue-600">
-            <i className="pi pi-info-circle mr-2 text-blue-600 text-4xl" />
-            About Dr. {doctor ? doctor.firstName : "Loading..."}{" "}
-            {doctor ? doctor.lastName : "Loading..."}
-          </h2>
-          {doctor ? (
-            <>
-            <p className="text-lg border border-gray-300 p-6 rounded-lg mt-4">
-              Bác sĩ {doctor.firstName} {doctor.lastName} là một chuyên gia y tế dày dặn kinh nghiệm và được đánh giá rất cao trong lĩnh vực {doctor.specialty}. 
-              Với kinh nghiệm sâu rộng trong {doctor.specialty}, bác sĩ {doctor.lastName} đã xây dựng được danh tiếng về sự tận tâm, chuyên nghiệp và hết lòng vì sức khỏe của bệnh nhân. 
-              Tốt nghiệp với thành tích xuất sắc từ một cơ sở đào tạo y khoa uy tín, bác sĩ {doctor.lastName} luôn mang đến kiến thức và kỹ năng vững vàng trong mọi lần thăm khám.
-            </p>
-
-            <p className="text-lg border border-gray-300 p-6 rounded-lg mt-4">
-              Hành trình chăm sóc sức khỏe bắt đầu tại {doctor.clinicLocation}, nơi bác sĩ {doctor.lastName} vận hành một phòng khám hiện đại và được trang bị đầy đủ. 
-              Bệnh nhân hoàn toàn có thể tin tưởng vào chuyên môn và sự tận tâm của bác sĩ {doctor.lastName} cùng đội ngũ hỗ trợ chuyên nghiệp.
-            </p>
-
-            <p className="text-lg border border-gray-300 p-6 rounded-lg mt-4">
-              Bác sĩ {doctor.lastName} luôn coi trọng tính kết nối và sự thuận tiện cho bệnh nhân, vì vậy bạn có thể dễ dàng liên hệ qua số điện thoại {doctor.contactNumber}. 
-              Dù bạn muốn đặt lịch hay cần tư vấn y khoa, bác sĩ {doctor.lastName} luôn sẵn sàng hỗ trợ.
-            </p>
-
-            <p className="text-lg border border-gray-300 p-6 rounded-lg mt-4">
-              Với sự cam kết vì sức khỏe cộng đồng, bác sĩ {doctor.lastName} dành {doctor.workingHours} giờ mỗi ngày để chăm sóc bệnh nhân, đảm bảo mọi mối lo ngại về sức khỏe đều được giải quyết chu đáo. 
-              Sự tận tâm đó còn được thể hiện qua các phác đồ điều trị cá nhân hóa, phù hợp với nhu cầu của từng bệnh nhân.
-            </p>
-
-            <p className="text-lg border border-gray-300 p-6 rounded-lg mt-4">
-              Ngoài công việc tại phòng khám, bác sĩ {doctor.lastName} còn tích cực tham gia các chương trình giáo dục và nâng cao nhận thức sức khỏe cho cộng đồng, thể hiện niềm đam mê cải thiện sức khỏe cộng đồng. 
-              Bệnh nhân không chỉ nhận được sự chăm sóc chuyên môn mà còn được bác sĩ {doctor.lastName} hướng dẫn về các biện pháp phòng bệnh hiệu quả.
-            </p>
-
-            <p className="text-lg border border-gray-300 p-6 rounded-lg mt-4">
-              Bác sĩ {doctor.lastName} tự hào xây dựng một môi trường thân thiện và cởi mở dành cho mọi bệnh nhân, đảm bảo ai cũng cảm thấy thoải mái và được tôn trọng trong suốt quá trình thăm khám. 
-              Bệnh nhân luôn đánh giá cao thái độ tận tâm và khả năng giải thích các khái niệm y khoa phức tạp một cách dễ hiểu của bác sĩ {doctor.lastName}.
-            </p>
-
-            <p className="text-lg border border-gray-300 p-6 rounded-lg mt-4">
-              Nếu bạn đang tìm kiếm một bác sĩ kết hợp giữa chuyên môn, sự thấu hiểu và tinh thần cống hiến, bác sĩ {doctor.lastName} sẽ là lựa chọn lý tưởng. 
-              Sức khỏe và sự an tâm của bạn luôn được đặt lên hàng đầu, và bác sĩ {doctor.lastName} sẽ đồng hành cùng bạn trên hành trình hướng tới cuộc sống khỏe mạnh hơn. 
-              Hãy trải nghiệm sự khác biệt trong mô hình chăm sóc lấy bệnh nhân làm trung tâm với bác sĩ {doctor.firstName} {doctor.lastName}. 
-              Đặt lịch hẹn ngay hôm nay để bắt đầu hành trình hướng đến một cuộc sống tốt đẹp hơn dưới sự chăm sóc của một chuyên gia y tế đáng tin cậy.
-            </p>
+              {/* About Doctor Section */}
+              <div className="bg-white rounded-2xl shadow-lg overflow-hidden p-8">
+                <h2 className="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-3">
+                  <i className="pi pi-info-circle text-blue-600 text-3xl" />
+                  Giới thiệu về BS. {doctor.firstName} {doctor.lastName}
+                </h2>
+                <div className="prose max-w-none">
+                  <p className="text-lg text-gray-700 leading-relaxed">
+                    Bác sĩ {doctor.firstName} {doctor.lastName} là một chuyên gia y tế dày dặn kinh nghiệm và được đánh giá rất cao trong lĩnh vực {doctor.specialty}. 
+                    Với kinh nghiệm sâu rộng chuyên về {doctor.specialty}, bác sĩ {doctor.lastName} đã xây dựng được danh tiếng về sự tận tâm, chuyên nghiệp và hết lòng vì sức khỏe của bệnh nhân. 
+                    Tốt nghiệp với thành tích xuất sắc từ một cơ sở đào tạo y khoa uy tín, bác sĩ {doctor.lastName} luôn mang đến kiến thức và kỹ năng vững vàng trong mọi lần thăm khám.
+                  </p>
+                </div>
+              </div>
             </>
-          ) : null}
-
-          {appointments.length > 0 ? (
-            <div className="mt-8">
-              <h2 className="text-3xl font-semibold mb-4 text-blue-600">
-                <i className="pi pi-user-plus mr-2 text-blue-600 text-4xl"></i>
-                Upcoming Appointments
-              </h2>
-              <div className="overflow-x-auto">
-                <table className="min-w-full bg-white text-gray-800 border-collapse rounded-lg overflow-hidden text-center">
-                  <thead>
-                    <tr className="bg-gradient-to-r from-blue-500 via-purple-500 to-indigo-500 text-white">
-                      <th className="px-6 py-4 text-lg">Patient</th>
-                      <th className="px-6 py-4 text-lg">Date</th>
-                      <th className="px-6 py-4 text-lg">Time</th>
-                      <th className="px-6 py-4 text-lg">Disease</th>
-                      <th className="px-6 py-4 text-lg">Status</th>
-                      <th className="px-6 py-4 text-lg">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {appointments.map((appointment, index) => (
-                      <tr
-                        key={appointment.appointmentId}
-                        className={`group transition-all hover:bg-blue-200 ${
-                          index % 2 === 0 ? "bg-gray-100" : "bg-white"
-                        }`}
-                      >
-                        <td className="px-6 py-4 text-lg">{`${appointment.Patient.firstName} ${appointment.Patient.lastName}`}</td>
-                        <td className="px-6 py-4 text-lg">
-                          {appointment.appointmentDate}
-                        </td>
-                        <td className="px-6 py-4 text-lg">{`${appointment.startTime} - ${appointment.endTime}`}</td>
-                        <td className="px-6 py-4 text-lg group-hover:overflow-visible relative">
-                          <span className="">{appointment.disease}</span>
-                          <div className="hidden absolute bg-white border border-gray-300 p-4 top-10 left-0 w-60 shadow-lg opacity-0 group-hover:opacity-100 transform group-hover:translate-y-2 transition-all">
-                            <p className="text-sm font-normal text-gray-600">
-                              {appointment.additionalInfo}
-                            </p>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 text-lg">
-                          {editingField === appointment.appointmentId ? (
-                            <div className="flex items-center">
-                              <select
-                                value={
-                                  editedStatus[appointment.appointmentId] ||
-                                  appointment.status
-                                }
-                                onChange={(event) =>
-                                  handleStatusChange(event, appointment)
-                                }
-                                className="mr-2"
-                              >
-                                <option value="scheduled">Đã lên lịch</option>
-                                <option value="completed">Hoàn thành</option>
-                                <option value="canceled">Đã hủy</option>
-                              </select>
-                              <button
-                                className="text-blue-600"
-                                onClick={() => {
-                                  saveEditedStatus(appointment.appointmentId);
-                                  setEditingField(null);
-                                }}
-                              >
-                                <i className="pi pi-save"></i>
-                              </button>
-                            </div>
-                          ) : (
-                            <div
-                              className={`px-4 py-2 text-lg ${
-                                statusColors[appointment.status]
-                              }`}
-                            >
-                              {appointment.status === "scheduled"
-                                ? "Đã lên lịch"
-                                : appointment.status === "completed"
-                                ? "Hoàn thành"
-                                : "Đã hủy "}
-                              <span className="mr-2 ml-3">
-                                {appointment.status === "scheduled" && (
-                                  <i className="pi pi-clock"></i>
-                                )}
-                                {appointment.status === "completed" && (
-                                  <i className="pi pi-check-circle"></i>
-                                )}
-                                {appointment.status === "canceled" && (
-                                  <i className="pi pi-ban"></i>
-                                )}
-                              </span>
-                              <button
-                                className={`${
-                                  statusColors[appointment.status]
-                                } ml-2 text-sm`}
-                                onClick={() => {
-                                  setEditingField(appointment.appointmentId);
-                                  setEditedStatus({
-                                    ...editedStatus,
-                                    [appointment.appointmentId]: appointment.status
-                                  });
-                                }}
-                              >
-                                <i className="pi pi-pencil"></i>
-                              </button>
-                            </div>
-                          )}
-                        </td>
-                        <td className="px-6 py-4 text-lg">
-                          <button
-                            className="text-red-600 ml-2"
-                            onClick={() => deleteAppointment(appointment.appointmentId)}
-                          >
-                            <i className="pi pi-trash"></i>
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+          ) : (
+            <div className="bg-white rounded-2xl shadow-lg p-12 text-center">
+              <div className="animate-pulse">
+                <div className="w-24 h-24 bg-gray-200 rounded-full mx-auto mb-4"></div>
+                <div className="h-6 bg-gray-200 rounded w-48 mx-auto mb-2"></div>
+                <div className="h-4 bg-gray-200 rounded w-32 mx-auto"></div>
               </div>
             </div>
-          ) : null}
+          )}
         </div>
       </div>
     </>
   );
 };
 
-export default DoctorProfile;
+export default DoctorProfile

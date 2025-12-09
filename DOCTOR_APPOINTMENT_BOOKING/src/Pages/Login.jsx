@@ -68,9 +68,12 @@ const Login = () => {
       }
     } catch (error) {
       console.error("Error logging in:", error);
-      toast.error(
-        "Vui lòng điền đầy đủ thông tin!"
-      );
+      // Check if error has response data with message from backend
+      if (error.response?.data?.message) {
+        toast.error(error.response.data.message);
+      } else {
+        toast.error("Vui lòng điền đầy đủ thông tin!");
+      }
     } finally {
       setIsLoading(false);
     }
@@ -78,11 +81,10 @@ const Login = () => {
 
 
   return (
-    <div className="bg-[url(https://healthworldnet.com/imagesHealthCloudBusinessofHealthHospitalsClinicshospital_800.jpg)] 
-     bg-cover py-10 min-h-screen flex justify-center items-center">
+    <div className="bg-gradient-to-br from-blue-50 to-indigo-100 bg-cover py-10 min-h-screen flex justify-center items-center">
        <ToastContainer position="top-right" autoClose={3000} />{" "}
       <div className="bg-opacity-95 bg-white backdrop-blur-xl w-full max-w-2xl rounded-lg shadow-lg">
-        <div className="bg-indigo-600 rounded-t-lg !w-full h-16 md:h-20 lg:h-28 flex items-center justify-center">
+        <div className="bg-blue-500 rounded-t-lg !w-full h-16 md:h-20 lg:h-28 flex items-center justify-center">
           <div>
             <h2 className="text-xl md:text-2xl lg:text-3xl font-bold text-center text-white mb-1 md:mb-2 lg:mb-4">Đăng nhập hệ thống</h2>
             <p className="text-center text-white text-xs font-medium md:text-sm lg:text-base">Đăng nhập vào hệ thống đặt lịch khám trực tuyến</p>
@@ -91,7 +93,7 @@ const Login = () => {
         <div className="flex justify-center mt-4">
           <div>
             <div className="mb-4 text-center">
-              <p className="text-indigo-700 font-medium text-xl">Chọn loại tài khoản</p>
+              <p className="text-blue-500 font-medium text-xl">Chọn loại tài khoản</p>
             </div>
             <div>
               <ButtonGroup>
@@ -145,7 +147,7 @@ const Login = () => {
         <div className="p-6 md:p-8 lg:p-10">
           <div>
             <div className="mb-4">
-              <label className="block text-indigo-700 text-sm font-bold mb-2">
+              <label className="block text-blue-500 text-sm font-bold mb-2">
                 Email<span className="text-red-500">*</span>
               </label>
               <IconField iconPosition="left">
@@ -162,7 +164,7 @@ const Login = () => {
               </IconField>
             </div>
             <div className="mb-4">
-              <label className="block text-indigo-700 text-sm font-bold mb-2">
+              <label className="block text-blue-500 text-sm font-bold mb-2">
                 Mật khẩu<span className="text-red-500">*</span>
               </label>
               <IconField iconPosition="left">
@@ -183,14 +185,14 @@ const Login = () => {
                 label={isLoading ? "Đang đăng nhập..." : "Đăng nhập"}
                 type="submit"
                 onClick={handleLogin}
-                className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-full focus:outline-none focus:shadow-outline-indigo active:bg-indigo-800 mt-10 w-full transform hover:scale-105 transition-transform duration-300 ease-in-out"
+                className="bg-blue-500 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:shadow-lg transition-all transform hover:scale-105 p-button p-component mt-10 w-full"
                 disabled={isLoading}
               />
 
             </div>
             <div className="text-center mt-4">
               Bạn chưa có tài khoản?{" "}
-              <Link to="/register" className="text-indigo-700 font-bold hover:underline">
+              <Link to="/register" className="text-blue-500 font-bold hover:underline">
                 Đăng ký tại đây.
               </Link>
             </div>
