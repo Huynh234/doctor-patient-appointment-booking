@@ -27,13 +27,13 @@ const DoctorCard = ({ doctor }) => {
         appointmentData
       )
       .then((response) => {
-        toast.success("Appointment created successfully");
+        toast.success("Đặt lịch hẹn thành công!");
         // updateDoctorAppointments(response.data.doctor, response.data._id);
         // updatePatientAppointments(response.data.patient, response.data._id);
         closeModal();
       })
       .catch((error) => {
-        toast.error("Error creating appointment");
+        toast.error("Lỗi khi đặt lịch hẹn");
         console.error("Error creating appointment:", error);
       });
   };
@@ -58,10 +58,10 @@ const DoctorCard = ({ doctor }) => {
         }
       )
       .then((response) => {
-        toast.success("Doctor's appointments updated successfully");
+        toast.success("Cập nhật lịch hẹn của bác sĩ thành công");
       })
       .catch((error) => {
-        toast.error("Error updating doctor's appointments");
+        toast.error("Lỗi khi cập nhật lịch hẹn của bác sĩ");
         console.error("Error updating doctor's appointments:", error);
       });
   };
@@ -84,11 +84,11 @@ const DoctorCard = ({ doctor }) => {
         }
       )
       .then((response) => {
-        toast.success("Patient's appointments updated successfully");
+        toast.success("Cập nhật lịch hẹn của bệnh nhân thành công");
       })
       .catch((error) => {
-        toast.error("Error updating patient's appointments");
-        console.error("Error updating patient's appointments:", error);
+        toast.error("Lỗi khi cập nhật lịch hẹn của bệnh nhân");
+        console.error("Lỗi khi cập nhật lịch hẹn của bệnh nhân:", error);
       });
   };
 
@@ -106,7 +106,7 @@ const DoctorCard = ({ doctor }) => {
           {doctor.specialty}
         </div>
       </div>
-      <div className="text-indigo-700 font-semibold mb-2">
+      <div className="text-blue-600 font-semibold mb-2">
         Bs. {doctor.firstName} {doctor.lastName}
       </div>
       <div className="text-gray-700 text-sm mb-2">
@@ -119,7 +119,7 @@ const DoctorCard = ({ doctor }) => {
       </div>
       <div className="text-gray-700 text-sm mb-2">
         <i className="pi pi-clock mr-2"></i>
-        Giờ làm việc: {doctor.workingHours}
+        Giờ làm việc: {doctor.workingHours ? `${doctor.workingHours} giờ/ngày` : "Chưa cập nhật"}
       </div>
       <div className="text-gray-700 text-sm mb-2">
         <i className="pi pi-user mr-2"></i>
@@ -128,7 +128,7 @@ const DoctorCard = ({ doctor }) => {
       <div className="text-center">
         <button
           onClick={openModal}
-          className="bg-blue-500 text-white font-bold py-2 px-4 rounded-full focus:outline-none focus:shadow-outline-indigo active:bg-indigo-800 transform hover:scale-105 transition-transform duration-300 ease-in-out"
+          className="bg-blue-500 text-white font-bold py-2 px-4 rounded-full focus:ring-2 focus:ring-blue-500 active:bg-blue-800 transform hover:scale-105 transition-transform duration-300 ease-in-out"
         >
           <i className="pi pi-calendar mr-2"></i>
           Đặt lịch hẹn
@@ -136,7 +136,6 @@ const DoctorCard = ({ doctor }) => {
       </div>
 
       <Dialog
-        header={`Đặt lịch hẹn với Bs. ${doctor.lastName}`}
         visible={isModalOpen}
         modal
         closable = {false}

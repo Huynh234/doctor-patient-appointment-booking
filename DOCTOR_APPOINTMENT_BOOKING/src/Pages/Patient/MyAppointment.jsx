@@ -59,14 +59,15 @@ const MyAppointment = () => {
     socket.emit("joinRoom", `patient_${patientId}`);
     console.log(`Đã tham gia phòng: patient_${patientId}`);
 
-    const refreshAppointments = () => {
-      console.log("Lịch hẹn đã thay đổi — đang làm mới danh sách...");
+    const refreshAppointments = (data) => {
+      console.log("Lịch hẹn đã thay đổi — đang làm mới danh sách...", data);
       fetchAppointments();
     };
 
     socket.on("appointmentAdded", refreshAppointments);
     socket.on("appointmentUpdated", refreshAppointments);
     socket.on("appointmentDeleted", refreshAppointments);
+    socket.on("statusUpdated", refreshAppointments); // Thêm listener cho status update
     
     return () => {
       socket.disconnect();
@@ -193,22 +194,11 @@ const MyAppointment = () => {
     }
   };
 
-  function formatTimeToAMPM(time) {
+  // Format time to 24h format (giống AppointmentForm)
+  function formatTime24h(time) {
+    // time format: "HH:mm:ss" or "HH:mm"
     const [hours, minutes] = time.split(":");
-    let period = "SA";
-    let formattedHours = parseInt(hours, 10);
-
-    if (formattedHours >= 12) {
-      period = "CH";
-      if (formattedHours > 12) {
-        formattedHours -= 12;
-      }
-    }
-    if (formattedHours === 0) {
-      formattedHours = 12;
-    }
-
-    return `${formattedHours}:${minutes} ${period}`;
+    return `${hours}:${minutes}`;
   }
 
   const handleLogout = () => {
@@ -217,174 +207,170 @@ const MyAppointment = () => {
   };
 
   return (
-    <>
-      <div className="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen font-sans">
-        <ToastContainer position="top-right" autoClose={3000} />
-        
-        <div className="container mx-auto py-8 mt-12 w-[95%]">
-          {/* Header Section */}
-          <div className="bg-white rounded-2xl shadow-lg p-6 mb-8">
-            <h2 className="text-3xl font-semibold text-blue-600">
-              <i className="pi pi-calendar-plus mr-2 text-4xl" />
-              Lịch Hẹn Của Tôi
-            </h2>
-            <p className="text-lg text-gray-600 mt-2">
-              Tổng số lịch hẹn: {appointments.length}
-            </p>
-          </div>
+    <div className="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen font-sans">
+      <ToastContainer position="top-right" autoClose={3000} />
+      
+      <div className="container mx-auto py-8 mt-12 w-[95%]">
+        <div className="bg-white rounded-2xl shadow-lg p-6 mb-8">
+          <h2 className="text-3xl font-semibold text-blue-600">
+            <i className="pi pi-calendar-plus mr-2 text-4xl" />
+            Lịch Hẹn Của Tôi
+          </h2>
+          <p className="text-lg text-gray-600 mt-2">
+            Tổng số lịch hẹn: {appointments.length}
+          </p>
+        </div>
 
-          {/* Appointments Table */}
-          <div className="mt-8">
-            {appointments.length > 0 ? (
-              <>
-                <h2 className="text-3xl font-semibold mb-4 text-blue-600">
-                  <i className="pi pi-calendar-plus mr-2 text-blue-600 text-4xl" />
-                  Danh Sách Lịch Hẹn
-                </h2>
-                <div className="overflow-x-auto bg-white rounded-2xl shadow-lg">
-                  <table className="min-w-full text-gray-800 border-collapse rounded-lg overflow-hidden text-center">
-                    <thead>
-                      <tr className="bg-blue-500  text-white text-center">
-                        <th className="px-6 py-4 text-lg">Bác Sĩ</th>
-                        <th className="px-6 py-4 text-lg">Ngày</th>
-                        <th className="px-6 py-4 text-lg">Thời Gian</th>
-                        <th className="px-6 py-4 text-lg">Bệnh</th>
-                        <th className="px-6 py-4 text-lg">Trạng Thái</th>
-                        <th className="px-6 py-4 text-lg">Thao Tác</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {appointments.map((appointment, index) => (
-                        <tr
-                          key={appointment.appointmentId}
-                          className={`group transition-all hover:bg-indigo-200 ${
-                            index % 2 === 0 ? "bg-gray-100" : "bg-white"
-                          }`}
-                        >
-                          <td className="px-6 py-4 text-lg">{`${appointment.Doctor.firstName} ${appointment.Doctor.lastName}`}</td>
-                          <td className="px-6 py-4 text-lg">
-                            {appointment.appointmentDate}
-                          </td>
-                          <td className="px-6 py-4 text-lg">{`${formatTimeToAMPM(
-                            appointment.startTime
-                          )} - ${formatTimeToAMPM(appointment.endTime)}`}</td>
+        <div className="mt-8">
+          {appointments.length > 0 ? (
+            <div>
+              <h2 className="text-3xl font-semibold mb-4 text-blue-600">
+                <i className="pi pi-calendar-plus mr-2 text-blue-600 text-4xl" />
+                Danh Sách Lịch Hẹn
+              </h2>
+              <div className="overflow-x-auto bg-white rounded-2xl shadow-lg">
+                <table className="min-w-full text-gray-800 border-collapse rounded-lg overflow-hidden text-center">
+                  <thead>
+                    <tr className="bg-blue-500 text-white text-center">
+                      <th className="px-6 py-4 text-lg">Bác Sĩ</th>
+                      <th className="px-6 py-4 text-lg">Ngày</th>
+                      <th className="px-6 py-4 text-lg">Thời Gian</th>
+                      <th className="px-6 py-4 text-lg">Bệnh lý</th>
+                      <th className="px-6 py-4 text-lg">Trạng Thái</th>
+                      <th className="px-6 py-4 text-lg">Thao Tác</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {appointments.map((appointment, index) => (
+                      <tr
+                        key={appointment.appointmentId}
+                        className={`group transition-all hover:bg-indigo-200 ${
+                          index % 2 === 0 ? "bg-gray-100" : "bg-white"
+                        }`}
+                      >
+                        <td className="px-6 py-4 text-lg">{`${appointment.Doctor.firstName} ${appointment.Doctor.lastName}`}</td>
+                        <td className="px-6 py-4 text-lg">
+                          {appointment.appointmentDate}
+                        </td>
+                        <td className="px-6 py-4 text-lg">{`${formatTime24h(
+                          appointment.startTime
+                        )} - ${formatTime24h(appointment.endTime)}`}</td>
 
-                          <td className="px-6 py-4 text-lg group-hover:overflow-visible relative">
-                            <span>{appointment.disease}</span>
-                            <div className="hidden absolute bg-white border border-gray-300 p-4 top-10 left-0 w-60 shadow-lg opacity-0 group-hover:opacity-100 transform group-hover:translate-y-2 transition-all z-10">
-                              <p className="text-sm font-normal text-gray-600">
-                                {appointment.additionalInfo}
-                              </p>
-                            </div>
-                          </td>
-                          
-                          <td className="px-6 py-4 text-lg">
-                            {editingField === appointment?.appointmentId ? (
-                              <div className="flex items-center justify-center">
-                                <select
-                                  value={
-                                    editedStatus[appointment?.appointmentId] ||
-                                    appointment.status
-                                  }
-                                  onChange={(event) =>
-                                    handleStatusChange(event, appointment)
-                                  }
-                                  className="mr-2 px-2 py-1 border rounded"
-                                >
-                                  <option value="scheduled">Đã lên lịch</option>
-                                  <option value="completed">Hoàn thành</option>
-                                  <option value="canceled">Đã hủy</option>
-                                </select>
-                                <button
-                                  className="text-blue-600 hover:text-blue-800"
-                                  onClick={() => {
-                                    saveEditedStatus(appointment?.appointmentId);
-                                    setEditingField(null);
-                                  }}
-                                >
-                                  <i className="pi pi-save" />
-                                </button>
-                              </div>
-                            ) : (
-                              <div
-                                className={`px-4 py-2 text-lg ${
-                                  statusColors[appointment.status]
-                                }`}
+                        <td className="px-6 py-4 text-lg group-hover:overflow-visible relative">
+                          <span>{appointment.disease}</span>
+                          <div className="hidden absolute bg-white border border-gray-300 p-4 top-10 left-0 w-60 shadow-lg opacity-0 group-hover:opacity-100 transform group-hover:translate-y-2 transition-all z-10">
+                            <p className="text-sm font-normal text-gray-600">
+                              {appointment.additionalInfo}
+                            </p>
+                          </div>
+                        </td>
+                        
+                        <td className="px-6 py-4 text-lg">
+                          {editingField === appointment?.appointmentId ? (
+                            <div className="flex items-center justify-center">
+                              <select
+                                value={
+                                  editedStatus[appointment?.appointmentId] ||
+                                  appointment.status
+                                }
+                                onChange={(event) =>
+                                  handleStatusChange(event, appointment)
+                                }
+                                className="mr-2 px-2 py-1 border rounded"
                               >
-                                {appointment.status === "scheduled"
-                                  ? "Đã lên lịch"
-                                  : appointment.status === "completed"
-                                  ? "Hoàn thành"
-                                  : "Đã hủy"}
-                                <span className="mr-2 ml-3">
-                                  {appointment.status === "scheduled" && (
-                                    <i className="pi pi-clock" />
-                                  )}
-                                  {appointment.status === "completed" && (
-                                    <i className="pi pi-check-circle" />
-                                  )}
-                                  {appointment.status === "canceled" && (
-                                    <i className="pi pi-ban" />
-                                  )}
-                                </span>
-                                <button
-                                  className={`${
-                                    statusColors[appointment.status]
-                                  } ml-2 text-sm hover:opacity-70`}
-                                  onClick={() => {
-                                    setEditingField(appointment?.appointmentId);
-                                    setEditedStatus({
-                                      ...editedStatus,
-                                      [appointment?.appointmentId]: appointment.status
-                                    });
-                                  }}
-                                >
-                                  <i className="pi pi-pencil" />
-                                </button>
-                              </div>
-                            )}
-                          </td>
+                                <option value="scheduled">Chờ duyệt</option>
+                                <option value="completed">Duyệt lịch</option>
+                                <option value="canceled">Huỷ lịch</option>
+                              </select>
+                              <button
+                                className="text-blue-600 hover:text-blue-800"
+                                onClick={() => {
+                                  saveEditedStatus(appointment?.appointmentId);
+                                  setEditingField(null);
+                                }}
+                              >
+                                <i className="pi pi-save" />
+                              </button>
+                            </div>
+                          ) : (
+                            <div
+                              className={`px-4 py-2 text-lg ${
+                                statusColors[appointment.status]
+                              }`}
+                            >
+                              {appointment.status === "scheduled"
+                                ? "Chờ duyệt"
+                                : appointment.status === "completed"
+                                ? "Duyệt lịch"
+                                : "Huỷ lịch"}
+                              <span className="mr-2 ml-3">
+                                {appointment.status === "scheduled" && (
+                                  <i className="pi pi-clock" />
+                                )}
+                                {appointment.status === "completed" && (
+                                  <i className="pi pi-check-circle" />
+                                )}
+                                {appointment.status === "canceled" && (
+                                  <i className="pi pi-ban" />
+                                )}
+                              </span>
+                              <button
+                                className={`${
+                                  statusColors[appointment.status]
+                                } ml-2 text-sm hover:opacity-70`}
+                                onClick={() => {
+                                  setEditingField(appointment?.appointmentId);
+                                  setEditedStatus({
+                                    ...editedStatus,
+                                    [appointment?.appointmentId]: appointment.status
+                                  });
+                                }}
+                              >
+                                <i className="pi pi-pencil" />
+                              </button>
+                            </div>
+                          )}
+                        </td>
 
-                          <td className="px-6 py-4 text-lg">
-                            <button
-                              className="text-blue-600 ml-2 hover:text-blue-800"
-                              onClick={() => openEditModal(appointment)}
-                              title="Chỉnh sửa"
-                            >
-                              <i className="pi pi-pencil" />
-                            </button>
-                            <button
-                              className="text-red-600 ml-2 hover:text-red-800"
-                              onClick={() => deleteAppointment(appointment?.appointmentId)}
-                              title="Xóa"
-                            >
-                              <i className="pi pi-trash" />
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </>
-            ) : (
-              <div className="bg-white rounded-2xl shadow-lg p-8 text-center">
-                <i className="pi pi-calendar-times text-gray-400 text-6xl mb-4" />
-                <p className="text-xl text-gray-600">Chưa có lịch hẹn nào</p>
+                        <td className="px-6 py-4 text-lg">
+                          <button
+                            className="text-blue-600 ml-2 hover:text-blue-800"
+                            onClick={() => openEditModal(appointment)}
+                            title="Chỉnh sửa"
+                          >
+                            <i className="pi pi-pencil" />
+                          </button>
+                          <button
+                            className="text-red-600 ml-2 hover:text-red-800"
+                            onClick={() => deleteAppointment(appointment?.appointmentId)}
+                            title="Xóa"
+                          >
+                            <i className="pi pi-trash" />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
-            )}
-          </div>
-          
-          {editModalOpen && (
-            <EditAppointmentModal
-              appointment={editAppointmentData}
-              closeModal={closeEditModal}
-              updateAppointment={updateAppointmentData}
-            />
+            </div>
+          ) : (
+            <div className="bg-white rounded-2xl shadow-lg p-8 text-center">
+              <i className="pi pi-calendar-times text-gray-400 text-6xl mb-4" />
+              <p className="text-xl text-gray-600">Chưa có lịch hẹn nào</p>
+            </div>
           )}
         </div>
+        
+        {editModalOpen && (
+          <EditAppointmentModal
+            appointment={editAppointmentData}
+            closeModal={closeEditModal}
+            updateAppointment={updateAppointmentData}
+          />
+        )}
       </div>
-    </>
+    </div>
   );
 };
 

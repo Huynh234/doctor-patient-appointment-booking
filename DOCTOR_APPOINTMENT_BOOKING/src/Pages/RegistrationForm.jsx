@@ -131,10 +131,10 @@ const RegistrationForm = () => {
 
 
   return (
-    <div className="bg-[url(https://healthworldnet.com/imagesHealthCloudBusinessofHealthHospitalsClinicshospital_800.jpg)] bg-cover py-10 ">
+    <div className="bg-gradient-to-br from-blue-50 to-indigo-100 bg-cover py-10 ">
       <div className="mx-auto max-w-screen-md bg-white bg-opacity-90 rounded-lg shadow-lg">
         <ToastContainer />
-        <div className="bg-indigo-600 rounded-t-lg !w-full h-16 md:h-20 lg:h-28 flex items-center justify-center">
+        <div className="bg-blue-500 rounded-t-lg !w-full h-16 md:h-20 lg:h-28 flex items-center justify-center">
           <div>
             <h2 className="text-xl md:text-2xl lg:text-3xl font-bold text-center text-white mb-1 md:mb-2 lg:mb-4">Đăng ký</h2>
             <p className="text-center text-white text-xs font-medium md:text-sm lg:text-base">Tạo tài khoản mới cho hệ thống đặt lịch phòng khám</p>
@@ -144,7 +144,7 @@ const RegistrationForm = () => {
           <div className="mb-4">
             <div className="flex flex-col justify-center space-y-2 mb-4 w-full">
               <div>
-                <p className="block text-indigo-950 text-lg font-semibold text-center">
+                <p className="block text-blue-500 text-lg font-semibold text-center">
                   Chọn loại tài khoản
                 </p>
               </div>
@@ -191,7 +191,7 @@ const RegistrationForm = () => {
             {/* Name */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <div className="flex flex-col gap-2">
-                <label className="text-indigo-600 font-bold" htmlFor="firstName">
+                <label className="text-blue-500 font-bold" htmlFor="firstName">
                   Họ <sub className="text-red-500">*</sub>
                 </label>
                 <IconField iconPosition="left">
@@ -208,7 +208,7 @@ const RegistrationForm = () => {
                 </IconField>
               </div>
               <div className="flex flex-col gap-2">
-                <label className="text-indigo-600 font-bold" htmlFor="lastName">
+                <label className="text-blue-500 font-bold" htmlFor="lastName">
                   Tên <sub className="text-red-500">*</sub>
                 </label>
                 <IconField iconPosition="left">
@@ -228,7 +228,7 @@ const RegistrationForm = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <div className="flex flex-col gap-2">
-                <label className="text-indigo-600 font-bold" htmlFor="email">
+                <label className="text-blue-500 font-bold" htmlFor="email">
                   Email <sub className="text-red-500">*</sub>
                 </label>
                 <IconField iconPosition="left">
@@ -246,7 +246,7 @@ const RegistrationForm = () => {
                 </IconField>
               </div>
               <div className="flex flex-col gap-2">
-                <label className="text-indigo-600 font-bold" htmlFor="contactNumber">
+                <label className="text-blue-500 font-bold" htmlFor="contactNumber">
                   Số điện thoại <sub className="text-red-500">*</sub>
                 </label>
                 <IconField iconPosition="left">
@@ -264,7 +264,7 @@ const RegistrationForm = () => {
             </div>
             <div className="flex flex-col w-full gap-4 mb-4">
               <div className="flex flex-col gap-2">
-                <label className="text-indigo-600 font-bold" htmlFor="password">
+                <label className="text-blue-500 font-bold" htmlFor="password">
                   Mật khẩu <sub className="text-red-500">*</sub>
                 </label>
                 <IconField iconPosition="left">
@@ -282,7 +282,7 @@ const RegistrationForm = () => {
                 </IconField>
               </div>
               <div className="flex flex-col gap-2">
-                <label className="text-indigo-600 font-bold" htmlFor="repass">
+                <label className="text-blue-500 font-bold" htmlFor="repass">
                   Xác nhận mật khẩu <sub className="text-red-500">*</sub>
                 </label>
                 <IconField iconPosition="left">
@@ -304,7 +304,7 @@ const RegistrationForm = () => {
             {/* Date of Birth + Contact Number */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <div className="flex flex-col gap-2">
-                <label className="text-indigo-600 font-bold" htmlFor="dateOfBirth">
+                <label className="text-blue-500 font-bold" htmlFor="dateOfBirth">
                   Ngày sinh <sub className="text-red-500">*</sub>
                 </label>
                 <Calendar
@@ -320,10 +320,11 @@ const RegistrationForm = () => {
                   showIcon
                   dateFormat="yy-mm-dd"
                   placeholder="Chọn ngày sinh"
+                  maxDate={new Date()}
                 />
               </div>
               <div className="flex flex-col gap-2">
-                <label className="text-indigo-600 font-bold" htmlFor="gender">
+                <label className="text-blue-500 font-bold" htmlFor="gender">
                   Giới tính <sub className="text-red-500">*</sub>
                 </label>
                 <Dropdown
@@ -348,7 +349,7 @@ const RegistrationForm = () => {
             <div className="flex flex-col gap-4 mb-4">
 
               <div className="flex flex-col gap-2">
-                <label className="text-indigo-600 font-bold" htmlFor="bloodGroup">
+                <label className="text-blue-500 font-bold" htmlFor="bloodGroup">
                   Nhóm máu <sub className="text-red-500">*</sub>
                 </label>
                 <Dropdown
@@ -373,7 +374,7 @@ const RegistrationForm = () => {
             <div className="flex flex-col gap-4 mb-2">
               {["address", "city"].map((field) => (
                 <div key={field} className="flex flex-col gap-2">
-                  <label className="text-indigo-600 font-bold" htmlFor={field}>
+                  <label className="text-blue-500 font-bold" htmlFor={field}>
                     {field === "address" ? "Địa chỉ" : "Thành phố"}
                   </label>
                   <IconField iconPosition="left">
@@ -400,10 +401,9 @@ const RegistrationForm = () => {
                 { label: "Họ", name: "firstName", type: "text", icon: "pi-user" },
                 { label: "Tên", name: "lastName", type: "text", icon: "pi-user" },
                 { label: "Email", name: "email", type: "email", icon: "pi-envelope" },
-                { label: "Số điện thoại", name: "contactNumber", type: "tel", icon: "pi-phone" },
               ].map((f) => (
                 <div key={f.name} className="flex flex-col gap-2">
-                  <label className="text-indigo-600 font-bold">
+                  <label className="text-blue-500 font-bold">
                     {f.label} <sub className="text-red-500">*</sub>
                   </label>
                   <IconField iconPosition="left">
@@ -420,10 +420,27 @@ const RegistrationForm = () => {
                   </IconField>
                 </div>
               ))}
+              <div className="flex flex-col gap-2">
+                <label className="text-blue-500 font-bold" htmlFor="contactNumberDoctor">
+                  Số điện thoại <sub className="text-red-500">*</sub>
+                </label>
+                <IconField iconPosition="left">
+                  <InputIcon className="pi pi-phone"> </InputIcon>
+                  <InputMask
+                    className="w-full"
+                    mask="999-999-9999"
+                    placeholder="Nhập Số điện thoại"
+                    id="contactNumberDoctor"
+                    name="contactNumber"
+                    value={formRegister.contactNumber}
+                    onChange={handleInputChange}
+                  />
+                </IconField>
+              </div>
             </div>
             <div className="flex flex-col w-full gap-4 mb-4">
               <div className="flex flex-col gap-2">
-                <label className="text-indigo-600 font-bold" htmlFor="password1">
+                <label className="text-blue-500 font-bold" htmlFor="password1">
                   Mật khẩu <sub className="text-red-500">*</sub>
                 </label>
                 <IconField iconPosition="left">
@@ -441,7 +458,7 @@ const RegistrationForm = () => {
                 </IconField>
               </div>
               <div className="flex flex-col gap-2">
-                <label className="text-indigo-600 font-bold" htmlFor="repass1">
+                <label className="text-blue-500 font-bold" htmlFor="repass1">
                   Xác nhận mật khẩu <sub className="text-red-500">*</sub>
                 </label>
                 <IconField iconPosition="left">
@@ -469,7 +486,7 @@ const RegistrationForm = () => {
                 { label: "Nơi làm việc / Phòng khám", name: "clinicLocation", type: "text", icon: "pi-building", i: false },
               ].map((field) => (
                 <div key={field.name} className="flex flex-col gap-2">
-                  <label className="text-indigo-600 font-bold">
+                  <label className="text-blue-500 font-bold">
                     {field.label} <sub className="text-red-500">*</sub>
                   </label>
                   <IconField iconPosition="left">
@@ -496,7 +513,7 @@ const RegistrationForm = () => {
                         options={field.department}
                         optionLabel="code"
                         optionValue="code" 
-                        placeholder={`Nhập ${field.label}`}
+                        placeholder={`Chọn ${field.label}`}
                         className="w-full md:w-14rem"
                       />
                     )
@@ -506,7 +523,7 @@ const RegistrationForm = () => {
               ))}
             </div>
             <div className="flex flex-col gap-2">
-              <label className="text-indigo-600 font-bold" htmlFor="code">
+              <label className="text-blue-500 font-bold" htmlFor="code">
                 Mã chứng chỉ hành nghề <sub className="text-red-500">*</sub>
               </label>
               <IconField iconPosition="left">
@@ -523,7 +540,7 @@ const RegistrationForm = () => {
               </IconField>
             </div>
             <div className="flex flex-col gap-2">
-              <label className="text-indigo-600 font-bold">
+              <label className="text-blue-500 font-bold">
                 Giới thiệu
               </label>
               <InputTextarea
@@ -545,12 +562,12 @@ const RegistrationForm = () => {
               label="Đăng ký"
               icon="pi pi-user-plus"
               loading={isLoading}
-              className="bg-indigo-600 border-none hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-full focus:outline-none mt-6 w-full transform hover:scale-105 transition-transform duration-300 ease-in-out"
+              className="bg-blue-500 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:shadow-lg transition-all transform hover:scale-105 p-button p-component mt-6 w-full"
             />
           </div>
           <div className="text-center mt-4 ml-6 mr-6 pb-6 ">
             <span className="text-black">Bạn đã có tài khoản?</span>{" "}
-            <Link to="/login" className="text-indigo-700 font-bold hover:underline">
+            <Link to="/login" className="text-blue-500 font-bold hover:underline">
               Đăng nhập tại đây.
             </Link>
           </div>

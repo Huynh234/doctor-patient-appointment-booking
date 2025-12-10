@@ -102,7 +102,7 @@ const DoctorDashboard = () => {
   };
 
   return (
-    <>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
       <header className="card bg-white fixed top-0 w-full z-10 flex justify-between items-center box-border shadow-md">
         <div className="flex w-full">
           <div className="flex ml-8 items-center justify-start cursor-pointer" onClick={() => {navigate("/doctor-dashboard"); setActiveIndex(0);}}>
@@ -133,7 +133,7 @@ const DoctorDashboard = () => {
               onClick={handleLogout}
             >
               <i className="pi pi-sign-out mr-2" />
-              <span>Logout</span>
+              <span>Đăng xuất</span>
             </button>
           </div>
         </div>
@@ -157,7 +157,7 @@ const DoctorDashboard = () => {
       </main>
 
       <Footer />
-    </>
+    </div>
   );
 };
 
