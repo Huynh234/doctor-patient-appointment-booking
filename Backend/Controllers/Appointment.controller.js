@@ -109,13 +109,13 @@ const updateAppointmentById = async (req, res) => {
 const deleteAppointmentById = async (req, res) => {
   try {
     const appointmentId = req.params.appointmentId;
-    const appointment = await Appointment.findByPk(appointmentId);
+    const appointment = await Appointment.findByPk(appointmentId, { include: [Doctor, Patient],});
     const role = req.body.role;
     if (!appointment) return res.status(404).json({ message: "Appointment not found" });
-    await sendWithRole(role, appointment, 'bị hủy chi tiết hãy xem tại trang web');
-    await appointment.destroy();
+    await sendWithRole(role, appointment, 'bị xóa chi tiết hãy xem tại trang web');
     req.io.to(`doctor_${appointment.doctorId}`).emit("appointmentDeleted", appointmentId);
     req.io.to(`patient_${appointment.patientId}`).emit("appointmentDeleted", appointmentId);
+    await Appointment.destroy({ where: { appointmentId } });
     res.status(200).json({ message: "Appointment deleted successfully" });
   } catch (error) {
     console.error(error);

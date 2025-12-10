@@ -71,17 +71,17 @@ const DoctorDashboard = () => {
 
     // Khi có thay đổi lịch hẹn
     socket.on("appointmentAdded", () => {
-      console.log("Lịch hẹn đã được thêm — đang làm mới dữ liệu...");
+      toast.success("Lịch hẹn đã được thêm — đang làm mới dữ liệu...");
       fetchAppointments(doctorId);
     });
 
     socket.on("appointmentUpdated", () => {
-      console.log("Lịch hẹn đã được cập nhật — đang làm mới dữ liệu...");
+      toast.success("Lịch hẹn đã được cập nhật — đang làm mới dữ liệu...");
       fetchAppointments(doctorId);
     });
 
     socket.on("appointmentDeleted", () => {
-      console.log("Lịch hẹn đã được xóa — đang làm mới dữ liệu...");
+      toast.success("Lịch hẹn đã được xóa — đang làm mới dữ liệu...");
       fetchAppointments(doctorId);
     });
 
