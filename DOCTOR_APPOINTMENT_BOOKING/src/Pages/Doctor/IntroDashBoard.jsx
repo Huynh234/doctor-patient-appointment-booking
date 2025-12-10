@@ -4,7 +4,7 @@ const IntroDoctorDashboard = () => {
   return (
     <div className="container mx-auto px-4 py-8">
       {/* Hero Section */}
-      <div className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-lg p-12 mb-8 shadow-lg">
+          <div className=" bg-blue-500 text-white rounded-2xl mb-6 shadow-xl p-10 font-sans py-8">
         <h1 className="text-4xl font-bold mb-4">Chào mừng đến với Bảng điều khiển Bác sĩ</h1>
         <p className="text-xl mb-6">Quản lý lịch khám và chăm sóc bệnh nhân hiệu quả</p>
       </div>

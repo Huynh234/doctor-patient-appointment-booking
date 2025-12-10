@@ -209,11 +209,11 @@ const DoctorDashboard = () => {
   // console.log("A", appointments.length);
   return (
     <>
-      <div className="bg-gray-100 min-h-screen font-sans">
+      <div className="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen font-sans">
         <ToastContainer position="top-right" autoClose={3000} />{" "}
         <div className="container mx-auto p-6">
-          <div className="border border-gray-300 p-6 rounded-lg mt-8">
-            <h2 className="text-3xl font-semibold mt-8 text-blue-600">
+          <div className="bg-white rounded-2xl shadow-lg p-6 mb-8">
+            <h2 className="text-3xl font-semibold text-blue-600">
               <i className="pi pi-user-plus mr-2 text-4xl"></i>
               Lịch hẹn
             </h2>
@@ -221,30 +221,23 @@ const DoctorDashboard = () => {
               Tổng số lịch hẹn: {appointments.length}
             </p>
           </div>
-
-          <hr className="my-6 border-t border-gray-300" />
-          <h2 className="text-3xl font-semibold mt-8 text-blue-600">
-            <i className="pi pi-info-circle mr-2 text-blue-600 text-4xl" />
-            Thông tin Bs. {appointments[0]?.Doctor ? appointments[0].Doctor.firstName : "Loading..."}{" "}
-            {appointments[0]?.Doctor ? appointments[0].Doctor.lastName : "Loading..."}
-          </h2>
-
+          
           {appointments.length > 0 ? (
             <div className="mt-8">
               <h2 className="text-3xl font-semibold mb-4 text-blue-600">
                 <i className="pi pi-user-plus mr-2 text-blue-600 text-4xl"></i>
                 Danh sách lịch hẹn
               </h2>
-              <div className="overflow-x-auto">
+              <div className=" overflow-x-auto bg-white rounded-2xl shadow-lg overflow-x-auto">
                 <table className="min-w-full bg-white text-gray-800 border-collapse rounded-lg overflow-hidden text-center">
                   <thead>
-                    <tr className="bg-gradient-to-r from-blue-500 via-purple-500 to-indigo-500 text-white">
-                      <th className="px-6 py-4 text-lg">Patient</th>
-                      <th className="px-6 py-4 text-lg">Date</th>
-                      <th className="px-6 py-4 text-lg">Time</th>
-                      <th className="px-6 py-4 text-lg">Disease</th>
-                      <th className="px-6 py-4 text-lg">Status</th>
-                      <th className="px-6 py-4 text-lg">Actions</th>
+                    <tr className="bg-blue-500  text-white text-center">
+                      <th className="px-6 py-4 text-lg">Bệnh nhân</th>
+                      <th className="px-6 py-4 text-lg">Ngày hẹn khám</th>
+                      <th className="px-6 py-4 text-lg">Thời gian</th>
+                      <th className="px-6 py-4 text-lg">Bệnh lý</th>
+                      <th className="px-6 py-4 text-lg">Trạng thái</th>
+                      <th className="px-6 py-4 text-lg">Thao tác</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -281,9 +274,9 @@ const DoctorDashboard = () => {
                                 }
                                 className="mr-2"
                               >
-                                <option value="scheduled">Đã lên lịch</option>
-                                <option value="completed">Hoàn thành</option>
-                                <option value="canceled">Đã hủy</option>
+                                <option value="scheduled">Chờ duyệt</option>
+                                <option value="completed">Duyệt lịch</option>
+                                <option value="canceled">Huỷ lịch</option>
                               </select>
                               <button
                                 className="text-blue-600"
@@ -302,7 +295,7 @@ const DoctorDashboard = () => {
                               }`}
                             >
                               {appointment.status === "scheduled"
-                                ? "Đã lên lịch"
+                                ? "Chờ duyệt"
                                 : appointment.status === "completed"
                                 ? "Hoàn thành"
                                 : "Đã hủy"}
