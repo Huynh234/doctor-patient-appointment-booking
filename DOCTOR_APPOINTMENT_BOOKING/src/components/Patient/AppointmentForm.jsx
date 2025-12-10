@@ -9,7 +9,7 @@ const AppointmentForm = ({ doctor, onSubmit, onCancel }) => {
     appointmentDate: "",
     startTime: "",
     endTime: "",
-    status: "pending",
+    status: "scheduled",
     disease: ""
   });
 
