@@ -60,14 +60,14 @@ const MyAppointment = () => {
     console.log(`Đã tham gia phòng: patient_${patientId}`);
 
     const refreshAppointments = (data) => {
-      console.log("Lịch hẹn đã thay đổi — đang làm mới danh sách...", data);
+      toast.success("Lịch hẹn đã thay đổi — đang làm mới danh sách...");
       fetchAppointments();
     };
 
     socket.on("appointmentAdded", refreshAppointments);
     socket.on("appointmentUpdated", refreshAppointments);
     socket.on("appointmentDeleted", refreshAppointments);
-    socket.on("statusUpdated", refreshAppointments); // Thêm listener cho status update
+    // socket.on("statusUpdated", refreshAppointments); // Thêm listener cho status update
     
     return () => {
       socket.disconnect();
@@ -314,7 +314,7 @@ const MyAppointment = () => {
                                   <i className="pi pi-ban" />
                                 )}
                               </span>
-                              <button
+                              {/* <button
                                 className={`${
                                   statusColors[appointment.status]
                                 } ml-2 text-sm hover:opacity-70`}
@@ -327,7 +327,7 @@ const MyAppointment = () => {
                                 }}
                               >
                                 <i className="pi pi-pencil" />
-                              </button>
+                              </button> */}
                             </div>
                           )}
                         </td>
