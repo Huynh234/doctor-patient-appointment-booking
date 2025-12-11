@@ -23,15 +23,15 @@ const approveDoctor = async (req, res) => {
   try {
     const { doctorId, approve } = req.body;
     const doctor = await Doctor.findByPk(doctorId);
-    if (!doctor) return res.status(404).json({ message: "Doctor not found" });
+    if (!doctor) return res.status(404).json({ message: "Bác sĩ không tồn tại" });
 
     doctor.approve = approve;
     await doctor.save();
 
-    res.status(200).json({ message: approve ? "Doctor approved" : "Doctor rejected", doctor });
+    res.status(200).json({ message: approve ? "Bác sĩ đã được duyệt" : "Bác sĩ bị từ chối", doctor });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Error approving doctor" });
+    res.status(500).json({ message: "Lỗi khi duyệt bác sĩ" });
   }
 };
 
@@ -45,15 +45,15 @@ const toggleUserStatus = async (req, res) => {
 
     if (userType === "doctor") model = Doctor;
     else if (userType === "patient") model = Patient;
-    else return res.status(400).json({ message: "Invalid user type" });
+    else return res.status(400).json({ message: "Loại người dùng không hợp lệ" });
 
     const user = await model.findByPk(userId);
-    if (!user) return res.status(404).json({ message: "User not found" });
+    if (!user) return res.status(404).json({ message: "Người dùng không tồn tại" });
 
     user.status = status;
     await user.save();
 
-    res.status(200).json({ message: `User ${status ? "activated" : "deactivated"} successfully`, user });
+    res.status(200).json({ message: `Người dùng đã được ${status ? "kích hoạt" : "khóa"} thành công`, user });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: error.message });
@@ -72,11 +72,11 @@ const createUserAccount = async (req, res) => {
 
     if (userType === "doctor") model = Doctor;
     else if (userType === "patient") model = Patient;
-    else return res.status(400).json({ message: "Invalid user type" });
+    else return res.status(400).json({ message: "Loại người dùng không hợp lệ" });
 
     // Kiểm tra email tồn tại
     const existing = await model.findOne({ where: { email } });
-    if (existing) return res.status(400).json({ message: "Email already exists" });
+    if (existing) return res.status(400).json({ message: "Email đã tồn tại" });
 
     // Mã hóa mật khẩu
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -113,10 +113,10 @@ const createUserAccount = async (req, res) => {
     }
 
     logAction(req.adminId, "Create User Account", `Type=${userType}, Email=${email}`);
-    res.status(201).json({ message: `${userType} account created successfully`, user: newUser });
+    res.status(201).json({ message: `${userType} đã được tạo thành công`, user: newUser });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Error creating account" });
+    res.status(500).json({ message: "Lỗi máy chủ nội bộ" });
   }
 };
 
@@ -148,7 +148,7 @@ const getSystemStats = async (req, res) => {
     res.json(stats);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Error fetching system stats" });
+    res.status(500).json({ message: "Lỗi máy chủ nội bộ" });
   }
 };
 
@@ -187,7 +187,7 @@ const exportReport = async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Error exporting report" });
+    res.status(500).json({ message: "Lỗi máy chủ nội bộ" });
   }
 };
 
@@ -201,7 +201,7 @@ const viewAdminLogs = (req, res) => {
     res.json({ logs });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Error reading logs" });
+    res.status(500).json({ message: "Lỗi máy chủ nội bộ" });
   }
 };
 
@@ -331,7 +331,7 @@ const getAllUsers = async (req, res) => {
     });
   } catch (error) {
     console.error("Error in getAllUsers:", error);
-    res.status(500).json({ message: "Internal server error" });
+    res.status(500).json({ message: "Lỗi máy chủ nội bộ" });
   }
 };
 
