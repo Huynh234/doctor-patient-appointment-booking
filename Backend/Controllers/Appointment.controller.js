@@ -47,13 +47,13 @@ const getDoctorAppointmentById = async (req, res) => {
     });
 
     if (!appointments || appointments.length === 0) {
-      return res.status(404).json({ message: "Appointment not found" });
+      return res.status(404).json({ message: "Không tìm thấy lịch hẹn" });
     }
 
     res.status(200).json(appointments);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Internal server error" });
+    res.status(500).json({ message: "Lỗi máy chủ nội bộ" });
   }
 };
 
@@ -68,13 +68,13 @@ const getPatientAppointmentById = async (req, res) => {
     });
 
     if (!appointments || appointments.length === 0) {
-      return res.status(404).json({ message: "Appointment not found" });
+      return res.status(404).json({ message: "Không tìm thấy lịch hẹn" });
     }
 
     res.status(200).json(appointments);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Internal server error" });
+    res.status(500).json({ message: "Lỗi máy chủ nội bộ" });
   }
 };
 
@@ -88,7 +88,7 @@ const updateAppointmentById = async (req, res) => {
     });
 
     if (!updated) {
-      return res.status(404).json({ message: "Appointment not found" });
+      return res.status(404).json({ message: "Lịch hẹn không tồn tại" });
       }
 
     const updatedAppointment = await Appointment.findByPk(appointmentId, {
@@ -111,15 +111,15 @@ const deleteAppointmentById = async (req, res) => {
     const appointmentId = req.params.appointmentId;
     const appointment = await Appointment.findByPk(appointmentId, { include: [Doctor, Patient],});
     const role = req.body.role;
-    if (!appointment) return res.status(404).json({ message: "Appointment not found" });
+    if (!appointment) return res.status(404).json({ message: "Lịch hẹn không tồn tại" });
     await sendWithRole(role, appointment, 'bị xóa chi tiết hãy xem tại trang web');
     req.io.to(`doctor_${appointment.doctorId}`).emit("appointmentDeleted", appointmentId);
     req.io.to(`patient_${appointment.patientId}`).emit("appointmentDeleted", appointmentId);
     await Appointment.destroy({ where: { appointmentId } });
-    res.status(200).json({ message: "Appointment deleted successfully" });
+    res.status(200).json({ message: "Xóa lịch hẹn thành công" });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Internal server error" });
+    res.status(500).json({ message: "Lỗi máy chủ nội bộ" });
   }
 };
 

@@ -42,19 +42,19 @@ const loginDoctor = async (req, res) => {
     const { email, password } = req.body;
     const doctor = await Doctor.findOne({ where: { email } });
 
-    if (!doctor) return res.status(404).json({ message: "Email not found!", status: false });
+    if (!doctor) return res.status(404).json({ message: "Email không tồn tại!", status: false });
 
     const match = await bcrypt.compare(password, doctor.password);
-    if (!match) return res.status(400).json({ message: "Incorrect password!", status: false });
+    if (!match) return res.status(400).json({ message: "Mật khẩu không đúng!", status: false });
     if (!doctor.approve) return res.status(401).json({ message: "Tài khoản đang chờ phê duyệt", status: false })
     if (!doctor.status) return res.status(401).json({ message: "Tài khoản bị khóa", status: false })
 
     const token = jwt.sign({ id: doctor.doctorId, role: "doctor" }, process.env.secretKey, { expiresIn: "2h" });
 
-    res.status(200).json({ message: "Login successful", token, user: doctor, status: true });
+    res.status(200).json({ message: "Đăng nhập thành công", token, user: doctor, status: true });
   } catch (error) {
     console.error("Login Doctor Error:", error);
-    res.status(500).json({ message: "Internal server error", status: false });
+    res.status(500).json({ message: "Lỗi máy chủ nội bộ", status: false });
   }
 };
 // Xóa bác sĩ
@@ -65,13 +65,13 @@ const deleteDoctor = async (req, res) => {
     const deleted = await Doctor.destroy({ where: { doctorId: doctorId } });
 
     if (!deleted) {
-      return res.status(404).json({ message: "Doctor not found" });
+      return res.status(404).json({ message: "Bác sĩ không tồn tại" });
     }
 
-    res.status(200).json({ message: "Doctor deleted successfully" });
+    res.status(200).json({ message: "Xóa bác sĩ thành công" });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Internal server error" });
+    res.status(500).json({ message: "Lỗi máy chủ nội bộ" });
   }
 };
 
@@ -82,14 +82,14 @@ const updateDoctor = async (req, res) => {
 
     const updated = await Doctor.update(req.body, { where: { doctorId: doctorId } });
     if (!updated) {
-      return res.status(404).json({ message: "Doctor not found" });
+      return res.status(404).json({ message: "Bác sĩ không tồn tại" });
     }
 
     const updatedDoctor = await Doctor.findByPk(doctorId);
     res.status(200).json(updatedDoctor);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Internal server error" });
+    res.status(500).json({ message: "Lỗi máy chủ nội bộ" });
   }
 };
 
@@ -104,13 +104,13 @@ const findDoctor = async (req, res) => {
     });
 
     if (!doctor) {
-      return res.status(404).json({ message: "Doctor not found" });
+      return res.status(404).json({ message: "Bác sĩ không tồn tại" });
     }
 
     res.status(200).json({ doctor });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Internal server error" });
+    res.status(500).json({ message: "Lỗi máy chủ nội bộ" });
   }
 };
 
@@ -159,7 +159,7 @@ const getAllDoctors = async (req, res) => {
 
   } catch (e) {
     console.log(e);
-    res.status(500).json({ message: "error" });
+    res.status(500).json({ message: "Lỗi máy chủ nội bộ" });
   }
 };
 
@@ -171,22 +171,22 @@ const updateAppointment = async (req, res) => {
 
     const doctor = await Doctor.findByPk(doctorId);
     if (!doctor) {
-      return res.status(404).json({ message: "Doctor not found" });
+      return res.status(404).json({ message: "Bác sĩ không tồn tại" });
     }
 
     const appointment = await Appointment.findByPk(appointmentId);
     if (!appointment) {
-      return res.status(404).json({ message: "Appointment not found" });
+      return res.status(404).json({ message: "Lịch hẹn không tồn tại" });
     }
 
     // Gán appointment cho doctor
     appointment.doctorId = doctorId;
     await appointment.save();
 
-    res.status(200).json({ message: "Appointment updated successfully" });
+    res.status(200).json({ message: "Cập nhật lịch hẹn thành công" });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Internal server error" });
+    res.status(500).json({ message: "Lỗi máy chủ nội bộ" });
   }
 };
 

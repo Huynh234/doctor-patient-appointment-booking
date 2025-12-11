@@ -333,13 +333,13 @@ const MyAppointment = () => {
                         </td>
 
                         <td className="px-6 py-4 text-lg">
-                          <button
+                          {appointment.status === "scheduled" ? <button
                             className="text-blue-600 ml-2 hover:text-blue-800"
                             onClick={() => openEditModal(appointment)}
                             title="Chỉnh sửa"
                           >
                             <i className="pi pi-pencil" />
-                          </button>
+                          </button> : null}
                           <button
                             className="text-red-600 ml-2 hover:text-red-800"
                             onClick={() => deleteAppointment(appointment?.appointmentId)}

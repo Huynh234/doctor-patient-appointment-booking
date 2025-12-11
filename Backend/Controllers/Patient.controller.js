@@ -12,7 +12,7 @@ const registerPatient = async (req, res) => {
 
     const existingPatient = await Patient.findOne({ where: { email } });
     if (existingPatient) {
-      return res.status(400).json({ message: "Email already exists!", status: false });
+      return res.status(400).json({ message: "Email đã tồn tại!", status: false });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -24,10 +24,10 @@ const registerPatient = async (req, res) => {
       status:true
     });
 
-    res.status(201).json({ newPatient, message: "Registration successful", status: true });
+    res.status(201).json({ newPatient, message: "Đăng ký thành công", status: true });
   } catch (error) {
     console.error("Register Patient Error:", error);
-    res.status(500).json({ message: "Internal server error", status: false });
+    res.status(500).json({ message: "Lỗi máy chủ nội bộ", status: false });
   }
 };
 
@@ -37,19 +37,19 @@ const loginPatient = async (req, res) => {
     const { email, password } = req.body;
     const patient = await Patient.findOne({ where: { email } });
 
-    if (!patient) return res.status(404).json({ message: "Email not found!", status: false });
+    if (!patient) return res.status(404).json({ message: "Email không tồn tại!", status: false });
 
     const match = await bcrypt.compare(password, patient.password);
-    if (!match) return res.status(400).json({ message: "Incorrect password!", status: false });
+    if (!match) return res.status(400).json({ message: "Sai mật khẩu!", status: false });
 
-    if (!patient?.status) return res.status(401).json({message: "Not active", status: false});
+    if (!patient?.status) return res.status(401).json({message: "Tài khoản chưa được kích hoạt", status: false});
 
     const token = jwt.sign({ id: patient.patientId, role: "patient" }, process.env.secretKey, { expiresIn: "2h" });
 
-    res.status(200).json({ message: "Login successful", token, user: patient, status: true });
+    res.status(200).json({ message: "Đăng nhập thành công", token, user: patient, status: true });
   } catch (error) {
     console.error("Login Patient Error:", error);
-    res.status(500).json({ message: "Internal server error", status: false });
+    res.status(500).json({ message: "Lỗi máy chủ nội bộ", status: false });
   }
 };
 
@@ -63,13 +63,13 @@ const getPatientById = async (req, res) => {
     });
 
     if (!patient) {
-      return res.status(404).json({ message: "Patient not found" });
+      return res.status(404).json({ message: "Không tìm thấy bệnh nhân" });
     }
 
     res.status(200).json({ patient });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Internal server error" });
+    res.status(500).json({ message: "Lỗi máy chủ nội bộ" });
   }
 };
 
@@ -83,14 +83,14 @@ const updatePatientById = async (req, res) => {
     });
 
     if (!updated) {
-      return res.status(404).json({ message: "Patient not found" });
+      return res.status(404).json({ message: "Không tìm thấy bệnh nhân" });
     }
 
     const updatedPatient = await Patient.findByPk(patientId);
     res.status(200).json(updatedPatient);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Internal server error" });
+    res.status(500).json({ message: "Lỗi máy chủ nội bộ" });
   }
 };
 
@@ -102,13 +102,13 @@ const deletePatientById = async (req, res) => {
     const deleted = await Patient.destroy({ where: { id: patientId } });
 
     if (!deleted) {
-      return res.status(404).json({ message: "Patient not found" });
+      return res.status(404).json({ message: "Không tìm thấy bệnh nhân" });
     }
 
-    res.status(200).json({ message: "Patient deleted successfully" });
+    res.status(200).json({ message: "Xóa bệnh nhân thành công" });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Internal server error" });
+    res.status(500).json({ message: "Lỗi máy chủ nội bộ" });
   }
 };
 
@@ -120,22 +120,22 @@ const updateAppointment = async (req, res) => {
 
     const patient = await Patient.findByPk(patientId);
     if (!patient) {
-      return res.status(404).json({ message: "Patient not found" });
+      return res.status(404).json({ message: "Không tìm thấy bệnh nhân" });
     }
 
     const appointment = await Appointment.findByPk(appointmentId);
     if (!appointment) {
-      return res.status(404).json({ message: "Appointment not found" });
+      return res.status(404).json({ message: "Không tìm thấy lịch hẹn " });
     }
 
     // Gán lịch hẹn cho bệnh nhân
     appointment.patientId = patientId;
     await appointment.save();
 
-    res.status(200).json({ message: "Appointment updated successfully" });
+    res.status(200).json({ message: "Cập nhật lịch hẹn thành công" });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Internal server error" });
+    res.status(500).json({ message: "Lỗi máy chủ nội bộ" });
   }
 };
 
