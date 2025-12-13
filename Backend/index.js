@@ -7,6 +7,7 @@ const swaggerDocs = require("./Config/swagger");
 const PatientRouter = require('./Routes/Patient.route');
 const AppointmentRouter = require('./Routes/Appointment.route');
 const AdminRouter = require('./Routes/Admin.route');
+const SendMailRouter = require('./Routes/SendMail.route');
 
 require("dotenv").config()
 require("./Models/Patient.model");
@@ -56,6 +57,7 @@ app.use("/doctors",DoctorRouter)
 app.use("/patients",PatientRouter)
 app.use("/appointments",AppointmentRouter)
 app.use("/admin",AdminRouter)
+app.use("/send-mail", SendMailRouter);
 
 // Start server + sync database
 const PORT = process.env.PORT || 8080;

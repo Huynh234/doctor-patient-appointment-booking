@@ -105,10 +105,10 @@ const PatientDashboard = () => {
     });
 
     socket.emit("joinRoom", `patient_${patientId}`);
-    console.log(`Joined room: patient_${patientId}`);
+    // console.log(`Joined room: patient_${patientId}`);
 
     const refresh = () => {
-      console.log("Appointment changed — updating total...");
+      // console.log("Appointment changed — updating total...");
       fetchTotalAppointments();
     };
 
@@ -118,7 +118,7 @@ const PatientDashboard = () => {
 
     return () => {
       socket.disconnect();
-      console.log("Socket disconnected (PatientDashboard)");
+      // console.log("Socket disconnected (PatientDashboard)");
     };
   }, []);
 

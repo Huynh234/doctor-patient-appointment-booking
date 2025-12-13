@@ -3,6 +3,7 @@ const Appointment = require("../Models/Appointment.model");
 const Doctor = require("../Models/Doctor.model");
 const Patient = require("../Models/Patient.model");
 const {sendEmailAndLog} = require("./SendMail.controller");
+const { Op, Sequelize } = require("sequelize");
 // Tạo lịch hẹn mới
 const createAppointment = async (req, res) => {
   try {
@@ -16,6 +17,33 @@ const createAppointment = async (req, res) => {
       disease,
     } = req.body;
     const role = req.body.role;
+    const conflictAppointment = await Appointment.findOne({
+      where: {
+        doctorId: doctor,
+        appointmentDate: appointmentDate,
+        status: {
+          [Op.ne]: "canceled",
+        },
+        [Op.and]: [
+          {
+            startTime: {
+              [Op.lt]: endTime,
+            },
+          },
+          {
+            endTime: {
+              [Op.gt]: startTime,
+            },
+          },
+        ],
+      },
+    });
+
+    if (conflictAppointment) {
+      return res.status(409).json({
+        message: "Bác sĩ đã có lịch hẹn trong khoảng thời gian này",
+      });
+    }
     const newAppointment = await Appointment.create({
       patientId: patient,
       doctorId: doctor,

@@ -7,7 +7,7 @@ import Footer from "../../components/Footer";
 import { AuthContext } from "../../Context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { io } from "socket.io-client";
-
+import { Dialog } from 'primereact/dialog';
 const statusColors = {
   scheduled: "text-blue-500 ",
   completed: "text-green-500 ",
@@ -23,8 +23,11 @@ const DoctorDashboard = () => {
   const token = localStorage.getItem("token");
   const { logout } = useContext(AuthContext);
   const navigate = useNavigate();
-
-    // Hàm load danh sách lịch hẹn của bác sĩ
+  const [visible, setVisible] = useState(false);
+  const [change, setChange] = useState(false);
+  const [topic, setTopic] = useState("");
+  const [message, setMessage] = useState("");
+  // Hàm load danh sách lịch hẹn của bác sĩ
   const fetchAppointments = async (doctorId) => {
     try {
       const response = await axios.get(
@@ -34,8 +37,34 @@ const DoctorDashboard = () => {
         }
       );
       setAppointments(response.data);
+      // console.log("Lịch hẹn bác sĩ:", response.data);
     } catch (error) {
       console.error("Lỗi khi lấy danh sách lịch hẹn của bác sĩ:", error);
+    }
+  };
+
+  const sendMail = (Pa, Do, Ap) => {
+    
+    const mailData = {
+        form: "Hệ thống đặt lịch trực tuyến",
+        receiver: Pa?.email,
+        subject: `Bác sỹ ${Do.firstName + " " + Do.lastName} Thông báo: ${topic}`,
+        message: message,
+        appointmentId: Ap.appointmentId
+      };
+    try{
+      axios.post('http://localhost:8080/send-mail/send', mailData)
+      .then((res)=>{
+        if(res.status===200){
+          toast.success("Gửi email thành công");
+          setVisible(false);
+        }else{
+          toast.error("Gửi email thất bại");
+        }
+      })
+    }catch(error){
+      console.error("Lỗi khi gửi email:", error);
+      toast.error("Lỗi khi gửi email");
     }
   };
 
@@ -55,7 +84,7 @@ const DoctorDashboard = () => {
     fetchAppointments(doctorId);
   }, [token]);
 
-   // Thiết lập Socket.IO realtime
+  // Thiết lập Socket.IO realtime
   useEffect(() => {
     const doctorId = localStorage.getItem("userId");
     if (!doctorId) return;
@@ -67,7 +96,7 @@ const DoctorDashboard = () => {
 
     // Join vào phòng riêng của bác sĩ
     socket.emit("joinRoom", `doctor_${doctorId}`);
-    console.log("Joined room: doctor_" + doctorId);
+    // console.log("Joined room: doctor_" + doctorId);
 
     // Khi có thay đổi lịch hẹn
     socket.on("appointmentAdded", () => {
@@ -221,39 +250,40 @@ const DoctorDashboard = () => {
               Tổng số lịch hẹn: {appointments.length}
             </p>
           </div>
-          
+
           {appointments.length > 0 ? (
             <div className="mt-8">
               <h2 className="text-3xl font-semibold mb-4 text-blue-600">
                 <i className="pi pi-user-plus mr-2 text-blue-600 text-4xl"></i>
                 Danh sách lịch hẹn
               </h2>
-              <div className=" overflow-x-auto bg-white rounded-2xl shadow-lg overflow-x-auto">
+              <div className=" overflow-x-auto bg-white rounded-2xl shadow-lg ">
                 <table className="min-w-full bg-white text-gray-800 border-collapse rounded-lg overflow-hidden text-center">
                   <thead>
                     <tr className="bg-blue-500  text-white text-center">
-                      <th className="px-6 py-4 text-lg">Bệnh nhân</th>
-                      <th className="px-6 py-4 text-lg">Ngày hẹn khám</th>
-                      <th className="px-6 py-4 text-lg">Thời gian</th>
-                      <th className="px-6 py-4 text-lg">Bệnh lý</th>
-                      <th className="px-6 py-4 text-lg">Trạng thái</th>
-                      <th className="px-6 py-4 text-lg">Thao tác</th>
+                      <th className="px-3 py-4 text-lg">STT</th>
+                      <th className="px-3 py-4 text-lg">Bệnh nhân</th>
+                      <th className="px-3 py-4 text-lg">Ngày hẹn khám</th>
+                      <th className="px-3 py-4 text-lg">Thời gian</th>
+                      <th className="px-3 py-4 text-lg">Bệnh lý</th>
+                      <th className="px-3 py-4 text-lg">Trạng thái</th>
+                      <th className="px-3 py-4 text-lg">Thao tác</th>
                     </tr>
                   </thead>
                   <tbody>
                     {appointments.map((appointment, index) => (
                       <tr
                         key={appointment.appointmentId}
-                        className={`group transition-all hover:bg-blue-200 ${
-                          index % 2 === 0 ? "bg-gray-100" : "bg-white"
-                        }`}
+                        className={`group transition-all hover:bg-blue-200 ${index % 2 === 0 ? "bg-gray-100" : "bg-white"
+                          }`}
                       >
-                        <td className="px-6 py-4 text-lg">{`${appointment.Patient.firstName} ${appointment.Patient.lastName}`}</td>
-                        <td className="px-6 py-4 text-lg">
+                        <td>{index + 1}</td>
+                        <td className="px-3 py-4 text-lg">{`${appointment.Patient.firstName} ${appointment.Patient.lastName}`}</td>
+                        <td className="px-3 py-4 text-lg">
                           {appointment.appointmentDate}
                         </td>
-                        <td className="px-6 py-4 text-lg">{`${appointment.startTime} - ${appointment.endTime}`}</td>
-                        <td className="px-6 py-4 text-lg group-hover:overflow-visible relative">
+                        <td className="px-3 py-4 text-lg">{`${appointment.startTime} - ${appointment.endTime}`}</td>
+                        <td className="px-3 py-4 text-lg group-hover:overflow-visible relative">
                           <span className="">{appointment.disease}</span>
                           <div className="hidden absolute bg-white border border-gray-300 p-4 top-10 left-0 w-60 shadow-lg opacity-0 group-hover:opacity-100 transform group-hover:translate-y-2 transition-all">
                             <p className="text-sm font-normal text-gray-600">
@@ -261,7 +291,7 @@ const DoctorDashboard = () => {
                             </p>
                           </div>
                         </td>
-                        <td className="px-6 py-4 text-lg">
+                        <td className="px-3 py-4 text-lg">
                           {editingField === appointment.appointmentId ? (
                             <div className="flex items-center">
                               <select
@@ -290,15 +320,14 @@ const DoctorDashboard = () => {
                             </div>
                           ) : (
                             <div
-                              className={`px-4 py-2 text-lg ${
-                                statusColors[appointment.status]
-                              }`}
+                              className={`px-4 py-2 text-lg ${statusColors[appointment.status]
+                                }`}
                             >
                               {appointment.status === "scheduled"
                                 ? "Chờ duyệt"
                                 : appointment.status === "completed"
-                                ? "Hoàn thành"
-                                : "Đã hủy"}
+                                  ? "Đã duyệt"
+                                  : "Đã hủy"}
                               <span className="mr-2 ml-3">
                                 {appointment.status === "scheduled" && (
                                   <i className="pi pi-clock"></i>
@@ -311,9 +340,8 @@ const DoctorDashboard = () => {
                                 )}
                               </span>
                               <button
-                                className={`${
-                                  statusColors[appointment.status]
-                                } ml-2 text-sm`}
+                                className={`${statusColors[appointment.status]
+                                  } ml-2 text-sm`}
                                 onClick={() => {
                                   setEditingField(appointment.appointmentId);
                                   setEditedStatus({
@@ -327,13 +355,45 @@ const DoctorDashboard = () => {
                             </div>
                           )}
                         </td>
-                        <td className="px-6 py-4 text-lg">
-                          <button
-                            className="text-red-600 ml-2"
-                            onClick={() => deleteAppointment(appointment.appointmentId)}
-                          >
-                            <i className="pi pi-trash"></i>
-                          </button>
+                        <td className="px-3 py-4 text-lg">
+                          <div className="flex justify-center items-center space-x-4">
+                            <div>
+                              <button
+                                className="text-red-600 ml-2"
+                                onClick={() => deleteAppointment(appointment.appointmentId)}
+                              >
+                                <i className="pi pi-trash"></i>
+                              </button>
+                            </div>
+                            <div><button onClick={() => { setVisible(true); setChange(true); }}>&#128222;</button></div>
+                            <div><button onClick={() => { setVisible(true); setChange(false); setTopic(""); setMessage(""); }}>&#128232;</button></div>
+                            <Dialog header={change ? <p>Gọi điện &#128222;</p> : <p>Gửi email &#128232;</p>} visible={visible} position={"top-right"} style={{ width: 'auto' }} onHide={() => { if (!visible) return; setVisible(false); }} draggable={false} resizable={false}>
+                              {change ?
+                                <div className="flex justify-center items-center gap-5">
+                                  <div>Số điện thoại: {appointment?.Patient?.contactNumber}</div>
+                                  <div><button onClick={() => window.location.href = `tel:${appointment?.Patient?.contactNumber}`} className="mt-2 px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600">
+                                    Gọi ngay
+                                  </button></div>
+                                </div>
+                                :
+                                <div>
+                                  <div> Đến Email: {appointment?.Patient?.email}</div>
+                                  <div className="mt-4">
+                                    <label htmlFor="subject" className="block mb-2 font-medium">Chủ đề:</label>
+                                    <input type="text" id="subject" className="w-full p-2 border border-gray-300 rounded-md" placeholder="Nhập chủ đề email..." value={topic} onChange={(e) => setTopic(e.target.value)} />
+                                  </div>
+                                  <div>
+                                    <label htmlFor="message" className="block mb-2 font-medium">Nội dung:</label>
+                                    <textarea id="message" rows="4" className="w-full p-2 border border-gray-300 rounded-md" placeholder="Nhập nội dung email ở đây..." value={message} onChange={(e) => setMessage(e.target.value)}></textarea>
+                                  </div>
+                                  <div className="mt-4">
+                                    <button onClick={() => sendMail(appointment?.Patient, appointment?.Doctor, appointment)} className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600">
+                                      Gửi Email
+                                    </button>
+                                  </div>
+                                </div>}
+                            </Dialog>
+                          </div>
                         </td>
                       </tr>
                     ))}

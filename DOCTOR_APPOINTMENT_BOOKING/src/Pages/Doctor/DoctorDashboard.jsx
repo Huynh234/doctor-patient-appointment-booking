@@ -76,11 +76,11 @@ const DoctorDashboard = () => {
     });
 
     socket.emit("joinRoom", `doctor_${doctorId}`);
-    console.log(`Joined room: doctor_${doctorId}`);
+    // console.log(`Joined room: doctor_${doctorId}`);
 
     // Lắng nghe các sự kiện realtime
     const refresh = () => {
-      console.log("Appointment changed — updating total...");
+      // console.log("Appointment changed — updating total...");
       fetchTotalAppointments();
     };
 
@@ -90,7 +90,7 @@ const DoctorDashboard = () => {
 
     return () => {
       socket.disconnect();
-      console.log("Socket disconnected (DoctorDashboard)");
+      // console.log("Socket disconnected (DoctorDashboard)");
     };
   }, []);
 
