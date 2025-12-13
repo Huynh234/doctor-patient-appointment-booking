@@ -36,7 +36,7 @@ const MyAppointment = () => {
           }
         );
         const data = response.data;
-        console.log("response", data);
+        // console.log("response", data);
         setAppointments(data);
       }
     } catch (error) {
@@ -57,7 +57,7 @@ const MyAppointment = () => {
     });
 
     socket.emit("joinRoom", `patient_${patientId}`);
-    console.log(`Đã tham gia phòng: patient_${patientId}`);
+    // console.log(`Đã tham gia phòng: patient_${patientId}`);
 
     const refreshAppointments = (data) => {
       toast.success("Lịch hẹn đã thay đổi — đang làm mới danh sách...");
@@ -71,7 +71,7 @@ const MyAppointment = () => {
     
     return () => {
       socket.disconnect();
-      console.log("Socket đã ngắt kết nối (MyAppointment)");
+      // console.log("Socket đã ngắt kết nối (MyAppointment)");
     };
   }, []);
 

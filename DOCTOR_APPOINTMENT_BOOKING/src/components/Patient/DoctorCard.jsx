@@ -33,8 +33,8 @@ const DoctorCard = ({ doctor }) => {
         closeModal();
       })
       .catch((error) => {
-        toast.error("Lỗi khi đặt lịch hẹn");
-        console.error("Error creating appointment:", error);
+        toast.error(error.response?.data?.message || "Lỗi khi đặt lịch hẹn");
+        // console.error("Error creating appointment:", error);
       });
   };
 

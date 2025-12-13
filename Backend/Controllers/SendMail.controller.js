@@ -59,6 +59,26 @@ const sendEmailAndLog = async (mailData) => {
   }
 };
 
+
+const sendMailController = async (req, res) => {
+  try {
+    const result = await sendEmailAndLog(req.body);
+
+    res.status(200).json({
+      success: true,
+      message: "Gửi email thành công",
+      data: result
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+
+
 module.exports = {
-  sendEmailAndLog
+  sendEmailAndLog,sendMailController
 };

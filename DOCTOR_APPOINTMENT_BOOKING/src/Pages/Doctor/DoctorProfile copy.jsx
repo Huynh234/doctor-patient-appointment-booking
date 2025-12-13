@@ -119,21 +119,21 @@ const DoctorProfile = () => {
 
     // Join vào phòng riêng của bác sĩ
     socket.emit("joinRoom", `doctor_${doctorId}`);
-    console.log("Joined room: doctor_" + doctorId);
+    // console.log("Joined room: doctor_" + doctorId);
 
     // Khi có thay đổi lịch hẹn
     socket.on("appointmentAdded", () => {
-      console.log("Appointment added — refreshing data...");
+      // console.log("Appointment added — refreshing data...");
       fetchAppointments(doctorId);
     });
 
     socket.on("appointmentUpdated", () => {
-      console.log("Appointment updated — refreshing data...");
+      // console.log("Appointment updated — refreshing data...");
       fetchAppointments(doctorId);
     });
 
     socket.on("appointmentDeleted", () => {
-      console.log("Appointment deleted — refreshing data...");
+      // console.log("Appointment deleted — refreshing data...");
       fetchAppointments(doctorId);
     });
 
