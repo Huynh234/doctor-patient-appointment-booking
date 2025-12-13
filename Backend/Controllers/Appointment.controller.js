@@ -2,7 +2,7 @@
 const Appointment = require("../Models/Appointment.model");
 const Doctor = require("../Models/Doctor.model");
 const Patient = require("../Models/Patient.model");
-const {sendEmailAndLog} = require("./SendMail.controller");
+const { sendEmailAndLog } = require("./SendMail.controller");
 const { Op, Sequelize } = require("sequelize");
 // Tạo lịch hẹn mới
 const createAppointment = async (req, res) => {
@@ -67,20 +67,31 @@ const createAppointment = async (req, res) => {
 // Lấy danh sách lịch hẹn của 1 bác sĩ
 const getDoctorAppointmentById = async (req, res) => {
   try {
-    const doctorId = req.params.doctorId;
+    const { doctorId } = req.params;
+    const { date } = req.query;
 
-    const appointments = await Appointment.findAll({
-      where: { doctorId },
-      include: [Doctor, Patient], // lấy thông tin bác sĩ + bệnh nhân
-    });
-
-    if (!appointments || appointments.length === 0) {
-      return res.status(404).json({ message: "Không tìm thấy lịch hẹn" });
+    const whereCondition = {
+      doctorId
+    };
+    if (date) {
+      whereCondition.appointmentDate = date;
     }
-
+    const appointments = await Appointment.findAll({
+      where: whereCondition,
+      include: [Doctor, Patient],
+      order: [
+        ["appointmentDate", "ASC"],
+        ["startTime", "ASC"]
+      ]
+    });
+    if (!appointments || appointments.length === 0) {
+      return res.status(200).json({
+        message: "Không tìm thấy lịch hẹn theo ngày này"
+      });
+    }
     res.status(200).json(appointments);
   } catch (error) {
-    console.error(error);
+    console.error("Lỗi lấy lịch hẹn:", error);
     res.status(500).json({ message: "Lỗi máy chủ nội bộ" });
   }
 };
@@ -117,7 +128,7 @@ const updateAppointmentById = async (req, res) => {
 
     if (!updated) {
       return res.status(404).json({ message: "Lịch hẹn không tồn tại" });
-      }
+    }
 
     const updatedAppointment = await Appointment.findByPk(appointmentId, {
       include: [Doctor, Patient],
@@ -137,7 +148,7 @@ const updateAppointmentById = async (req, res) => {
 const deleteAppointmentById = async (req, res) => {
   try {
     const appointmentId = req.params.appointmentId;
-    const appointment = await Appointment.findByPk(appointmentId, { include: [Doctor, Patient],});
+    const appointment = await Appointment.findByPk(appointmentId, { include: [Doctor, Patient], });
     const role = req.body.role;
     if (!appointment) return res.status(404).json({ message: "Lịch hẹn không tồn tại" });
     await sendWithRole(role, appointment, 'bị xóa chi tiết hãy xem tại trang web');
@@ -153,29 +164,29 @@ const deleteAppointmentById = async (req, res) => {
 
 const sendWithRole = async (role, appointment, tex) => {
   if (role !== 'doctor' && role !== 'patient') {
-      return {message: "Invalid role" };
-    }
-    if (role === 'doctor') {
-      const em = await Patient.findByPk(appointment.patientId);
-      const mailData = {
-        form: "Hệ thống đặt lịch trực tuyến",
-        receiver: em?.email,
-        subject: "Thông tin lịch hẹn",
-        message: `<p> Lịch hẹn của ${appointment.Patient.firstName + " " + appointment.Patient.lastName} vào ngày ${appointment.appointmentDate} từ ${appointment.startTime} đến ${appointment.endTime} với bác sỹ ${appointment.Doctor.firstName + " " + appointment.Doctor.lastName} đã ${tex}.</p>`,
-        appointmentId: appointment.appointmentId
-      };
-      await sendEmailAndLog(mailData);
-    } else if (role === 'patient') {
-      const em2 = await Doctor.findByPk(appointment.doctorId);
-      const mailData2 = {
-        form: "Hệ thống đặt lịch trực tuyến",
-        receiver: em2?.email,
-        subject: "Thông tin lịch hẹn",
-        message: `<p> Lịch hẹn của ${appointment.Patient.firstName + " " + appointment.Patient.lastName} vào ngày ${appointment.appointmentDate} từ ${appointment.startTime} đến ${appointment.endTime} với bác sỹ ${appointment.Doctor.firstName + " " + appointment.Doctor.lastName} đã ${tex}.</p>`,
-        appointmentId: appointment.appointmentId
-      };
-      await sendEmailAndLog(mailData2);
-    }
+    return { message: "Invalid role" };
+  }
+  if (role === 'doctor') {
+    const em = await Patient.findByPk(appointment.patientId);
+    const mailData = {
+      form: "Hệ thống đặt lịch trực tuyến",
+      receiver: em?.email,
+      subject: "Thông tin lịch hẹn",
+      message: `<p> Lịch hẹn của ${appointment.Patient.firstName + " " + appointment.Patient.lastName} vào ngày ${appointment.appointmentDate} từ ${appointment.startTime} đến ${appointment.endTime} với bác sỹ ${appointment.Doctor.firstName + " " + appointment.Doctor.lastName} đã ${tex}.</p>`,
+      appointmentId: appointment.appointmentId
+    };
+    await sendEmailAndLog(mailData);
+  } else if (role === 'patient') {
+    const em2 = await Doctor.findByPk(appointment.doctorId);
+    const mailData2 = {
+      form: "Hệ thống đặt lịch trực tuyến",
+      receiver: em2?.email,
+      subject: "Thông tin lịch hẹn",
+      message: `<p> Lịch hẹn của ${appointment.Patient.firstName + " " + appointment.Patient.lastName} vào ngày ${appointment.appointmentDate} từ ${appointment.startTime} đến ${appointment.endTime} với bác sỹ ${appointment.Doctor.firstName + " " + appointment.Doctor.lastName} đã ${tex}.</p>`,
+      appointmentId: appointment.appointmentId
+    };
+    await sendEmailAndLog(mailData2);
+  }
 }
 
 module.exports = {

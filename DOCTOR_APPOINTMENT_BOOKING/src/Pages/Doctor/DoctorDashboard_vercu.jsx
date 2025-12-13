@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useState, useCallback } from "react";
 
 import axios from "axios";
 import { ToastContainer, toast } from "react-toastify";
@@ -8,6 +8,8 @@ import { AuthContext } from "../../Context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { io } from "socket.io-client";
 import { Dialog } from 'primereact/dialog';
+import { Calendar } from 'primereact/calendar';
+import { Button } from 'primereact/button';
 const statusColors = {
   scheduled: "text-blue-500 ",
   completed: "text-green-500 ",
@@ -28,61 +30,60 @@ const DoctorDashboard = () => {
   const [topic, setTopic] = useState("");
   const [message, setMessage] = useState("");
   // Hàm load danh sách lịch hẹn của bác sĩ
-  const fetchAppointments = async (doctorId) => {
+  const [date, setDate] = useState(new Date());
+  const [filterByDate, setFilterByDate] = useState(true);
+
+  const fetchAppointments = async (doctorId, selectedDate, useDateFilter) => {
     try {
-      const response = await axios.get(
-        `http://localhost:8080/appointments/doctor/${doctorId}`,
-        {
-          headers: { Authorization: `Bearer ${token}` }
-        }
-      );
+      let url = `http://localhost:8080/appointments/doctor/${doctorId}`;
+
+      if (useDateFilter && selectedDate) {
+        const formattedDate = selectedDate.toISOString().split("T")[0];
+        url += `?date=${formattedDate}`;
+      }
+
+      const response = await axios.get(url, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
       setAppointments(response.data);
-      // console.log("Lịch hẹn bác sĩ:", response.data);
     } catch (error) {
-      console.error("Lỗi khi lấy danh sách lịch hẹn của bác sĩ:", error);
+      console.error("Lỗi khi lấy danh sách lịch hẹn:", error);
     }
   };
 
   const sendMail = (Pa, Do, Ap) => {
-    
+
     const mailData = {
-        form: "Hệ thống đặt lịch trực tuyến",
-        receiver: Pa?.email,
-        subject: `Bác sỹ ${Do.firstName + " " + Do.lastName} Thông báo: ${topic}`,
-        message: message,
-        appointmentId: Ap.appointmentId
-      };
-    try{
+      form: "Hệ thống đặt lịch trực tuyến",
+      receiver: Pa?.email,
+      subject: `Bác sỹ ${Do.firstName + " " + Do.lastName} Thông báo: ${topic}`,
+      message: message,
+      appointmentId: Ap.appointmentId
+    };
+    try {
       axios.post('http://localhost:8080/send-mail/send', mailData)
-      .then((res)=>{
-        if(res.status===200){
-          toast.success("Gửi email thành công");
-          setVisible(false);
-        }else{
-          toast.error("Gửi email thất bại");
-        }
-      })
-    }catch(error){
+        .then((res) => {
+          if (res.status === 200) {
+            toast.success("Gửi email thành công");
+            setVisible(false);
+          } else {
+            toast.error("Gửi email thất bại");
+          }
+        })
+    } catch (error) {
       console.error("Lỗi khi gửi email:", error);
       toast.error("Lỗi khi gửi email");
     }
   };
 
-  // Lấy thông tin bác sĩ
-  useEffect(() => {
-    const doctorId = localStorage.getItem("userId");
-    if (!doctorId) return;
+useEffect(() => {
+  const doctorId = localStorage.getItem("userId");
+  if (!doctorId) return;
 
-    axios
-      .get(`http://localhost:8080/doctors/${doctorId}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
-      .then((res) => setDoctor(res.data))
-      .catch((err) => console.error("Lỗi khi lấy thông tin bác sĩ:", err));
+  fetchAppointments(doctorId, date, filterByDate);
+}, []);
 
-    // Gọi lần đầu load lịch hẹn
-    fetchAppointments(doctorId);
-  }, [token]);
 
   // Thiết lập Socket.IO realtime
   useEffect(() => {
@@ -96,62 +97,26 @@ const DoctorDashboard = () => {
 
     // Join vào phòng riêng của bác sĩ
     socket.emit("joinRoom", `doctor_${doctorId}`);
-    // console.log("Joined room: doctor_" + doctorId);
 
-    // Khi có thay đổi lịch hẹn
     socket.on("appointmentAdded", () => {
       toast.success("Lịch hẹn đã được thêm — đang làm mới dữ liệu...");
-      fetchAppointments(doctorId);
+      fetchAppointments(doctorId, date, filterByDate);
     });
 
     socket.on("appointmentUpdated", () => {
       toast.success("Lịch hẹn đã được cập nhật — đang làm mới dữ liệu...");
-      fetchAppointments(doctorId);
+      fetchAppointments(doctorId, date, filterByDate);
     });
 
     socket.on("appointmentDeleted", () => {
       toast.success("Lịch hẹn đã được xóa — đang làm mới dữ liệu...");
-      fetchAppointments(doctorId);
+      fetchAppointments(doctorId, date, filterByDate);
     });
 
     return () => {
       socket.disconnect();
     };
   }, [fetchAppointments]);
-
-  const updateDoctorDetail = async (field, value) => {
-    // console.log("Doctorid", doctor._id);
-    const token = localStorage.getItem("token");
-    const userId = localStorage.getItem("userId");
-    // console.log("token userId", token, userId);
-    const requestBody = {
-      [field]: value,
-      role: "doctor"
-    };
-    try {
-      const response = await axios.patch(
-        `http://localhost:8080/doctors/${userId}`,
-        requestBody,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        }
-      );
-
-      if (response.status === 200) {
-        const updatedDoctor = { ...doctor, [field]: value };
-        setDoctor(updatedDoctor);
-        setEditingField(null);
-        toast.success(`Cập nhật ${field} thành công`);
-      } else {
-        console.error("Thất bại khi cập nhật thông tin bác sĩ");
-      }
-    } catch (error) {
-      console.error("Lỗi khi cập nhật thông tin bác sĩ:", error);
-      toast.error(`Lỗi khi cập nhật ${field}`);
-    }
-  };
 
   const updateEditedStatus = (appointmentId, status) => {
     setEditedStatus((prevState) => ({
@@ -241,6 +206,38 @@ const DoctorDashboard = () => {
       <div className="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen font-sans">
         <ToastContainer position="top-right" autoClose={3000} />{" "}
         <div className="container mx-auto p-6">
+
+          <div className="flex items-center gap-10 bg-white rounded-2xl shadow-lg p-6 mb-8">
+            <Calendar className="flex-1"
+              value={date}
+              onChange={(e) => {
+                setDate(e.value);
+                setFilterByDate(true);
+                const doctorId = localStorage.getItem("userId");
+                fetchAppointments(doctorId, e.value, true);
+              }}
+              dateFormat="yy-mm-dd"
+            />
+
+            <Button
+              label="Lấy tất cả"
+              onClick={() => {
+                const doctorId = localStorage.getItem("userId");
+                setFilterByDate(false); // tắt lọc ngày
+                fetchAppointments(doctorId, null, false);
+              }}
+            />
+            <Button
+              label="Làm mới"
+              onClick={() => {
+                const doctorId = localStorage.getItem("userId");
+                setDate(new Date());
+                setFilterByDate(true); // tắt lọc ngày
+                fetchAppointments(doctorId, new Date(), true);
+              }}
+            />
+          </div>
+
           <div className="bg-white rounded-2xl shadow-lg p-6 mb-8">
             <h2 className="text-3xl font-semibold text-blue-600">
               <i className="pi pi-user-plus mr-2 text-4xl"></i>
