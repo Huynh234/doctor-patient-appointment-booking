@@ -22,9 +22,9 @@ const DoctorDashboard = () => {
   const { logout } = useContext(AuthContext);
 
   const items = [
-    { label: 'Giới thiệu', icon: 'pi pi-home' },
+    { label: 'Giới thiệu', icon: 'pi pi-crown' },
     { label: 'Quản lý lịch hẹn', icon: 'pi pi-calendar-clock' },
-    { label: 'Hồ sơ của tôi', icon: 'pi pi-list' }
+    { label: 'Hồ sơ của tôi', icon: 'pi pi-address-book' }
   ];
 
   const fetchDoctors = async () => {

@@ -38,10 +38,10 @@ const DoctorDashboard = () => {
       let url = `http://localhost:8080/appointments/doctor/${doctorId}`;
 
       if (useDateFilter && selectedDate) {
-        const formattedDate = selectedDate.toISOString().split("T")[0];
+        const formattedDate = selectedDate.toLocaleDateString("en-CA");
         url += `?date=${formattedDate}`;
       }
-
+      // console.log("Fetching appointments from URL:", url);
       const response = await axios.get(url, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -77,12 +77,12 @@ const DoctorDashboard = () => {
     }
   };
 
-useEffect(() => {
-  const doctorId = localStorage.getItem("userId");
-  if (!doctorId) return;
+  useEffect(() => {
+    const doctorId = localStorage.getItem("userId");
+    if (!doctorId) return;
 
-  fetchAppointments(doctorId, date, filterByDate);
-}, []);
+    fetchAppointments(doctorId, date, filterByDate);
+  }, []);
 
 
   // Thiết lập Socket.IO realtime
@@ -208,16 +208,20 @@ useEffect(() => {
         <div className="container mx-auto p-6">
 
           <div className="flex items-center gap-10 bg-white rounded-2xl shadow-lg p-6 mb-8">
-            <Calendar className="flex-1"
-              value={date}
-              onChange={(e) => {
-                setDate(e.value);
-                setFilterByDate(true);
-                const doctorId = localStorage.getItem("userId");
-                fetchAppointments(doctorId, e.value, true);
-              }}
-              dateFormat="yy-mm-dd"
-            />
+            <div>
+              <label htmlFor="">Lọc theo ngày</label>
+              <Calendar className="flex-1"
+                value={date}
+                readOnlyInput
+                onChange={(e) => {
+                  setDate(e.value);
+                  setFilterByDate(true);
+                  const doctorId = localStorage.getItem("userId");
+                  fetchAppointments(doctorId, e.value, true);
+                }}
+                dateFormat="yy-mm-dd"
+              />
+            </div>
 
             <Button
               label="Lấy tất cả"
@@ -364,32 +368,34 @@ useEffect(() => {
                             </div>
                             <div><button onClick={() => { setVisible(true); setChange(true); }}>&#128222;</button></div>
                             <div><button onClick={() => { setVisible(true); setChange(false); setTopic(""); setMessage(""); }}>&#128232;</button></div>
-                            <Dialog header={change ? <p>Gọi điện &#128222;</p> : <p>Gửi email &#128232;</p>} visible={visible} position={"top-right"} style={{ width: 'auto' }} onHide={() => { if (!visible) return; setVisible(false); }} draggable={false} resizable={false}>
-                              {change ?
-                                <div className="flex justify-center items-center gap-5">
-                                  <div>Số điện thoại: {appointment?.Patient?.contactNumber}</div>
-                                  <div><button onClick={() => window.location.href = `tel:${appointment?.Patient?.contactNumber}`} className="mt-2 px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600">
-                                    Gọi ngay
-                                  </button></div>
-                                </div>
-                                :
-                                <div>
-                                  <div> Đến Email: {appointment?.Patient?.email}</div>
-                                  <div className="mt-4">
-                                    <label htmlFor="subject" className="block mb-2 font-medium">Chủ đề:</label>
-                                    <input type="text" id="subject" className="w-full p-2 border border-gray-300 rounded-md" placeholder="Nhập chủ đề email..." value={topic} onChange={(e) => setTopic(e.target.value)} />
+                            <div>
+                              <Dialog header={change ? <p>Gọi điện &#128222;</p> : <p>Gửi email &#128232;</p>} visible={visible} position style={{ width: 'auto' }} onHide={() => { if (!visible) return; setVisible(false); }} draggable={false} resizable={false}>
+                                {change ?
+                                  <div className="flex justify-center items-center gap-5">
+                                    <div>Số điện thoại: {appointment?.Patient?.contactNumber}</div>
+                                    <div><button onClick={() => window.location.href = `tel:${appointment?.Patient?.contactNumber}`} className="mt-2 px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600">
+                                      Gọi ngay
+                                    </button></div>
                                   </div>
+                                  :
                                   <div>
-                                    <label htmlFor="message" className="block mb-2 font-medium">Nội dung:</label>
-                                    <textarea id="message" rows="4" className="w-full p-2 border border-gray-300 rounded-md" placeholder="Nhập nội dung email ở đây..." value={message} onChange={(e) => setMessage(e.target.value)}></textarea>
-                                  </div>
-                                  <div className="mt-4">
-                                    <button onClick={() => sendMail(appointment?.Patient, appointment?.Doctor, appointment)} className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600">
-                                      Gửi Email
-                                    </button>
-                                  </div>
-                                </div>}
-                            </Dialog>
+                                    <div> Đến Email: {appointment?.Patient?.email}</div>
+                                    <div className="mt-4">
+                                      <label htmlFor="subject" className="block mb-2 font-medium">Chủ đề:</label>
+                                      <input type="text" id="subject" className="w-full p-2 border border-gray-300 rounded-md" placeholder="Nhập chủ đề email..." value={topic} onChange={(e) => setTopic(e.target.value)} />
+                                    </div>
+                                    <div>
+                                      <label htmlFor="message" className="block mb-2 font-medium">Nội dung:</label>
+                                      <textarea id="message" rows="4" className="w-full p-2 border border-gray-300 rounded-md" placeholder="Nhập nội dung email ở đây..." value={message} onChange={(e) => setMessage(e.target.value)}></textarea>
+                                    </div>
+                                    <div className="mt-4">
+                                      <button onClick={() => sendMail(appointment?.Patient, appointment?.Doctor, appointment)} className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600">
+                                        Gửi Email
+                                      </button>
+                                    </div>
+                                  </div>}
+                              </Dialog>
+                            </div>
                           </div>
                         </td>
                       </tr>

@@ -29,10 +29,10 @@ const PatientDashboard = () => {
   const { logout } = useContext(AuthContext);
   const [searchText, setSearchText] = useState("");
   const items = [
-    { label: 'Giới thiệu', icon: 'pi pi-home' },
+    { label: 'Giới thiệu', icon: 'pi pi-crown' },
     { label: 'Đặt lịch khám', icon: 'pi pi-calendar-clock' },
     { label: 'Xem lịch khám', icon: 'pi pi-list' },
-    { label: 'Hồ sơ cá nhân', icon: 'pi pi-user' }
+    { label: 'Hồ sơ cá nhân', icon: 'pi pi-address-book' }
   ];
 
   const [first, setFirst] = useState(0);
