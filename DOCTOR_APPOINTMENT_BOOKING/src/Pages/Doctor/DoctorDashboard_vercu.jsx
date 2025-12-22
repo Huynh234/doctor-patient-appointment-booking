@@ -207,39 +207,55 @@ const DoctorDashboard = () => {
         <ToastContainer position="top-right" autoClose={3000} />{" "}
         <div className="container mx-auto p-6">
 
-          <div className="flex items-center gap-10 bg-white rounded-2xl shadow-lg p-6 mb-8">
-            <div>
-              <label htmlFor="">Lọc theo ngày</label>
-              <Calendar className="flex-1"
-                value={date}
-                readOnlyInput
-                onChange={(e) => {
-                  setDate(e.value);
-                  setFilterByDate(true);
-                  const doctorId = localStorage.getItem("userId");
-                  fetchAppointments(doctorId, e.value, true);
-                }}
-                dateFormat="yy-mm-dd"
-              />
+          <div className="flex items-center bg-white rounded-2xl shadow-lg p-6 mb-8 w-full">
+            <div className="flex flex-col w-full">
+              <label htmlFor="" className="font-medium text-lg">Lọc theo ngày</label>
+              <div className="lg:flex md:flex items-center gap-5 w-full">
+                <div className="flex-1">
+                  <Calendar
+                    value={date}
+                    readOnlyInput
+                    onChange={(e) => {
+                      setDate(e.value);
+                      // setFilterByDate(true);
+                      // const doctorId = localStorage.getItem("userId");
+                      // fetchAppointments(doctorId, e.value, true);
+                    }}
+                    dateFormat="yy-mm-dd"
+                    className="w-full"
+                  />
+                </div>
+                <Button
+                  label="Lọc"
+                  icon="pi pi-filter"
+                  onClick={() => {
+                    const doctorId = localStorage.getItem("userId");
+                    setFilterByDate(true);
+                    fetchAppointments(doctorId, date, true);
+                  }}
+                  className="w-full md:w-auto"
+                />
+                <Button
+                  label="Lấy tất cả"
+                  onClick={() => {
+                    const doctorId = localStorage.getItem("userId");
+                    setFilterByDate(false); // tắt lọc ngày
+                    fetchAppointments(doctorId, null, false);
+                  }}
+                  className="w-full md:w-auto"
+                />
+                <Button
+                  label="Làm mới"
+                  onClick={() => {
+                    const doctorId = localStorage.getItem("userId");
+                    setDate(new Date());
+                    setFilterByDate(true); // tắt lọc ngày
+                    fetchAppointments(doctorId, new Date(), true);
+                  }}
+                  className="w-full md:w-auto"
+                />
+              </div>
             </div>
-
-            <Button
-              label="Lấy tất cả"
-              onClick={() => {
-                const doctorId = localStorage.getItem("userId");
-                setFilterByDate(false); // tắt lọc ngày
-                fetchAppointments(doctorId, null, false);
-              }}
-            />
-            <Button
-              label="Làm mới"
-              onClick={() => {
-                const doctorId = localStorage.getItem("userId");
-                setDate(new Date());
-                setFilterByDate(true); // tắt lọc ngày
-                fetchAppointments(doctorId, new Date(), true);
-              }}
-            />
           </div>
 
           <div className="bg-white rounded-2xl shadow-lg p-6 mb-8">
