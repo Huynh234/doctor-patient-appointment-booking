@@ -1,6 +1,8 @@
 import React, { useState, useMemo } from "react";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { Dropdown } from 'primereact/dropdown';
+import { InputText } from 'primereact/inputtext';
 
 const AppointmentForm = ({ doctor, onSubmit, onCancel }) => {
   const [appointmentData, setAppointmentData] = useState({
@@ -12,6 +14,31 @@ const AppointmentForm = ({ doctor, onSubmit, onCancel }) => {
     status: "scheduled",
     disease: ""
   });
+
+   const [selectedStime, setselectedStime] = useState(null);
+    const timeSlots = [
+        { name: '7:00', startTime: '7:00', endTime:'7:30' },
+        { name: '7:30', startTime: '7:30', endTime:'8:00' },
+        { name: '8:00', startTime: '8:00', endTime:'8:30' },
+        { name: '8:30', startTime: '8:30', endTime:'9:00' },
+        { name: '9:00', startTime: '9:00', endTime:'9:30' },
+        { name: '9:30', startTime: '9:30', endTime:'10:00' },
+        { name: '10:00', startTime: '10:00', endTime:'10:30' },
+        { name: '10:30', startTime: '10:30', endTime:'11:00' },
+        { name: '11:00', startTime: '11:00', endTime:'11:30' },
+        { name: '11:30', startTime: '11:30', endTime:'12:00' },
+        { name: '12:00', startTime: '12:00', endTime:'12:30' },
+        { name: '12:30', startTime: '12:30', endTime:'13:00' },
+        { name: '13:00', startTime: '13:00', endTime:'13:30' },
+        { name: '13:30', startTime: '13:30', endTime:'14:00' },
+        { name: '14:00', startTime: '14:00', endTime:'14:30' },
+        { name: '14:30', startTime: '14:30', endTime:'15:00' },
+        { name: '15:00', startTime: '15:00', endTime:'15:30' },
+        { name: '15:30', startTime: '15:30', endTime:'16:00' },
+        { name: '16:00', startTime: '16:00', endTime:'16:30' },
+        { name: '16:30', startTime: '16:30', endTime:'17:00' },
+        { name: '17:00', startTime: '17:00', endTime:'17:30' },
+    ];
 
   const today = new Date().toISOString().split("T")[0];
 
@@ -99,7 +126,7 @@ const AppointmentForm = ({ doctor, onSubmit, onCancel }) => {
             onClick={onCancel}
             className="text-blue-600 hover:text-blue-400 focus:outline-none"
           >
-           <i className="pi pi-times"></i>
+            <i className="pi pi-times"></i>
           </button>
         </div>
         <div>
@@ -134,50 +161,15 @@ const AppointmentForm = ({ doctor, onSubmit, onCancel }) => {
               <i className="pi pi-clock mr-2 text-blue-600"></i>
               Giờ bắt đầu
             </label>
-            <select
-              name="startTime"
-              value={appointmentData.startTime}
-              onChange={(e) => handleInputChange("startTime", e.target.value)}
-              className="w-full border-2 border-blue-600 rounded-lg px-4 py-3 pr-10 focus:outline-none focus:border-blue-700 bg-white appearance-none"
-              required
-            >
-              <option value="">Chọn giờ bắt đầu</option>
-              {timeOptions
-                .filter((time) => {
-                  if (appointmentData.appointmentDate === today) {
-                    return time >= getMinStartTime();
-                  }
-                  return true;
-                })
-                .map((time) => (
-                  <option key={time} value={time}>
-                    {time}
-                  </option>
-                ))}
-            </select>
+            <Dropdown value={selectedStime} onChange={(e) => {setselectedStime(e.value); setAppointmentData({...appointmentData, startTime: e.value.startTime, endTime: e.value.endTime})}} optionsValue="startTime" options={timeSlots} optionLabel="name"
+              placeholder="Giờ bắt đầu" className="w-full md:w-14rem" />    
           </div>
           <div className="mb-4">
             <label className="block text-blue-600 text-sm font-bold mb-2">
               <i className="pi pi-clock mr-2 text-blue-600"></i>
               Giờ kết thúc
             </label>
-            <select
-              name="endTime"
-              value={appointmentData.endTime}
-              onChange={(e) => handleInputChange("endTime", e.target.value)}
-              className="w-full border-2 border-blue-600 rounded-lg px-4 py-3 pr-10 focus:outline-none focus:border-blue-700 bg-white appearance-none"
-              disabled={!appointmentData.startTime}
-              required
-            >
-              <option value="">Chọn giờ kết thúc</option>
-              {timeOptions
-                .filter((time) => appointmentData.startTime && time > appointmentData.startTime)
-                .map((time) => (
-                  <option key={time} value={time}>
-                    {time}
-                  </option>
-                ))}
-            </select>
+            <InputText value={appointmentData.endTime} placeholder="Giờ kết thúc" className="w-full md:w-14rem" disabled />
           </div>
           <div className="mb-4">
             <label className="block text-blue-600 text-sm font-bold mb-2">
@@ -199,7 +191,7 @@ const AppointmentForm = ({ doctor, onSubmit, onCancel }) => {
               onClick={handleSubmit}
               className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg focus:outline-none focus:shadow-outline-blue active:bg-blue-800 transform hover:scale-105 transition-transform duration-300 ease-in-out"
             >
-             <i className="pi pi-save mr-2"></i>
+              <i className="pi pi-save mr-2"></i>
               Đặt lịch hẹn
             </button>
           </div>
