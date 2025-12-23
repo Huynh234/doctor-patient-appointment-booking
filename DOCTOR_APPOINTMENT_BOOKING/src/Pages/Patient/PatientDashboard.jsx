@@ -123,7 +123,7 @@ const PatientDashboard = () => {
   }, []);
 
   const breadcrumbs = [{ title: "Danh sách bác sĩ", link: "/patient-dashboard" }];
-  
+
   const handleLogout = () => {
     logout();
     navigate("/login");
@@ -133,18 +133,18 @@ const PatientDashboard = () => {
     <>
       <header className="card bg-white fixed top-0 w-full z-10 flex justify-between items-center box-border shadow-md">
         <div className="flex w-full">
-          <div className="flex ml-8 items-center justify-start cursor-pointer" onClick={() => {navigate("/patient-dashboard"); setActiveIndex(0);}}>
-            <div><img src={newLogo} alt="Logo" className="mx-auto md:w-16 lg:w-20" /></div>
+          <div className="flex ml-8 items-center justify-start cursor-pointer" onClick={() => { navigate("/patient-dashboard"); setActiveIndex(0); }}>
+            <div><img src={newLogo} alt="Logo" className="mx-auto w-12 md:w-16 lg:w-20" /></div>
             <div className="flex flex-col ml-7 text-left">
-              <div className=""><p className="md:text-xl lg:text-3xl text-blue-500 font-bold">MedBooking</p></div>
+              <div className=""><p className="text-base md:text-xl lg:text-2xl text-blue-500 font-bold">MedBooking</p></div>
               <div>
-                <span className="text-gray-600 md:text-sm lg:text-base">Hệ thống đặt lịch khám trực tuyến</span>
+                <span className="text-gray-600 md:text-sm lg:text-base text-xs">Hệ thống đặt lịch khám trực tuyến</span>
               </div>
             </div>
           </div>
           <div className="lg:flex-1"></div>
           <div className="flex bottom-0 justify-end items-center mr-8">
-            <div className="h-full flex items-end">
+            <div className="h-full md:flex items-end hidden">
               <TabMenu model={items} activeIndex={activeIndex} onTabChange={(e) => setActiveIndex(e.index)} className="lg:text-base md:text-sm" />
             </div>
             <button
@@ -157,7 +157,9 @@ const PatientDashboard = () => {
           </div>
         </div>
       </header>
-
+      <div className="md:hidden mt-20 px-4">
+        <TabMenu model={items} activeIndex={activeIndex} onTabChange={(e) => setActiveIndex(e.index)} className="text-xs lg:text-base md:text-sm" />
+      </div>
       <main className="mt-24">
         {/* Tab 0: Giới thiệu */}
         {activeIndex === 0 && (
@@ -174,58 +176,58 @@ const PatientDashboard = () => {
                   <i className="pi pi-search mr-2" />
                   Tìm kiếm bác sĩ
                 </h2>
-                
+
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-end">
                   <div className="flex-1">
                     <label className="block mb-2 text-base font-medium text-gray-700">
                       <i className="pi pi-user-edit mr-2 text-blue-500" />
                       Tên bác sĩ
                     </label>
-                    <InputText 
-                      className="w-full p-3 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all" 
-                      id="search" 
-                      placeholder="Nhập tên bác sĩ" 
+                    <InputText
+                      className="w-full p-3 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all"
+                      id="search"
+                      placeholder="Nhập tên bác sĩ"
                       value={searchText}
                       onChange={(e) => {
                         setSearchText(e.target.value);
                         fetchDoctors(e.target.value, datadm?.join(","));
-                      }} 
+                      }}
                     />
                   </div>
-                  
+
                   <div className="flex-1">
                     <label className="block mb-2 text-base font-medium text-gray-700">
                       <i className="pi pi-bookmark mr-2 text-blue-500" />
                       Chuyên khoa
                     </label>
-                    <MultiSelect 
-                      value={datadm} 
-                      options={dataSpecialty} 
-                      optionLabel="code" 
-                      optionValue="code" 
+                    <MultiSelect
+                      value={datadm}
+                      options={dataSpecialty}
+                      optionLabel="code"
+                      optionValue="code"
                       display="chip"
-                      placeholder="Chọn chuyên khoa" 
-                      maxSelectedLabels={3} 
-                      className="w-full border-2 border-gray-200 rounded-lg focus:border-blue-500" 
+                      placeholder="Chọn chuyên khoa"
+                      maxSelectedLabels={3}
+                      className="w-full border-2 border-gray-200 rounded-lg focus:border-blue-500"
                       onChange={(e) => {
                         setdatadm(e.value);
                         fetchDoctors(searchText, e.value?.join(","));
-                      }} 
+                      }}
                     />
                   </div>
-                  
+
                   <div className="flex-0">
-                    <Button 
-                      label="Xóa bộ lọc" 
-                      icon="pi pi-refresh" 
-                      className="bg-blue-500 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:shadow-lg transition-all transform hover:scale-105" 
+                    <Button
+                      label="Xóa bộ lọc"
+                      icon="pi pi-refresh"
+                      className="bg-blue-500 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:shadow-lg transition-all transform hover:scale-105"
                       onClick={() => {
                         setSearchText("");
                         setdatadm(null);
                         setFirst(0);
                         setRows(6);
                         fetchDoctors("", "");
-                      }} 
+                      }}
                     />
                   </div>
                 </div>
@@ -242,7 +244,7 @@ const PatientDashboard = () => {
                     {totalRecord} bác sĩ
                   </span>
                 </div>
-                
+
                 <div className="min-h-[40rem]">
                   {doctors.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -262,11 +264,11 @@ const PatientDashboard = () => {
                 {/* Pagination */}
                 {totalRecord > rows && (
                   <div className="mt-6 flex justify-center">
-                    <Paginator 
-                      first={first} 
-                      rows={rows} 
-                      totalRecords={totalRecord} 
-                      rowsPerPageOptions={[6, 12, 18]} 
+                    <Paginator
+                      first={first}
+                      rows={rows}
+                      totalRecords={totalRecord}
+                      rowsPerPageOptions={[6, 12, 18]}
                       onPageChange={onPageChange}
                       className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg shadow-sm"
                     />
