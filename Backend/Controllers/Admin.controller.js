@@ -6,17 +6,19 @@ const { Op } = require("sequelize");
 const bcrypt = require("bcrypt");
 const fs = require("fs");
 const path = require("path");
+const csv = require("csv-parser");
+const getRandomDoctorImage = require("../Utils/StaticData");
 
-// Giả lập log file
-const LOG_FILE = path.join(__dirname, "../logs/admin-actions.log");
+// // Giả lập log file
+// const LOG_FILE = path.join(__dirname, "../logs/admin-actions.log");
 
-const logAction = (adminId, action, details) => {
-  const entry = `[${new Date().toISOString()}] [Admin:${adminId}] ${action} - ${details}\n`;
-  fs.appendFileSync(LOG_FILE, entry, "utf8");
-};
+// const logAction = (adminId, action, details) => {
+//   const entry = `[${new Date().toISOString()}] [Admin:${adminId}] ${action} - ${details}\n`;
+//   fs.appendFileSync(LOG_FILE, entry, "utf8");
+// };
 
 /**
- * ✅ DUYỆT BÁC SĨ
+ * DUYỆT BÁC SĨ
  * Admin có thể duyệt hoặc từ chối tài khoản bác sĩ mới.
  */
 const approveDoctor = async (req, res) => {
@@ -35,9 +37,8 @@ const approveDoctor = async (req, res) => {
   }
 };
 
-/**
- * ✅ KHÓA / MỞ KHÓA NGƯỜI DÙNG (Doctor hoặc Patient)
- */
+//  KHÓA / MỞ KHÓA NGƯỜI DÙNG (Doctor hoặc Patient)
+
 const toggleUserStatus = async (req, res) => {
   try {
     const { userType, userId, status } = req.body;
@@ -60,10 +61,7 @@ const toggleUserStatus = async (req, res) => {
   }
 };
 
-/**
- * ✅ PHÂN QUYỀN (ví dụ: set role)
- * Gợi ý: bạn có thể có thêm trường "role" trong bảng người dùng (ở đây giả lập)
- */
+//  PHÂN QUYỀN (ví dụ: set role)
 const createUserAccount = async (req, res) => {
   try {
     const { userType, firstName, lastName, email, password, specialty, clinicLocation, contactNumber, licenseCode, bloodGroup, dateOfBirth, gender, address, city } = req.body;
@@ -120,90 +118,86 @@ const createUserAccount = async (req, res) => {
   }
 };
 
-/**
- * ✅ THỐNG KÊ HOẠT ĐỘNG HỆ THỐNG
- */
-const getSystemStats = async (req, res) => {
-  try {
-    const totalDoctors = await Doctor.count();
-    const activeDoctors = await Doctor.count({ where: { status: true } });
-    const totalPatients = await Patient.count();
-    const totalAppointments = await Appointment.count();
 
-    const recentAppointments = await Appointment.findAll({
-      limit: 5,
-      order: [["appointmentDate", "DESC"]],
-      include: [Doctor, Patient]
-    });
+// //  THỐNG KÊ HOẠT ĐỘNG HỆ THỐNG
+// const getSystemStats = async (req, res) => {
+//   try {
+//     const totalDoctors = await Doctor.count();
+//     const activeDoctors = await Doctor.count({ where: { status: true } });
+//     const totalPatients = await Patient.count();
+//     const totalAppointments = await Appointment.count();
 
-    const stats = {
-      totalDoctors,
-      activeDoctors,
-      totalPatients,
-      totalAppointments,
-      recentAppointments
-    };
+//     const recentAppointments = await Appointment.findAll({
+//       limit: 5,
+//       order: [["appointmentDate", "DESC"]],
+//       include: [Doctor, Patient]
+//     });
 
-    logAction(req.adminId, "View System Stats", "Viewed general system statistics");
-    res.json(stats);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Lỗi máy chủ nội bộ" });
-  }
-};
+//     const stats = {
+//       totalDoctors,
+//       activeDoctors,
+//       totalPatients,
+//       totalAppointments,
+//       recentAppointments
+//     };
 
-/**
- * ✅ XUẤT BÁO CÁO HOẠT ĐỘNG HỆ THỐNG
- */
-const exportReport = async (req, res) => {
-  try {
-    const fromDate = req.query.from || "2020-01-01";
-    const toDate = req.query.to || new Date().toISOString().split("T")[0];
+//     logAction(req.adminId, "View System Stats", "Viewed general system statistics");
+//     res.json(stats);
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ message: "Lỗi máy chủ nội bộ" });
+//   }
+// };
 
-    const appointments = await Appointment.findAll({
-      where: {
-        appointmentDate: { [Op.between]: [fromDate, toDate] }
-      },
-      include: [Doctor, Patient]
-    });
+// 
+// XUẤT BÁO CÁO HOẠT ĐỘNG HỆ THỐNG
+// const exportReport = async (req, res) => {
+//   try {
+//     const fromDate = req.query.from || "2020-01-01";
+//     const toDate = req.query.to || new Date().toISOString().split("T")[0];
 
-    const report = appointments.map(a => ({
-      AppointmentID: a.appointmentId,
-      Doctor: `${a.Doctor.firstName} ${a.Doctor.lastName}`,
-      Patient: `${a.Patient.firstName} ${a.Patient.lastName}`,
-      Date: a.appointmentDate,
-      Time: `${a.startTime} - ${a.endTime}`,
-      Status: a.status,
-      Disease: a.disease
-    }));
+//     const appointments = await Appointment.findAll({
+//       where: {
+//         appointmentDate: { [Op.between]: [fromDate, toDate] }
+//       },
+//       include: [Doctor, Patient]
+//     });
 
-    logAction(req.adminId, "Export Report", `From=${fromDate} To=${toDate}`);
+//     const report = appointments.map(a => ({
+//       AppointmentID: a.appointmentId,
+//       Doctor: `${a.Doctor.firstName} ${a.Doctor.lastName}`,
+//       Patient: `${a.Patient.firstName} ${a.Patient.lastName}`,
+//       Date: a.appointmentDate,
+//       Time: `${a.startTime} - ${a.endTime}`,
+//       Status: a.status,
+//       Disease: a.disease
+//     }));
 
-    res.json({
-      fromDate,
-      toDate,
-      totalAppointments: report.length,
-      report
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Lỗi máy chủ nội bộ" });
-  }
-};
+//     logAction(req.adminId, "Export Report", `From=${fromDate} To=${toDate}`);
 
-/**
- * ✅ XEM LOG HOẠT ĐỘNG QUẢN TRỊ
- */
-const viewAdminLogs = (req, res) => {
-  try {
-    if (!fs.existsSync(LOG_FILE)) return res.json({ logs: [] });
-    const logs = fs.readFileSync(LOG_FILE, "utf8").split("\n").filter(l => l.trim());
-    res.json({ logs });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Lỗi máy chủ nội bộ" });
-  }
-};
+//     res.json({
+//       fromDate,
+//       toDate,
+//       totalAppointments: report.length,
+//       report
+//     });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ message: "Lỗi máy chủ nội bộ" });
+//   }
+// };
+
+// // XEM LOG HOẠT ĐỘNG QUẢN TRỊ
+// const viewAdminLogs = (req, res) => {
+//   try {
+//     if (!fs.existsSync(LOG_FILE)) return res.json({ logs: [] });
+//     const logs = fs.readFileSync(LOG_FILE, "utf8").split("\n").filter(l => l.trim());
+//     res.json({ logs });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ message: "Lỗi máy chủ nội bộ" });
+//   }
+// };
 
 const getAllUsers = async (req, res) => {
   try {
@@ -318,19 +312,72 @@ const getAllUsers = async (req, res) => {
         : new Date(b.createdAt) - new Date(a.createdAt)
     );
 
-    // ---- Phân trang ----
-    const start = (page - 1) * limit;
-    const end = start + Number(limit);
-    const paginatedUsers = allUsers.slice(start, end);
-
     res.status(200).json({
       total: allUsers.length,
-      page: Number(page),
-      limit: Number(limit),
-      users: paginatedUsers,
+      users: allUsers,
     });
   } catch (error) {
     console.error("Error in getAllUsers:", error);
+    res.status(500).json({ message: "Lỗi máy chủ nội bộ" });
+  }
+};
+
+const importDoctorsFromCSV = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: "Vui lòng upload file CSV" });
+    }
+
+    const doctors = [];
+
+    fs.createReadStream(req.file.path)
+      .pipe(csv())
+      .on("data", (row) => {
+        doctors.push(row);
+      })
+      .on("end", async () => {
+        try {
+          for (const item of doctors) {
+            // kiểm tra email trùng
+            const existed = await Doctor.findOne({
+              where: { email: item.email }
+            });
+            if (existed) continue;
+
+            const hashedPassword = item.password.startsWith("$2b$")
+              ? item.password
+              : await bcrypt.hash(item.password, 10);
+
+            await Doctor.create({
+              firstName: item.firstName,
+              lastName: item.lastName,
+              email: item.email,
+              password: hashedPassword,
+              specialty: item.specialty,
+              clinicLocation: item.clinicLocation,
+              contactNumber: item.contactNumber,
+              workingHours: item.workingHours,
+              about: item.about,
+              licenseCode: item.licenseCode,
+              status: item.status == 1,
+              approve: item.approve == 1,
+              profile: getRandomDoctorImage()
+            });
+          }
+
+          fs.unlinkSync(req.file.path); // xóa file sau khi import
+
+          res.json({
+            message: "Import bác sĩ từ CSV thành công",
+            total: doctors.length
+          });
+        } catch (err) {
+          console.error(err);
+          res.status(500).json({ message: "Lỗi khi import dữ liệu" });
+        }
+      });
+  } catch (error) {
+    console.error(error);
     res.status(500).json({ message: "Lỗi máy chủ nội bộ" });
   }
 };
@@ -339,8 +386,6 @@ module.exports = {
     approveDoctor,
     toggleUserStatus,
     createUserAccount,
-    getSystemStats,
-    exportReport,
-    viewAdminLogs,
-    getAllUsers
+    getAllUsers,
+    importDoctorsFromCSV
 }
