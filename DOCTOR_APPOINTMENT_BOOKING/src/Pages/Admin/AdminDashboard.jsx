@@ -105,6 +105,24 @@ const AdminDashboard = () => {
       />
   );
 
+  const exportPDF = async () => {
+    try {
+      const response = await axios.get("http://localhost:8080/admin/users/export-pdf", {
+        responseType: 'blob',
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        }
+      });
+      const blob = new Blob([response.data], { type: 'application/pdf' });
+      const link = document.createElement('a');
+      link.href = window.URL.createObjectURL(blob);
+      link.download = 'users-report.pdf';
+      link.click();
+    } catch (error) {
+      console.error("Error exporting PDF:", error);
+    }
+  };
+
   const updateAppove = async (r, v) => {
     try {
       await axios.patch(
@@ -235,7 +253,8 @@ const AdminDashboard = () => {
                   </h2>
                   <p className="text-gray-600 mt-2">Quản lý thông tin bác sĩ và bệnh nhân trong hệ thống</p>
                 </div>
-                <div>
+                <div className="flex flex-col gap-5">  
+                  <Button label="xuất PDF" icon="pi pi-file-pdf" onClick={exportPDF} className="w-full" />
                   <Button
                     className="w-full"
                     label="Thêm người dùng mới"

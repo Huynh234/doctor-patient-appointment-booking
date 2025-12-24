@@ -8,6 +8,8 @@ const fs = require("fs");
 const path = require("path");
 const csv = require("csv-parser");
 const getRandomDoctorImage = require("../Utils/StaticData");
+const puppeteer = require("puppeteer");
+const { PassThrough } = require("stream");
 
 // // Giả lập log file
 // const LOG_FILE = path.join(__dirname, "../logs/admin-actions.log");
@@ -202,12 +204,12 @@ const createUserAccount = async (req, res) => {
 const getAllUsers = async (req, res) => {
   try {
     const {
-      type,            // 'doctor' | 'patient'
-      contact,         // tìm theo email hoặc contactNumber
-      status,          // lọc trạng thái
-      page = 1,        // phân trang
+      type,
+      contact,
+      status,
+      page = 1,
       limit = 10,
-      sort = "desc",   // sắp xếp theo ngày tạo
+      sort = "desc",
     } = req.query;
 
     // ---- Xây điều kiện lọc chung ----
@@ -229,43 +231,43 @@ const getAllUsers = async (req, res) => {
     const [doctors, patients] = await Promise.all([
       (!type || type === "doctor")
         ? Doctor.findAll({
-            where: filter,
-            attributes: [
-              "doctorId",
-              "firstName",
-              "lastName",
-              "email",
-              "specialty",
-              "clinicLocation",
-              "contactNumber",
-              "profile",
-              "about",
-              "licenseCode",
-              "status",
-              "approve",
-              "createdAt",
-            ],
-          })
+          where: filter,
+          attributes: [
+            "doctorId",
+            "firstName",
+            "lastName",
+            "email",
+            "specialty",
+            "clinicLocation",
+            "contactNumber",
+            "profile",
+            "about",
+            "licenseCode",
+            "status",
+            "approve",
+            "createdAt",
+          ],
+        })
         : Promise.resolve([]),
 
       (!type || type === "patient")
         ? Patient.findAll({
-            where: filter,
-            attributes: [
-              "patientId",
-              "firstName",
-              "lastName",
-              "email",
-              "dateOfBirth",
-              "gender",
-              "contactNumber",
-              "address",
-              "city",
-              "bloodGroup",
-              "status",
-              "createdAt",
-            ],
-          })
+          where: filter,
+          attributes: [
+            "patientId",
+            "firstName",
+            "lastName",
+            "email",
+            "dateOfBirth",
+            "gender",
+            "contactNumber",
+            "address",
+            "city",
+            "bloodGroup",
+            "status",
+            "createdAt",
+          ],
+        })
         : Promise.resolve([]),
     ]);
 
@@ -382,10 +384,194 @@ const importDoctorsFromCSV = async (req, res) => {
   }
 };
 
+const exportAllUsersPDF = async (req, res) => {
+  let browser;
+  try {
+    // ---- Lấy toàn bộ dữ liệu ----
+    const [doctors, patients] = await Promise.all([
+      Doctor.findAll({
+        attributes: [
+          "doctorId",
+          "firstName",
+          "lastName",
+          "email",
+          "specialty",
+          "clinicLocation",
+          "contactNumber",
+          "status",
+          "approve",
+          "createdAt",
+        ],
+      }),
+      Patient.findAll({
+        attributes: [
+          "patientId",
+          "firstName",
+          "lastName",
+          "email",
+          "contactNumber",
+          "status",
+          "createdAt",
+        ],
+      }),
+    ]);
+
+    // ---- Chuẩn hoá ----
+    const formattedDoctors = doctors.map((d, i) => ({
+      stt: i + 1,
+      name: `${d.firstName} ${d.lastName}`,
+      email: d.email,
+      contactNumber: d.contactNumber,
+      status: d.status,
+      userType: "Bác sĩ",
+      createdAt: d.createdAt,
+    }));
+
+    const formattedPatients = patients.map((p, i) => ({
+      stt: formattedDoctors.length + i + 1,
+      name: `${p.firstName} ${p.lastName}`,
+      email: p.email,
+      contactNumber: p.contactNumber,
+      status: p.status,
+      userType: "Bệnh nhân",
+      createdAt: p.createdAt,
+    }));
+
+    const allUsers = [...formattedDoctors, ...formattedPatients];
+
+    // ---- HTML ----
+    const html = `
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      font-size: 12px;
+      color: #333;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 6px;
+      text-align: left;
+    }
+    th {
+      background: #2563eb;
+      color: white;
+    }
+    tr:nth-child(even) {
+      background: #f3f4f6;
+    }
+    .doctor {
+      color: #2563eb;
+      font-weight: bold;
+    }
+    .patient {
+      color: #16a34a;
+      font-weight: bold;
+    }
+    .footer {
+      margin-top: 20px;
+      font-size: 10px;
+      text-align: right;
+      color: #555;
+    }
+  </style>
+</head>
+<body>
+  <h1>DANH SÁCH TẤT CẢ NGƯỜI DÙNG</h1>
+
+  <table>
+    <thead>
+      <tr>
+        <th>STT</th>
+        <th>Tên</th>
+        <th>Email</th>
+        <th>SĐT</th>
+        <th>Loại</th>
+        <th>Trạng thái</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${allUsers
+        .map(
+          (u) => `
+        <tr>
+          <td>${u.stt}</td>
+          <td>${u.name}</td>
+          <td>${u.email || "-"}</td>
+          <td>${u.contactNumber || "-"}</td>
+          <td class="${u.userType === "Bác sĩ" ? "doctor" : "patient"}">
+            ${u.userType}
+          </td>
+          <td>${u.status ? "Kích hoạt" : "Khóa" || "-"}</td>
+        </tr>
+      `
+        )
+        .join("")}
+    </tbody>
+  </table>
+
+  <div class="footer">
+    Xuất lúc: ${new Date().toLocaleString("vi-VN")}
+  </div>
+</body>
+</html>
+`;
+
+    browser = await puppeteer.launch({
+      headless: "new",
+      args: ["--no-sandbox", "--disable-setuid-sandbox"],
+    });
+
+    const page = await browser.newPage();
+    await page.setContent(html, { waitUntil: "networkidle0" });
+
+    const pdfBuffer = await page.pdf({
+      format: "A4",
+      printBackground: true,
+      margin: {
+        top: "20mm",
+        bottom: "20mm",
+        left: "15mm",
+        right: "15mm",
+      },
+    });
+
+    const stream = new PassThrough();
+    stream.end(pdfBuffer);
+
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader(
+      "Content-Disposition",
+      "attachment; filename=tat_ca_nguoi_dung.pdf"
+    );
+
+    stream.pipe(res);
+
+    await browser.close();
+  } catch (error) {
+    console.error("Xuất PDF puppeteer lỗi:", error);
+    if (browser) await browser.close();
+    res.status(500).json({ message: "Xuất PDF thất bại" });
+  }
+};
+
+
 module.exports = {
-    approveDoctor,
-    toggleUserStatus,
-    createUserAccount,
-    getAllUsers,
-    importDoctorsFromCSV
+  approveDoctor,
+  toggleUserStatus,
+  createUserAccount,
+  getAllUsers,
+  importDoctorsFromCSV,
+  exportAllUsersPDF,
 }

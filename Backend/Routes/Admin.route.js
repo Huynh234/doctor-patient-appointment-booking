@@ -1,7 +1,7 @@
 const express=require("express");
 
 const AdminRouter=express.Router()
-const {approveDoctor, toggleUserStatus, getAllUsers,importDoctorsFromCSV } = require("../Controllers/Admin.controller");
+const {approveDoctor, toggleUserStatus, getAllUsers,importDoctorsFromCSV, exportAllUsersPDF } = require("../Controllers/Admin.controller");
 const jwt=require("jsonwebtoken")
 const upload = require("../Middlewares/uploadCSV");
 const Auth = require("../Middlewares/JWT.authentication");
@@ -449,6 +449,28 @@ AdminRouter.get("/allusers",Auth, AdminAuth, getAllUsers);
 
 
 AdminRouter.post("/doctors/import-csv",Auth, AdminAuth, upload.single("file"), importDoctorsFromCSV);
+
+/**
+ * @swagger
+ * /admin/users/export-pdf:
+ *   get:
+ *     summary: Xuất danh sách tất cả người dùng ra PDF
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Xuất PDF thành công
+ *         content:
+ *           application/pdf:
+ *             schema:
+ *               type: string
+ *               format: binary
+ *       500:
+ *         description: Lỗi máy chủ
+ */
+
+AdminRouter.get("/users/export-pdf", exportAllUsersPDF);
 
 
 module.exports = AdminRouter
