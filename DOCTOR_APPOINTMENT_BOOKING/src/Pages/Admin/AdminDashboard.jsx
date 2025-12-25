@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useContext, useRef } from "react";
 import axios from "axios";
 import Footer from "../../components/Footer";
 import { useNavigate } from "react-router-dom";
@@ -12,15 +12,18 @@ import { Chip } from 'primereact/chip';
 import { TabMenu } from 'primereact/tabmenu';
 import { AuthContext } from "../../Context/AuthContext";
 import newLogo from '../../assets/Logo_Medbooking.png';
+import { Dialog } from "primereact/dialog";
+import { FileUpload } from 'primereact/fileupload';
+import { Toast } from 'primereact/toast';
 
 const AdminDashboard = () => {
   const [users, setUsers] = useState([]);
   const [totalRecords, setTotalRecords] = useState(0);
-
+  const [visible, setVisible] = useState(false);
   const [contact, setContact] = useState("");
-  const [type, setType] = useState(null);
-  const [status, setStatus] = useState(null);
-
+  const [typee, setTypee] = useState(null);
+  const [statuss, setStatuss] = useState(null);
+  const toast = useRef(null);
   const [page, setPage] = useState(1);
   const [rows, setRows] = useState(10);
   const [activeIndex, setActiveIndex] = useState(0);
@@ -34,48 +37,44 @@ const AdminDashboard = () => {
 
   // Options cho Dropdown
   const typeOptions = [
-    { label: "Tất cả", value: null },
+    { label: "Tất cả", value: "all" },
     { label: "Bác sĩ", value: "doctor" },
     { label: "Bệnh nhân", value: "patient" },
   ];
 
   const statusOptions = [
-    { label: "Tất cả", value: null },
+    { label: "Tất cả", value: "all" },
     { label: "Đang hoạt động", value: true },
     { label: "Đã khóa", value: false },
   ];
 
   const fetchUsers = async () => {
     try {
-      const params = {
-        page,
-        limit: rows,
-        sort: "desc",
-      };
+      const params = {};
 
       if (contact && contact.trim() !== "") {
         params.contact = contact.trim();
       }
 
-      if (type && type !== "") {
-        params.type = type;
+      if (typee !== "all") {
+        params.type = typee;
       }
 
-      if (status !== null && status !== undefined && status !== "") {
-        params.status = status;
+      if (statuss !== "all") {
+        params.status = statuss;
       }
-
       const response = await axios.get("http://localhost:8080/admin/allusers", {
         params,
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
       });
-
+      toast.current.show({ severity: 'info', summary: 'Cập nhật', detail: 'Dữ liệu người dùng đã được cập nhật', life: 2000 });
       setUsers(response.data.users);
       setTotalRecords(response.data.total);
     } catch (error) {
       console.error("Error fetching users:", error);
+      toast.current.show({ severity: 'error', summary: 'Lỗi', detail: 'Không thể tải dữ liệu người dùng', life: 3000 });
     }
   };
 
@@ -106,6 +105,24 @@ const AdminDashboard = () => {
       />
   );
 
+  const exportPDF = async () => {
+    try {
+      const response = await axios.get("http://localhost:8080/admin/users/export-pdf", {
+        responseType: 'blob',
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        }
+      });
+      const blob = new Blob([response.data], { type: 'application/pdf' });
+      const link = document.createElement('a');
+      link.href = window.URL.createObjectURL(blob);
+      link.download = 'users-report.pdf';
+      link.click();
+    } catch (error) {
+      console.error("Error exporting PDF:", error);
+    }
+  };
+
   const updateAppove = async (r, v) => {
     try {
       await axios.patch(
@@ -116,18 +133,45 @@ const AdminDashboard = () => {
         },
         {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
           }
         }
       );
+      toast.current.show({ severity: 'success', summary: 'Thành công', detail: 'Cập nhật phê duyệt thành công', life: 3000 });
       fetchUsers();
     } catch (err) {
       console.error("Update approval failed:", err);
+      toast.current.show({ severity: 'error', summary: 'Lỗi', detail: 'Cập nhật phê duyệt thất bại', life: 3000 });
     }
   };
 
+  const uploadCSV = async ({ files }) => {
+    try {
+      const formData = new FormData();
+      formData.append("file", files[0]);
+
+      const res = await axios.post("http://localhost:8080/admin/doctors/import-csv", formData, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        }
+      });
+      toast.current.show({ severity: 'success', summary: 'Thành công', detail: 'Tải lên CSV thành công', life: 3000 });
+      fetchUsers();
+      setVisible(false);
+    } catch (err) {
+      console.error("CSV upload failed:", err);
+      toast.current.show({ severity: 'error', summary: 'Lỗi', detail: 'Tải lên CSV thất bại', life: 3000 });
+    }
+  };
+
+
   const updateStatus = async (r, v) => {
     try {
+      console.log({
+          userType: r.userType,
+          userId: r.id,
+          status: v
+        },);
       await axios.patch(
         'http://localhost:8080/admin/toggle-user-status',
         {
@@ -141,15 +185,17 @@ const AdminDashboard = () => {
           }
         }
       );
+      toast.current.show({ severity: 'success', summary: 'Thành công', detail: 'Cập nhật trạng thái thành công', life: 3000 });
       fetchUsers();
     } catch (err) {
       console.error("Update status failed:", err);
+      toast.current.show({ severity: 'error', summary: 'Lỗi', detail: 'Cập nhật trạng thái thất bại', life: 3000 });
     }
   };
 
   useEffect(() => {
     fetchUsers();
-  }, [contact, type, status, page, rows]);
+  }, [contact, typee, statuss, page, rows]);
 
   const handleLogout = () => {
     logout();
@@ -177,11 +223,11 @@ const AdminDashboard = () => {
           <div className="lg:flex-1"></div>
           <div className="flex bottom-0 justify-end items-center mr-8">
             <div className="h-full flex items-end">
-              <TabMenu 
-                model={items} 
-                activeIndex={activeIndex} 
-                onTabChange={(e) => setActiveIndex(e.index)} 
-                className="lg:text-base md:text-sm" 
+              <TabMenu
+                model={items}
+                activeIndex={activeIndex}
+                onTabChange={(e) => setActiveIndex(e.index)}
+                className="lg:text-base md:text-sm"
               />
             </div>
             <button
@@ -200,13 +246,40 @@ const AdminDashboard = () => {
         {activeIndex === 0 && (
           <div className="flex flex-col items-center mb-12 mt-16 w-full">
             <div className="card w-11/12 bg-white shadow-lg rounded-lg p-6">
-              <div className="m-6">
-                <h2 className="text-3xl font-bold text-gray-800 flex items-center">
-                  Quản lý người dùng
-                </h2>
-                <p className="text-gray-600 mt-2">Quản lý thông tin bác sĩ và bệnh nhân trong hệ thống</p>
+              <div className="m-6 md:flex justify-between items-center">
+                <div className="flex-1">
+                  <h2 className="text-3xl font-bold text-gray-800 flex items-center">
+                    Quản lý người dùng
+                  </h2>
+                  <p className="text-gray-600 mt-2">Quản lý thông tin bác sĩ và bệnh nhân trong hệ thống</p>
+                </div>
+                <div className="flex flex-col gap-5">  
+                  <Button label="xuất PDF" icon="pi pi-file-pdf" onClick={exportPDF} className="w-full" />
+                  <Button
+                    className="w-full"
+                    label="Thêm người dùng mới"
+                    icon="pi pi-plus"
+                    onClick={() => setVisible(true)}
+                  />
+                </div>
               </div>
-
+              <Dialog visible={visible} onHide={() => setVisible(false)} header="Thêm người dùng mới">
+                <div className="card">
+                  <FileUpload
+                    name="file"
+                    customUpload
+                    uploadHandler={uploadCSV}
+                    chooseLabel="Chọn file CSV"
+                    uploadLabel="Tải lên"
+                    cancelLabel="Hủy"
+                    accept=".csv"
+                    maxFileSize={1000000}
+                    emptyTemplate={
+                      <p className="m-0">Kéo thả file CSV vào đây để tải lên.</p>
+                    }
+                  />
+                </div>
+              </Dialog>
               {/* Bộ lọc */}
               <div className="bg-gray-50 p-4 rounded-lg mb-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -223,8 +296,8 @@ const AdminDashboard = () => {
                   <div className="flex flex-col">
                     <label className="text-sm font-medium text-gray-700 mb-2">Loại người dùng</label>
                     <Dropdown
-                      value={type}
-                      onChange={(e) => setType(e.value)}
+                      value={typee}
+                      onChange={(e) => setTypee(e.value)}
                       options={typeOptions}
                       optionLabel="label"
                       placeholder="Chọn loại"
@@ -235,8 +308,8 @@ const AdminDashboard = () => {
                   <div className="flex flex-col">
                     <label className="text-sm font-medium text-gray-700 mb-2">Trạng thái</label>
                     <Dropdown
-                      value={status}
-                      onChange={(e) => setStatus(e.value)}
+                      value={statuss}
+                      onChange={(e) => setStatuss(e.value)}
                       options={statusOptions}
                       optionLabel="label"
                       placeholder="Chọn trạng thái"
@@ -245,14 +318,15 @@ const AdminDashboard = () => {
                   </div>
 
                   <div className="flex items-end">
-                    <Button 
-                      label="Đặt lại bộ lọc" 
+                    <Button
+                      label="Đặt lại bộ lọc"
                       icon="pi pi-refresh"
-                      onClick={() => { 
-                        setContact(""); 
-                        setType(null); 
-                        setStatus(null); 
-                        setPage(1); 
+                      onClick={() => {
+                        setContact("");
+                        setTypee(null);
+                        setStatuss(null);
+                        setPage(1);
+                        toast.current.show({ severity: 'info', summary: 'Đặt lại', detail: 'Bộ lọc đã được đặt lại', life: 3000 });
                       }}
                       className="w-full bg-blue-500 hover:bg-blue-600 border-blue-500"
                     />
@@ -265,15 +339,8 @@ const AdminDashboard = () => {
                 value={users}
                 paginator
                 rows={rows}
-                totalRecords={totalRecords}
-                first={(page - 1) * rows}
-                onPage={(e) => {
-                  setPage(e.page + 1);
-                  setRows(e.rows);
-                }}
-                rowsPerPageOptions={[5, 10, 25, 50]}
+                rowsPerPageOptions={[10, 25, 50]}
                 tableStyle={{ minWidth: "50rem" }}
-                responsiveLayout="scroll"
                 stripedRows
                 className="custom-datatable"
               >
@@ -290,10 +357,10 @@ const AdminDashboard = () => {
           </div>
         )}
 
-
+        <Toast ref={toast}></Toast>
       </main>
 
-      <Footer/>
+      <Footer />
     </>
   );
 };

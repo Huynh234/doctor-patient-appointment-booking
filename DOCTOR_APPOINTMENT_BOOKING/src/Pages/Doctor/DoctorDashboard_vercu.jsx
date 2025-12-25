@@ -10,6 +10,7 @@ import { io } from "socket.io-client";
 import { Dialog } from 'primereact/dialog';
 import { Calendar } from 'primereact/calendar';
 import { Button } from 'primereact/button';
+import { InputText } from 'primereact/inputtext';
 const statusColors = {
   scheduled: "text-blue-500 ",
   completed: "text-green-500 ",
@@ -20,19 +21,37 @@ const DoctorDashboard = () => {
   const [doctor, setDoctor] = useState(null);
   const [appointments, setAppointments] = useState([]);
   const [editingField, setEditingField] = useState(null);
-  const [editedValue, setEditedValue] = useState("");
   const [editedStatus, setEditedStatus] = useState({});
   const token = localStorage.getItem("token");
   const { logout } = useContext(AuthContext);
   const navigate = useNavigate();
   const [visible, setVisible] = useState(false);
+  const [visiable2, setVisiable2] = useState(false);
   const [change, setChange] = useState(false);
   const [topic, setTopic] = useState("");
   const [message, setMessage] = useState("");
   // Hàm load danh sách lịch hẹn của bác sĩ
   const [date, setDate] = useState(new Date());
   const [filterByDate, setFilterByDate] = useState(true);
+  const [useAppointment, setUseAppointment] = useState(null);
+  const [count, setCount] = useState(1);
+  const [payload, setPayload] = useState({
+    service: '',
+    examFee: '',
+    medicines: [
+      { name: "", quantity: 1, price: 0 }
+    ]
+  });
 
+  const resetpayLoad = () => {
+    setPayload({
+      service: '',
+      examFee: '',
+      medicines: [
+        { name: "", quantity: 1, price: 0 }
+      ]
+    });
+  }
   const fetchAppointments = async (doctorId, selectedDate, useDateFilter) => {
     try {
       let url = `http://localhost:8080/appointments/doctor/${doctorId}`;
@@ -196,6 +215,91 @@ const DoctorDashboard = () => {
     }
   };
 
+  const exportAppointment = async (dat) => {
+    const doctorId = localStorage.getItem("userId");
+    const token = localStorage.getItem("token");
+
+    try {
+      const response = await axios.get(
+        `http://localhost:8080/appointments/export/pdf/${doctorId}?date=${dat?.toLocaleDateString("en-CA")}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          },
+          responseType: "blob"
+        }
+      );
+
+      const blob = new Blob([response.data], {
+        type: "application/pdf"
+      });
+
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `lich_hen_${dat?.toLocaleDateString("en-CA") || "tat_ca"}.pdf`;
+
+      document.body.appendChild(link);
+      link.click();
+
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      toast.success("Yêu cầu xuất lịch hẹn thành công xin đợi giây lát...");
+    } catch (error) {
+      console.error("Lỗi khi xuất lịch hẹn:", error);
+      toast.error("Lỗi khi xuất lịch hẹn");
+    }
+  };
+
+  const exportInvoice = async (appointmentId) => {
+    const token = localStorage.getItem("token");
+
+    try {
+      const response = await axios.post(
+        `http://localhost:8080/appointments/invoice/${appointmentId}`,
+        payload,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          },
+          responseType: "blob"
+        }
+      );
+      const blob = new Blob([response.data], {
+        type: "application/pdf"
+      });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `hoa_don_kham_benh_${appointmentId}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      toast.success("Yêu cầu xuất hóa đơn thành công xin đợi giây lát...");
+    } catch (error) {
+      console.error("Lỗi khi xuất hóa đơn:", error);
+      toast.error("Lỗi khi xuất hóa đơn");
+    }
+  };
+
+  const addMedicine = () => {
+    setPayload(prev => ({
+      ...prev,
+      medicines: [
+        ...prev.medicines,
+        { name: "", quantity: 1, price: 0 }
+      ]
+    }));
+  };
+
+  const removeMedicine = (index) => {
+    setPayload(prev => ({
+      ...prev,
+      medicines: prev.medicines.filter((_, i) => i !== index)
+    }));
+  };
+
   const handleLogout = () => {
     logout();
     navigate("/login");
@@ -258,14 +362,22 @@ const DoctorDashboard = () => {
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl shadow-lg p-6 mb-8">
-            <h2 className="text-3xl font-semibold text-blue-600">
-              <i className="pi pi-user-plus mr-2 text-4xl"></i>
-              Lịch hẹn
-            </h2>
-            <p className="text-lg text-gray-600">
-              Tổng số lịch hẹn: {appointments.length}
-            </p>
+          <div className="mt-2 md:flex md:items-center bg-white rounded-2xl shadow-lg p-6 mb-8">
+            <div className="md:flex-1" >
+              <h2 className="text-3xl font-semibold text-blue-600">
+                <i className="pi pi-user-plus mr-2 text-4xl"></i>
+                Lịch hẹn
+              </h2>
+              <p className="text-lg text-gray-600">
+                Tổng số lịch hẹn: {appointments.length}
+              </p>
+            </div>
+            <div>
+              <Button
+                onClick={() => exportAppointment(date)}
+                label="xuất lịch hẹn"
+                icon="pi pi-list" />
+            </div>
           </div>
 
           {appointments.length > 0 ? (
@@ -382,36 +494,11 @@ const DoctorDashboard = () => {
                                 <i className="pi pi-trash"></i>
                               </button>
                             </div>
-                            <div><button onClick={() => { setVisible(true); setChange(true); }}>&#128222;</button></div>
-                            <div><button onClick={() => { setVisible(true); setChange(false); setTopic(""); setMessage(""); }}>&#128232;</button></div>
-                            <div>
-                              <Dialog header={change ? <p>Gọi điện &#128222;</p> : <p>Gửi email &#128232;</p>} visible={visible} position style={{ width: 'auto' }} onHide={() => { if (!visible) return; setVisible(false); }} draggable={false} resizable={false}>
-                                {change ?
-                                  <div className="flex justify-center items-center gap-5">
-                                    <div>Số điện thoại: {appointment?.Patient?.contactNumber}</div>
-                                    <div><button onClick={() => window.location.href = `tel:${appointment?.Patient?.contactNumber}`} className="mt-2 px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600">
-                                      Gọi ngay
-                                    </button></div>
-                                  </div>
-                                  :
-                                  <div>
-                                    <div> Đến Email: {appointment?.Patient?.email}</div>
-                                    <div className="mt-4">
-                                      <label htmlFor="subject" className="block mb-2 font-medium">Chủ đề:</label>
-                                      <input type="text" id="subject" className="w-full p-2 border border-gray-300 rounded-md" placeholder="Nhập chủ đề email..." value={topic} onChange={(e) => setTopic(e.target.value)} />
-                                    </div>
-                                    <div>
-                                      <label htmlFor="message" className="block mb-2 font-medium">Nội dung:</label>
-                                      <textarea id="message" rows="4" className="w-full p-2 border border-gray-300 rounded-md" placeholder="Nhập nội dung email ở đây..." value={message} onChange={(e) => setMessage(e.target.value)}></textarea>
-                                    </div>
-                                    <div className="mt-4">
-                                      <button onClick={() => sendMail(appointment?.Patient, appointment?.Doctor, appointment)} className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600">
-                                        Gửi Email
-                                      </button>
-                                    </div>
-                                  </div>}
-                              </Dialog>
-                            </div>
+                            <div><button onClick={() => { setVisible(true); setChange(true); setUseAppointment(appointment); }}><i className="pi pi-phone text-green-400"></i></button></div>
+                            <div><button onClick={() => { setVisible(true); setChange(false); setTopic(""); setMessage(""); setUseAppointment(appointment); }}><i className="pi pi-envelope text-teal-400"></i></button></div>
+                            {appointment.status === "completed" && (
+                              <div><button onClick={() => { setVisiable2(true); resetpayLoad(); setCount(appointment.appointmentId); }}><i className="pi pi-receipt text-blue-400"></i></button></div>
+                            )}
                           </div>
                         </td>
                       </tr>
@@ -421,6 +508,121 @@ const DoctorDashboard = () => {
               </div>
             </div>
           ) : null}
+          <div>
+            <Dialog header={change ? <p>Gọi điện &#128222;</p> : <p>Gửi email &#128232;</p>} visible={visible} position style={{ width: 'auto' }} onHide={() => { if (!visible) return; setVisible(false); }} draggable={false} resizable={false}>
+              {change ?
+                <div className="flex justify-center items-center gap-5">
+                  <div>Số điện thoại: {useAppointment?.Patient?.contactNumber}</div>
+                  <div><button onClick={() => window.location.href = `tel:${useAppointment?.Patient?.contactNumber}`} className="mt-2 px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600">
+                    Gọi ngay
+                  </button></div>
+                </div>
+                :
+                <div>
+                  <div> Đến Email: {useAppointment?.Patient?.email}</div>
+                  <div className="mt-4">
+                    <label htmlFor="subject" className="block mb-2 font-medium">Chủ đề:</label>
+                    <input type="text" id="subject" className="w-full p-2 border border-gray-300 rounded-md" placeholder="Nhập chủ đề email..." value={topic} onChange={(e) => setTopic(e.target.value)} />
+                  </div>
+                  <div>
+                    <label htmlFor="message" className="block mb-2 font-medium">Nội dung:</label>
+                    <textarea id="message" rows="4" className="w-full p-2 border border-gray-300 rounded-md" placeholder="Nhập nội dung email ở đây..." value={message} onChange={(e) => setMessage(e.target.value)}></textarea>
+                  </div>
+                  <div className="mt-4">
+                    <button onClick={() => sendMail(useAppointment?.Patient, useAppointment?.Doctor, useAppointment)} className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600">
+                      Gửi Email
+                    </button>
+                  </div>
+                </div>}
+            </Dialog>
+          </div>
+          <div>
+            <Dialog header={<p>Tải hóa đơn &#128179;</p>} visible={visiable2} position style={{ width: 'auto' }} onHide={() => { if (!visiable2) return; setVisiable2(false); }} draggable={false} resizable={false}>
+              <div className="flex flex-col gap-5">
+                <div>Bệnh nhân: {useAppointment?.Patient?.firstName} {useAppointment?.Patient?.lastName}</div>
+                <div>
+                  <label htmlFor="quantity" className="block mb-2 font-medium">Dịch vụ khám</label>
+                  <InputText
+                    value={payload.service}
+                    onChange={(e) => setPayload({ ...payload, service: e.target.value })}
+                    className="w-full"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="quantity" className="block mb-2 font-medium">Giá dịch vụ</label>
+                  <InputText
+                    type="number"
+                    value={payload.examFee}
+                    onChange={(e) => setPayload({ ...payload, examFee: e.target.value })}
+                    className="w-full"
+                  />
+                </div>
+                {payload.medicines.map((medicine, index) => (
+                  <div key={index} className="border p-3 rounded-md mb-3 flex gap-3 items-end">
+                    <div>
+                      <label className="block mb-1 font-medium">Tên thuốc</label>
+                      <InputText
+                        value={medicine.name}
+                        onChange={(e) => {
+                          const newMedicines = [...payload.medicines];
+                          newMedicines[index].name = e.target.value;
+                          setPayload({ ...payload, medicines: newMedicines });
+                        }}
+                        className="w-40"
+                      />
+                    </div>
+                    <div>
+                      <label className="block mb-1 font-medium">SL</label>
+                      <InputText
+                        type="number"
+                        value={medicine.quantity}
+                        onChange={(e) => {
+                          const newMedicines = [...payload.medicines];
+                          newMedicines[index].quantity = Number(e.target.value);
+                          setPayload({ ...payload, medicines: newMedicines });
+                        }}
+                        className="w-20"
+                      />
+                    </div>
+                    <div>
+                      <label className="block mb-1 font-medium">Giá</label>
+                      <InputText
+                        type="number"
+                        value={medicine.price}
+                        onChange={(e) => {
+                          const newMedicines = [...payload.medicines];
+                          newMedicines[index].price = Number(e.target.value);
+                          setPayload({ ...payload, medicines: newMedicines });
+                        }}
+                        className="w-28"
+                      />
+                    </div>
+                    <Button
+                      icon="pi pi-trash"
+                      className="p-button-danger p-button-text"
+                      onClick={() => removeMedicine(index)}
+                    />
+                  </div>
+                ))}
+                <div>
+                  <Button
+                  icon="pi pi-plus"
+                  label="Thêm thuốc"
+                  className="p-button-sm p-button-success"
+                  onClick={addMedicine}
+                />
+                </div>
+                <div>
+                  <button
+                    className="mt-2 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+                    onClick={() => exportInvoice(count)}
+                  >
+                    Tải hóa đơn
+                  </button>
+                </div>
+              </div>
+            </Dialog>
+          </div>
         </div>
       </div>
     </>

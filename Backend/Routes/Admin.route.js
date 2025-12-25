@@ -1,10 +1,12 @@
 const express=require("express");
 
 const AdminRouter=express.Router()
-const {approveDoctor, toggleUserStatus, createUserAccount, getSystemStats, exportReport, viewAdminLogs, getAllUsers} = require("../Controllers/Admin.controller");
+const {approveDoctor, toggleUserStatus, getAllUsers,importDoctorsFromCSV, exportAllUsersPDF } = require("../Controllers/Admin.controller");
 const jwt=require("jsonwebtoken")
+const upload = require("../Middlewares/uploadCSV");
 const Auth = require("../Middlewares/JWT.authentication");
 const { AdminAuth } = require("../Middlewares/RoleBased.authentication");
+
 require("dotenv").config()
 
 /**
@@ -146,144 +148,144 @@ AdminRouter.patch("/approve-doctor",Auth, AdminAuth, approveDoctor);
  */
 AdminRouter.patch("/toggle-user-status",Auth, AdminAuth, toggleUserStatus);
 
-// Thêm tài khoản mới (Doctor hoặc Patient)
-/**
- * @swagger
- * /admin/create-user:
- *   post:
- *     summary: Thêm mới tài khoản bác sĩ hoặc bệnh nhân
- *     tags: [Admin]
- *     security:
- *       - bearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - userType
- *               - firstName
- *               - lastName
- *               - email
- *               - password
- *             properties:
- *               userType:
- *                 type: string
- *                 enum: [doctor, patient]
- *                 example: "doctor"
- *               firstName:
- *                 type: string
- *                 example: "Nguyen"
- *               lastName:
- *                 type: string
- *                 example: "An"
- *               email:
- *                 type: string
- *                 example: "doctor.an@example.com"
- *               password:
- *                 type: string
- *                 example: "123456"
- *               specialty:
- *                 type: string
- *                 example: "Cardiology"
- *               clinicLocation:
- *                 type: string
- *                 example: "Hanoi General Hospital"
- *               contactNumber:
- *                 type: string
- *                 example: "0905123456"
- *               licenseCode:
- *                 type: string
- *                 example: "LIC12345"
- *               bloodGroup:
- *                 type: string
- *                 example: "O+"
- *               dateOfBirth:
- *                 type: string
- *                 format: date
- *                 example: "1999-02-15"
- *               gender:
- *                 type: string
- *                 enum: [male, female, other]
- *                 example: "male"
- *               address:
- *                 type: string
- *                 example: "123 Nguyen Trai, Hanoi"
- *               city:
- *                 type: string
- *                 example: "Hanoi"
- *     responses:
- *       201:
- *         description: Tạo tài khoản thành công
- *       400:
- *         description: Dữ liệu không hợp lệ hoặc email đã tồn tại
- *       500:
- *         description: Lỗi máy chủ
- */
-AdminRouter.post("/create-user", Auth, AdminAuth, createUserAccount);
+// // Thêm tài khoản mới (Doctor hoặc Patient)
+// /**
+//  * @swagger
+//  * /admin/create-user:
+//  *   post:
+//  *     summary: Thêm mới tài khoản bác sĩ hoặc bệnh nhân
+//  *     tags: [Admin]
+//  *     security:
+//  *       - bearerAuth: []
+//  *     requestBody:
+//  *       required: true
+//  *       content:
+//  *         application/json:
+//  *           schema:
+//  *             type: object
+//  *             required:
+//  *               - userType
+//  *               - firstName
+//  *               - lastName
+//  *               - email
+//  *               - password
+//  *             properties:
+//  *               userType:
+//  *                 type: string
+//  *                 enum: [doctor, patient]
+//  *                 example: "doctor"
+//  *               firstName:
+//  *                 type: string
+//  *                 example: "Nguyen"
+//  *               lastName:
+//  *                 type: string
+//  *                 example: "An"
+//  *               email:
+//  *                 type: string
+//  *                 example: "doctor.an@example.com"
+//  *               password:
+//  *                 type: string
+//  *                 example: "123456"
+//  *               specialty:
+//  *                 type: string
+//  *                 example: "Cardiology"
+//  *               clinicLocation:
+//  *                 type: string
+//  *                 example: "Hanoi General Hospital"
+//  *               contactNumber:
+//  *                 type: string
+//  *                 example: "0905123456"
+//  *               licenseCode:
+//  *                 type: string
+//  *                 example: "LIC12345"
+//  *               bloodGroup:
+//  *                 type: string
+//  *                 example: "O+"
+//  *               dateOfBirth:
+//  *                 type: string
+//  *                 format: date
+//  *                 example: "1999-02-15"
+//  *               gender:
+//  *                 type: string
+//  *                 enum: [male, female, other]
+//  *                 example: "male"
+//  *               address:
+//  *                 type: string
+//  *                 example: "123 Nguyen Trai, Hanoi"
+//  *               city:
+//  *                 type: string
+//  *                 example: "Hanoi"
+//  *     responses:
+//  *       201:
+//  *         description: Tạo tài khoản thành công
+//  *       400:
+//  *         description: Dữ liệu không hợp lệ hoặc email đã tồn tại
+//  *       500:
+//  *         description: Lỗi máy chủ
+//  */
+// AdminRouter.post("/create-user", Auth, AdminAuth, createUserAccount);
 
-// Thống kê
-/**
- * @swagger
- * /admin/stats:
- *   get:
- *     summary: Lấy thống kê tổng quan hệ thống
- *     tags: [Admin]
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: Dữ liệu thống kê hệ thống
- *       500:
- *         description: Lỗi khi lấy thống kê
- */
-AdminRouter.get("/stats",Auth, AdminAuth, getSystemStats);
+// // Thống kê
+// /**
+//  * @swagger
+//  * /admin/stats:
+//  *   get:
+//  *     summary: Lấy thống kê tổng quan hệ thống
+//  *     tags: [Admin]
+//  *     security:
+//  *       - bearerAuth: []
+//  *     responses:
+//  *       200:
+//  *         description: Dữ liệu thống kê hệ thống
+//  *       500:
+//  *         description: Lỗi khi lấy thống kê
+//  */
+// AdminRouter.get("/stats",Auth, AdminAuth, getSystemStats);
 
-// Xuất báo cáo
-/**
- * @swagger
- * /admin/export-report:
- *   get:
- *     summary: Xuất báo cáo hoạt động hệ thống
- *     tags: [Admin]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: query
- *         name: from
- *         schema:
- *           type: string
- *           format: date
- *         description: Ngày bắt đầu lọc dữ liệu (yyyy-mm-dd)
- *         example: 2024-01-01
- *       - in: query
- *         name: to
- *         schema:
- *           type: string
- *           format: date
- *         description: Ngày kết thúc lọc dữ liệu (yyyy-mm-dd)
- *         example: 2024-12-31
- *     responses:
- *       200:
- *         description: Báo cáo được xuất thành công
- */
-AdminRouter.get("/export-report",Auth, AdminAuth, exportReport);
+// // Xuất báo cáo
+// /**
+//  * @swagger
+//  * /admin/export-report:
+//  *   get:
+//  *     summary: Xuất báo cáo hoạt động hệ thống
+//  *     tags: [Admin]
+//  *     security:
+//  *       - bearerAuth: []
+//  *     parameters:
+//  *       - in: query
+//  *         name: from
+//  *         schema:
+//  *           type: string
+//  *           format: date
+//  *         description: Ngày bắt đầu lọc dữ liệu (yyyy-mm-dd)
+//  *         example: 2024-01-01
+//  *       - in: query
+//  *         name: to
+//  *         schema:
+//  *           type: string
+//  *           format: date
+//  *         description: Ngày kết thúc lọc dữ liệu (yyyy-mm-dd)
+//  *         example: 2024-12-31
+//  *     responses:
+//  *       200:
+//  *         description: Báo cáo được xuất thành công
+//  */
+// AdminRouter.get("/export-report",Auth, AdminAuth, exportReport);
 
-// Xem log
-/**
- * @swagger
- * /admin/logs:
- *   get:
- *     summary: Xem log hoạt động của quản trị viên
- *     tags: [Admin]
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: Danh sách log hoạt động
- */
-AdminRouter.get("/logs",Auth, AdminAuth, viewAdminLogs);
+// // Xem log
+// /**
+//  * @swagger
+//  * /admin/logs:
+//  *   get:
+//  *     summary: Xem log hoạt động của quản trị viên
+//  *     tags: [Admin]
+//  *     security:
+//  *       - bearerAuth: []
+//  *     responses:
+//  *       200:
+//  *         description: Danh sách log hoạt động
+//  */
+// AdminRouter.get("/logs",Auth, AdminAuth, viewAdminLogs);
 
 /**
  * @swagger
@@ -417,4 +419,58 @@ AdminRouter.get("/logs",Auth, AdminAuth, viewAdminLogs);
  */
 AdminRouter.get("/allusers",Auth, AdminAuth, getAllUsers);
 
-module.exports=AdminRouter
+
+/**
+ * @swagger
+ * /admin/doctors/import-csv:
+ *   post:
+ *     summary: Nhập danh sách bác sĩ từ file CSV
+ *     tags:
+ *       - Admin
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               file:
+ *                 type: string
+ *                 format: binary
+ *           description: File CSV chứa danh sách bác sĩ
+ *     responses:
+ *       200:
+ *         description: Nhập danh sách bác sĩ thành công
+ *       400:
+ *         description: Lỗi định dạng file hoặc dữ liệu không hợp lệ
+ *       500:
+ *         description: Lỗi máy chủ nội bộ
+ */
+
+
+AdminRouter.post("/doctors/import-csv",Auth, AdminAuth, upload.single("file"), importDoctorsFromCSV);
+
+/**
+ * @swagger
+ * /admin/users/export-pdf:
+ *   get:
+ *     summary: Xuất danh sách tất cả người dùng ra PDF
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Xuất PDF thành công
+ *         content:
+ *           application/pdf:
+ *             schema:
+ *               type: string
+ *               format: binary
+ *       500:
+ *         description: Lỗi máy chủ
+ */
+
+AdminRouter.get("/users/export-pdf", exportAllUsersPDF);
+
+
+module.exports = AdminRouter

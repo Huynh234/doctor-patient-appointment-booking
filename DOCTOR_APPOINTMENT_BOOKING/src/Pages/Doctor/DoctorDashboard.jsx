@@ -95,7 +95,7 @@ const DoctorDashboard = () => {
   }, []);
 
   const breadcrumbs = [{ title: "Home", link: "/doctor-dashboard" }];
-  
+
   const handleLogout = () => {
     logout();
     navigate("/login");
@@ -105,27 +105,27 @@ const DoctorDashboard = () => {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
       <header className="card bg-white fixed top-0 w-full z-10 flex justify-between items-center box-border shadow-md">
         <div className="flex w-full">
-          <div className="flex ml-8 items-center justify-start cursor-pointer" onClick={() => {navigate("/doctor-dashboard"); setActiveIndex(0);}}>
+          <div className="flex ml-8 items-center justify-start cursor-pointer" onClick={() => { navigate("/doctor-dashboard"); setActiveIndex(0); }}>
             <div>
-              <img src={newLogo} alt="Logo" className="mx-auto md:w-16 lg:w-20" />
+              <img src={newLogo} alt="Logo" className="mx-auto w-12 md:w-16 lg:w-20" />
             </div>
             <div className="flex flex-col ml-7 text-left">
               <div>
-                <p className="md:text-xl lg:text-3xl text-blue-500 font-bold">MedBooking</p>
+                <p className="text-xs md:text-base lg:text-2xl text-blue-500 font-bold">MedBooking</p>
               </div>
               <div>
-                <span className="text-gray-600 md:text-sm lg:text-base">Hệ thống đặt lịch khám trực tuyến</span>
+                <span className="text-gray-600 text-xs md:text-sm lg:text-base">Hệ thống đặt lịch khám trực tuyến</span>
               </div>
             </div>
           </div>
           <div className="lg:flex-1"></div>
           <div className="flex bottom-0 justify-end items-center mr-8">
-            <div className="h-full flex items-end">
-              <TabMenu 
-                model={items} 
-                activeIndex={activeIndex} 
-                onTabChange={(e) => setActiveIndex(e.index)} 
-                className="lg:text-base md:text-sm" 
+            <div className="hidden h-full md:flex items-end">
+              <TabMenu
+                model={items}
+                activeIndex={activeIndex}
+                onTabChange={(e) => setActiveIndex(e.index)}
+                className="lg:text-base md:text-sm"
               />
             </div>
             <button
@@ -138,7 +138,9 @@ const DoctorDashboard = () => {
           </div>
         </div>
       </header>
-
+      <div className="md:hidden mt-20 px-4">
+        <TabMenu model={items} activeIndex={activeIndex} onTabChange={(e) => setActiveIndex(e.index)} className="text-xs lg:text-base md:text-sm" />
+      </div>
       <main className="mt-24">
         {/* Tab 0: Giới thiệu */}
         {activeIndex === 0 && (

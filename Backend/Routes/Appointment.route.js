@@ -5,7 +5,9 @@ const {
   updateAppointmentById,
   deleteAppointmentById,
   getPatientAppointmentById,
-  getDoctorAppointmentById
+  getDoctorAppointmentById,
+  exportDoctorAppointmentsToPDF,
+  exportInvoicePDF
 } = require("../Controllers/Appointment.controller");
 const Auth = require("../Middlewares/JWT.authentication");
 const { DoctorAuth } = require("../Middlewares/RoleBased.authentication");
@@ -192,6 +194,108 @@ const { DoctorAuth } = require("../Middlewares/RoleBased.authentication");
  *         description: Appointment not found
  */
 
+/**
+ * @swagger
+ * /appointments/export/pdf/{doctorId}:
+ *   get:
+ *     summary: Xuất danh sách lịch hẹn của bác sĩ ra PDF
+ *     tags: [Appointments]
+ *     parameters:
+ *       - in: path
+ *         name: doctorId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID của bác sĩ
+ *       - in: query
+ *         name: date
+ *         required: false
+ *         schema:
+ *           type: string
+ *           format: date
+ *           example: 2025-12-16
+ *         description: Lọc lịch hẹn theo ngày (YYYY-MM-DD)
+ *     responses:
+ *       200:
+ *         description: Xuất PDF thành công
+ *         content:
+ *           application/pdf:
+ *             schema:
+ *               type: string
+ *               format: binary
+ *       404:
+ *         description: Không tìm thấy lịch hẹn
+ *       500:
+ *         description: Lỗi máy chủ
+ */
+
+/**
+ * @swagger
+ * /appointments/invoice/{appointmentId}:
+ *   post:
+ *     summary: Tạo và tải hóa đơn khám bệnh dạng PDF
+ *     description: |
+ *       API nhận thông tin dịch vụ và thuốc,
+ *       kết hợp với lịch hẹn để xuất hóa đơn PDF.
+ *     tags: [Appointments]
+ *     parameters:
+ *       - in: path
+ *         name: appointmentId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID lịch hẹn
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - service
+ *               - examFee
+ *               - medicines
+ *             properties:
+ *               service:
+ *                 type: string
+ *                 example: Khám nội tổng quát
+ *               examFee:
+ *                 type: number
+ *                 example: 150000
+ *               medicines:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   required:
+ *                     - name
+ *                     - quantity
+ *                     - price
+ *                   properties:
+ *                     name:
+ *                       type: string
+ *                       example: Paracetamol
+ *                     quantity:
+ *                       type: integer
+ *                       example: 2
+ *                     price:
+ *                       type: number
+ *                       example: 10000
+ *     responses:
+ *       200:
+ *         description: Tạo và tải PDF thành công
+ *         content:
+ *           application/pdf:
+ *             schema:
+ *               type: string
+ *               format: binary
+ *       404:
+ *         description: Không tìm thấy lịch hẹn
+ *       500:
+ *         description: Lỗi tạo PDF
+ */
+
+
+
 // Create a new appointment
 AppointmentRouter.post("/", createAppointment);
 
@@ -205,6 +309,10 @@ AppointmentRouter.patch("/:appointmentId", Auth, updateAppointmentById);
 
 // Delete an appointment by ID
 AppointmentRouter.delete("/:appointmentId", Auth, deleteAppointmentById);
+
+AppointmentRouter.get("/export/pdf/:doctorId", Auth, DoctorAuth, exportDoctorAppointmentsToPDF);
+
+AppointmentRouter.post("/invoice/:appointmentId", Auth, DoctorAuth, exportInvoicePDF);
 
 
 module.exports = AppointmentRouter;
