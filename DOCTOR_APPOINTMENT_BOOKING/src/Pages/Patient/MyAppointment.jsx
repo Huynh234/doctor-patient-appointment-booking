@@ -333,7 +333,7 @@ const MyAppointment = () => {
                         </td>
 
                         <td className="px-6 py-4 text-lg">
-                          {appointment.status === "scheduled" ? <button
+                          {appointment.status === "scheduled" && appointment.appointmentDate >= new Date().toLocaleDateString("en-CA") ? <button
                             className="text-blue-600 ml-2 hover:text-blue-800"
                             onClick={() => openEditModal(appointment)}
                             title="Chỉnh sửa"
