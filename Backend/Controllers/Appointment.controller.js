@@ -123,24 +123,59 @@ const getPatientAppointmentById = async (req, res) => {
 // Cập nhật lịch hẹn
 const updateAppointmentById = async (req, res) => {
   try {
-    const appointmentId = req.params.appointmentId;
+    const { appointmentId } = req.params;
     const role = req.body.role;
-    const updated = await Appointment.update(req.body, {
-      where: { appointmentId: appointmentId },
+
+    const appointment = await Appointment.findByPk(appointmentId, {
+      include: [Doctor, Patient],
     });
 
-    if (!updated) {
+    if (!appointment) {
       return res.status(404).json({ message: "Lịch hẹn không tồn tại" });
     }
 
+    const {
+      doctorId = appointment.doctorId,
+      appointmentDate = appointment.appointmentDate,
+      startTime = appointment.startTime,
+      endTime = appointment.endTime,
+      disease = appointment.disease,
+    } = req.body;
+
+    const conflict = await Appointment.findOne({
+      where: {
+        appointmentId: { [Op.ne]: appointmentId },
+        doctorId,
+        appointmentDate,
+        status: { [Op.ne]: "canceled" },
+        [Op.and]: [
+          { startTime: { [Op.lt]: endTime } },
+          { endTime: { [Op.gt]: startTime } },
+        ],
+      },
+    });
+
+    if (conflict) {
+      return res.status(409).json({
+        message: "Bác sĩ đã có lịch hẹn trong khoảng thời gian này",
+      });
+    }
+    const affectedRows = await Appointment.update(
+      req.body,
+      { where: { appointmentId } }
+    );
+    if (!affectedRows) {
+      return res.status(400).json({ message: "Không có thay đổi nào" });
+    }
     const updatedAppointment = await Appointment.findByPk(appointmentId, {
       include: [Doctor, Patient],
     });
+
     // Emit event cập nhật
     await sendWithRole(role, updatedAppointment, 'được cập nhật trạng thái vui lòng vào trang web để xem chi tiết ');
     req.io.to(`doctor_${updatedAppointment.doctorId}`).emit("appointmentUpdated", updatedAppointment);
     req.io.to(`patient_${updatedAppointment.patientId}`).emit("appointmentUpdated", updatedAppointment);
-    res.status(200).json({ success: updatedAppointment });
+    res.status(200).json({ success: true, data: updatedAppointment });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: error.message });

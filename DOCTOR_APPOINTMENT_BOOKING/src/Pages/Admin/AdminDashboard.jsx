@@ -207,9 +207,9 @@ const AdminDashboard = () => {
       {/* Header */}
       <header className="card bg-white fixed top-0 w-full z-10 flex justify-between items-center box-border shadow-md">
         <div className="flex w-full">
-          <div className="flex ml-8 items-center justify-start">
+          <div className="flex ml-8 items-center justify-start gap-3">
             <div>
-              <img src={newLogo} alt="Logo" className="mx-auto md:w-16 lg:w-20" />
+              <img src={newLogo} alt="Logo" className="mx-auto w-12 md:w-16 lg:w-20" />
             </div>
             <div className="flex flex-col ml-7 text-left">
               <div>
@@ -220,7 +220,7 @@ const AdminDashboard = () => {
               </div>
             </div>
           </div>
-          <div className="lg:flex-1"></div>
+          <div className="flex-1"></div>
           <div className="flex bottom-0 justify-end items-center mr-8">
             <div className="h-full flex items-end">
               <TabMenu
