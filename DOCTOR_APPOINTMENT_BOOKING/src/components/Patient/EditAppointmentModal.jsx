@@ -7,19 +7,13 @@ const EditAppointmentModal = ({
   closeModal,
   updateAppointment
 }) => {
-  const doctorFirstName = appointment.Doctor.firstName || "";
-  const doctorLastName = appointment.Doctor.lastName || "";
-
   const [editedData, setEditedData] = useState({
     doctorId: appointment.Doctor.doctorId,
-    doctorFirstName: doctorFirstName,
-    doctorLastName: doctorLastName,
     appointmentDate: appointment.appointmentDate,
     startTime: appointment.startTime.substring(0, 5), // Format HH:mm
     endTime: appointment.endTime.substring(0, 5), // Format HH:mm
     disease: appointment.disease,
     status: appointment.status,
-    additionalInfo: appointment.additionalInfo || ""
   });
 
   const today = new Date().toISOString().split("T")[0];
@@ -31,59 +25,87 @@ const EditAppointmentModal = ({
     return `${hh}:${mm}`;
   };
 
-  // Generate time options for business hours (08:00 - 17:00)
+  // Generate time options for business hours (07:00 - 17:00)
   const timeOptions = useMemo(() => {
     const times = [];
-    for (let h = 8; h <= 17; h++) {
-      times.push(`${String(h).padStart(2, "0")}:00`);
+    let hour = 7;
+    let minute = 0;
+
+    while (hour < 17 || (hour === 17 && minute === 0) ) {
+      times.push(
+        `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`
+      );
+
+      minute += 30;
+      if (minute === 60) {
+        minute = 0;
+        hour++;
+      }
     }
+
     return times;
   }, []);
+
+  const add30Minutes = (time) => {
+    const [h, m] = time.split(":").map(Number);
+    const date = new Date();
+    date.setHours(h, m + 30);
+
+    return `${String(date.getHours()).padStart(2, "0")}:${String(
+      date.getMinutes()
+    ).padStart(2, "0")}`;
+  };
+
 
   // Get minimum start time based on selected date
   const getMinStartTime = () => {
     if (editedData.appointmentDate === today) {
-      const now = getCurrentTime();
-      const currentHour = parseInt(now.split(":")[0]);
-      return `${String(currentHour).padStart(2, "0")}:00`;
+      const now = new Date();
+      let h = now.getHours();
+      let m = now.getMinutes();
+
+      if (m > 0 && m <= 30) m = 30;
+      else if (m > 30) {
+        m = 0;
+        h++;
+      }
+
+      return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
     }
-    return "00:00";
+    return "07:00";
   };
+
 
   const handleChange = (name, value) => {
     if (name === "appointmentDate") {
       if (value < today) {
-        toast.error("Ngày hẹn không được là quá khứ.", { 
-          position: "top-right", 
-          autoClose: 3000 
+        toast.error("Ngày hẹn không được là quá khứ.", {
+          position: "top-right",
+          autoClose: 3000
         });
         return;
       }
       // Reset times when date changes
       setEditedData({ ...editedData, [name]: value, startTime: "", endTime: "" });
     } else if (name === "startTime") {
-      // Check if start time is valid for selected date
       if (editedData.appointmentDate === today) {
         const minTime = getMinStartTime();
         if (value < minTime) {
-          toast.error("Giờ bắt đầu không được là quá khứ.", { 
-            position: "top-right", 
-            autoClose: 3000 
+          toast.error("Giờ bắt đầu không được là quá khứ.", {
+            position: "top-right",
+            autoClose: 3000,
           });
           return;
         }
       }
-      setEditedData({ ...editedData, [name]: value });
-    } else if (name === "endTime") {
-      // Check if end time is after start time
-      if (editedData.startTime && value <= editedData.startTime) {
-        toast.error("Giờ kết thúc phải sau giờ bắt đầu.", { 
-          position: "top-right", 
-          autoClose: 3000 
-        });
-        return;
-      }
-      setEditedData({ ...editedData, [name]: value });
+
+      const endTime = add30Minutes(value);
+
+      setEditedData({
+        ...editedData,
+        startTime: value,
+        endTime: endTime,
+      });
     } else {
       setEditedData({ ...editedData, [name]: value });
     }
@@ -92,17 +114,17 @@ const EditAppointmentModal = ({
   const handleSave = () => {
     // Final validation before save
     if (!editedData.appointmentDate || !editedData.startTime || !editedData.endTime || !editedData.disease) {
-      toast.error("Vui lòng điền đầy đủ thông tin.", { 
-        position: "top-right", 
-        autoClose: 3000 
+      toast.error("Vui lòng điền đầy đủ thông tin.", {
+        position: "top-right",
+        autoClose: 3000
       });
       return;
     }
 
     if (editedData.endTime <= editedData.startTime) {
-      toast.error("Giờ kết thúc phải sau giờ bắt đầu.", { 
-        position: "top-right", 
-        autoClose: 3000 
+      toast.error("Giờ kết thúc phải sau giờ bắt đầu.", {
+        position: "top-right",
+        autoClose: 3000
       });
       return;
     }
@@ -125,7 +147,7 @@ const EditAppointmentModal = ({
             <i className="pi pi-times"></i>
           </button>
         </div>
-        
+
         <div>
           <div className="mb-4">
             <label className="block text-blue-600 text-sm font-bold mb-2">
@@ -135,8 +157,8 @@ const EditAppointmentModal = ({
             <input
               type="text"
               name="doctorFirstName"
-              value={`${editedData.doctorFirstName} ${editedData.doctorLastName}`}
-              readOnly 
+              value={`${appointment.Doctor.firstName} ${appointment.Doctor.lastName}`}
+              readOnly
               className="w-full border-2 border-blue-600 rounded-lg px-4 py-3 bg-gray-100 cursor-not-allowed focus:outline-none"
             />
           </div>
@@ -204,19 +226,10 @@ const EditAppointmentModal = ({
             <select
               name="endTime"
               value={editedData.endTime}
-              onChange={(e) => handleChange("endTime", e.target.value)}
-              className="w-full border-2 border-blue-600 rounded-lg px-4 py-3 pr-10 focus:outline-none focus:border-blue-700 bg-white appearance-none"
-              disabled={!editedData.startTime}
-              required
+              disabled
+              className="w-full border-2 border-blue-600 rounded-lg px-4 py-3 bg-gray-100 cursor-not-allowed"
             >
-              <option value="">Chọn giờ kết thúc</option>
-              {timeOptions
-                .filter((time) => editedData.startTime && time > editedData.startTime)
-                .map((time) => (
-                  <option key={time} value={time}>
-                    {time}
-                  </option>
-                ))}
+              <option value="">{editedData.endTime || "Tự động"}</option>
             </select>
           </div>
 

@@ -11,6 +11,7 @@ import { Dialog } from 'primereact/dialog';
 import { Calendar } from 'primereact/calendar';
 import { Button } from 'primereact/button';
 import { InputText } from 'primereact/inputtext';
+import { InputNumber } from 'primereact/inputnumber';
 const statusColors = {
   scheduled: "text-blue-500 ",
   completed: "text-green-500 ",
@@ -468,7 +469,7 @@ const DoctorDashboard = () => {
                                   <i className="pi pi-ban"></i>
                                 )}
                               </span>
-                              <button
+                              {appointment.appointmentDate >= new Date().toLocaleDateString("en-CA") ? <button
                                 className={`${statusColors[appointment.status]
                                   } ml-2 text-sm`}
                                 onClick={() => {
@@ -480,7 +481,7 @@ const DoctorDashboard = () => {
                                 }}
                               >
                                 <i className="pi pi-pencil"></i>
-                              </button>
+                              </button> : null}
                             </div>
                           )}
                         </td>
@@ -550,12 +551,10 @@ const DoctorDashboard = () => {
                 </div>
                 <div>
                   <label htmlFor="quantity" className="block mb-2 font-medium">Giá dịch vụ</label>
-                  <InputText
-                    type="number"
-                    value={payload.examFee}
-                    onChange={(e) => setPayload({ ...payload, examFee: e.target.value })}
-                    className="w-full"
-                  />
+                  <InputNumber value={payload.examFee}
+                    min={0}
+                    onValueChange={(e) => setPayload({ ...payload, examFee: e.target.value })}
+                    className="w-full" suffix=" VND" />
                 </div>
                 {payload.medicines.map((medicine, index) => (
                   <div key={index} className="border p-3 rounded-md mb-3 flex gap-3 items-end">
@@ -576,6 +575,7 @@ const DoctorDashboard = () => {
                       <InputText
                         type="number"
                         value={medicine.quantity}
+                        min={0}
                         onChange={(e) => {
                           const newMedicines = [...payload.medicines];
                           newMedicines[index].quantity = Number(e.target.value);
@@ -586,16 +586,14 @@ const DoctorDashboard = () => {
                     </div>
                     <div>
                       <label className="block mb-1 font-medium">Giá</label>
-                      <InputText
-                        type="number"
-                        value={medicine.price}
-                        onChange={(e) => {
+                      <InputNumber value={medicine.price}
+                        min={0}
+                        onValueChange={(e) => {
                           const newMedicines = [...payload.medicines];
                           newMedicines[index].price = Number(e.target.value);
                           setPayload({ ...payload, medicines: newMedicines });
                         }}
-                        className="w-28"
-                      />
+                        className="w-auto" suffix=" VND" />
                     </div>
                     <Button
                       icon="pi pi-trash"
@@ -606,11 +604,11 @@ const DoctorDashboard = () => {
                 ))}
                 <div>
                   <Button
-                  icon="pi pi-plus"
-                  label="Thêm thuốc"
-                  className="p-button-sm p-button-success"
-                  onClick={addMedicine}
-                />
+                    icon="pi pi-plus"
+                    label="Thêm thuốc"
+                    className="p-button-sm p-button-success"
+                    onClick={addMedicine}
+                  />
                 </div>
                 <div>
                   <button
